@@ -1,10 +1,85 @@
-/*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
- */
+:root {
+  --ink: #111111;
+  --paper: #f7f4ef;
+  --deep-blue: #1d2a4d;
+  --muted: #5c584f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Outfit", sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+.eyebrow {
+  font-family: "Cormorant Garamond", serif;
+}
+
+.hero {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 18vh 1.5rem 4rem;
+}
+
+.eyebrow {
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  color: var(--deep-blue);
+}
+
+h1 {
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  font-weight: 500;
+  line-height: 1.1;
+  margin: 0.4rem 0 1rem;
+}
+
+.lede,
+.note {
+  color: var(--muted);
+  max-width: 32rem;
+}
+
+.button {
+  display: inline-block;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.4rem;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+}
+
+.button:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.flash {
+  margin: 0;
+  padding: 0.75rem 1.5rem;
+  text-align: center;
+}
+
+.flash.notice {
+  background: #e8efe8;
+}
+
+.flash.alert {
+  background: #f6e6e6;
+}
