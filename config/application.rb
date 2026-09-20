@@ -16,12 +16,15 @@ module Denshe
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
-    # Configuration for the application, engines, and railties goes here.
-    #
-    # These settings can be overridden in specific environments using the files
-    # in config/environments, which are processed later.
-    #
-    # config.time_zone = "Central Time (US & Canada)"
-    # config.eager_load_paths << Rails.root.join("extras")
+    # India-first jewellery storefront and admin.
+    config.time_zone = "Mumbai"
+    config.active_record.default_timezone = :utc
+
+    config.generators do |g|
+      g.orm :active_record, primary_key_type: :bigint
+      g.assets false
+      g.helper false
+      g.test_framework :test_unit, fixture: true
+    end
   end
 end

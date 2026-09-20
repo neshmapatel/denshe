@@ -17,6 +17,16 @@ gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 
+# json 3.0 only accepts keyword options; Rails 8.1 still calls JSON.parse(json, options)
+gem "json", "~> 2.16"
+
+# Admin authentication
+gem "devise", "~> 5.0"
+
+# Functional admin for product, inventory, and order management
+gem "activeadmin", "4.0.0.beta22"
+gem "activeadmin_assets"
+
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
 
@@ -39,6 +49,9 @@ gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
+
+# S3-compatible client for Cloudflare R2 / Amazon S3 in production
+gem "aws-sdk-s3", require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

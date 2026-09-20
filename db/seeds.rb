@@ -1,9 +1,28 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# This file is idempotent. Safe to re-run with `bin/rails db:seed`.
+
+password = ENV.fetch("ADMIN_SEED_PASSWORD", "denshe-admin-123")
+
+[
+  { name: "Neshma", email: "neshma@denshe.in", role: :super_admin },
+  { name: "Devanshi", email: "devanshi@denshe.in", role: :admin }
+].each do |attrs|
+  AdminUser.find_or_create_by!(email: attrs[:email]) do |user|
+    user.name = attrs[:name]
+    user.role = attrs[:role]
+    user.password = password
+    user.password_confirmation = password
+  end
+end
+
+[
+  [ "Earrings", 1 ],
+  [ "Necklaces", 2 ],
+  [ "Rings", 3 ],
+  [ "Bracelets", 4 ],
+  [ "Sets", 5 ],
+  [ "Other", 6 ]
+].each do |name, position|
+  Category.find_or_create_by!(name: name) do |category|
+    category.position = position
+  end
+end
