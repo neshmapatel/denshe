@@ -84,4 +84,26 @@ class ProductTest < ActiveSupport::TestCase
 
     assert_equal 289, product.contribution_margin
   end
+
+  test "copies supplier from the purchase lot" do
+    supplier = Supplier.create!(name: "Mahavir Enterprise")
+    purchase = Purchase.create!(
+      supplier: supplier,
+      reference: "MV-LOT-TEST",
+      article_count: 1,
+      merchandise_total: 100,
+      courier_charge: 0,
+      total_amount: 100
+    )
+    product = Product.create!(
+      category: @category,
+      purchase: purchase,
+      name: "Golden Hoops",
+      selling_price: 0,
+      purchase_price: 100,
+      stock_quantity: 1
+    )
+
+    assert_equal supplier, product.supplier
+  end
 end

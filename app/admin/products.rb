@@ -4,7 +4,7 @@ ActiveAdmin.register Product do
   menu parent: "Catalogue", priority: 2
   searchable placeholder: "Search name, SKU, or slug"
 
-  permit_params :category_id, :name, :slug, :sku, :description, :short_description,
+  permit_params :category_id, :supplier_id, :purchase_id, :name, :slug, :sku, :description, :short_description,
                 :purchase_price, :selling_price, :compare_at_price, :packaging_allocation,
                 :shipping_allocation, :gst_rate, :quantity_purchased, :stock_quantity,
                 :low_stock_threshold, :material, :colour, :dimensions, :weight,
@@ -25,6 +25,7 @@ ActiveAdmin.register Product do
     column :name
     column :sku
     column :slug
+    column :supplier
     column :category
     column :status
     column("Purchase") { |product| "₹#{product.purchase_price}" }
@@ -35,6 +36,8 @@ ActiveAdmin.register Product do
     actions
   end
 
+  filter :supplier
+  filter :purchase
   filter :category
   filter :status
   filter :featured
@@ -46,6 +49,8 @@ ActiveAdmin.register Product do
       row :name
       row :slug
       row :sku
+      row :supplier
+      row :purchase
       row :category
       row :status
       row :featured
@@ -131,6 +136,8 @@ ActiveAdmin.register Product do
     f.semantic_errors
     f.inputs "Basic" do
       f.input :category
+      f.input :supplier
+      f.input :purchase
       f.input :name
       f.input :slug, hint: "Leave blank to generate from the name."
       f.input :sku

@@ -16,6 +16,21 @@ ActiveAdmin.register_page "Dashboard" do
       end
     end
 
+    panel "Investors" do
+      ul do
+        Investor.order(:name).each do |investor|
+          li "#{investor.name}: ₹#{investor.total_invested}"
+        end
+      end
+    end
+
+    panel "Sourcing" do
+      ul do
+        li "Suppliers: #{Supplier.count}"
+        li "Purchase lots: #{Purchase.count}"
+      end
+    end
+
     panel "Catalogue" do
       ul do
         li "Total products: #{Product.count}"
@@ -23,6 +38,7 @@ ActiveAdmin.register_page "Dashboard" do
         li "Draft products: #{Product.draft.count}"
         li "Low-stock products: #{Product.low_stock.count}"
         li "Out-of-stock products: #{Product.out_of_stock.count}"
+        li { span link_to "Open category reports", admin_reports_path }
       end
     end
 
@@ -67,6 +83,7 @@ ActiveAdmin.register_page "Dashboard" do
       if products.any?
         table_for products do
           column(:name) { |product| link_to product.name, admin_product_path(product) }
+          column(:supplier)
           column(:category)
           column(:status) { |product| status_tag product.status }
           column("Purchase") { |product| "₹#{product.purchase_price}" }
