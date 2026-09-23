@@ -48,7 +48,7 @@ gem "kamal", require: false
 gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 2.1"
 
 # S3-compatible client for Cloudflare R2 / Amazon S3 in production
 gem "aws-sdk-s3", require: false
