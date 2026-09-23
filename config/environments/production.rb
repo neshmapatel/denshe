@@ -21,18 +21,22 @@ Rails.application.configure do
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
 
-  # Production image files go to cloud object storage, not PostgreSQL.
-  # Set ACTIVE_STORAGE_SERVICE=cloudflare_r2 (or amazon) once credentials exist.
-  config.active_storage.service = ENV.fetch("ACTIVE_STORAGE_SERVICE", "local").to_sym
+  # Heroku dyno disk is wiped on restart. Use R2 when credentials exist so product
+  # photos survive deploys. ACTIVE_STORAGE_SERVICE still wins if set explicitly.
+  config.active_storage.service =
+    if ENV["ACTIVE_STORAGE_SERVICE"].present?
+      ENV["ACTIVE_STORAGE_SERVICE"].to_sym
+    elsif ENV["CLOUDFLARE_R2_ACCESS_KEY_ID"].present?
+      :cloudflare_r2
+    else
+      :local
+    end
 
-  # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  # config.assume_ssl = true
-
-  # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
+  # Heroku terminates SSL at the router. Without this, Active Storage signs http://
+  # disk URLs and the browser blocks them on the https admin.
+  config.assume_ssl = true
   config.force_ssl = true
-
-  # Skip http-to-https redirect for the default health check endpoint.
-  # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
+  config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
   # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]
@@ -58,8 +62,11 @@ Rails.application.configure do
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 
-  # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "denshe.in") }
+  app_host = ENV.fetch("APP_HOST", "denshe.in")
+  url_options = { host: app_host, protocol: "https" }
+  config.action_controller.default_url_options = url_options
+  config.action_mailer.default_url_options = url_options
+  Rails.application.routes.default_url_options = url_options
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
   # config.action_mailer.smtp_settings = {
