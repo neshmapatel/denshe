@@ -90,15 +90,27 @@ production:
     database: denshe_production
     username: denshe
     password: <%= ENV["DENSHE_DATABASE_PASSWORD"] %>
+    <% if ENV["DATABASE_URL"].present? %>
+    url: <%= ENV["DATABASE_URL"] %>
+    <% end %>
   cache:
     <<: *primary_production
     database: denshe_production_cache
     migrations_paths: db/cache_migrate
+    <% if (ENV["CACHE_DATABASE_URL"].presence || ENV["DATABASE_URL"]).present? %>
+    url: <%= ENV["CACHE_DATABASE_URL"].presence || ENV["DATABASE_URL"] %>
+    <% end %>
   queue:
     <<: *primary_production
     database: denshe_production_queue
     migrations_paths: db/queue_migrate
+    <% if (ENV["QUEUE_DATABASE_URL"].presence || ENV["DATABASE_URL"]).present? %>
+    url: <%= ENV["QUEUE_DATABASE_URL"].presence || ENV["DATABASE_URL"] %>
+    <% end %>
   cable:
     <<: *primary_production
     database: denshe_production_cable
     migrations_paths: db/cable_migrate
+    <% if (ENV["CABLE_DATABASE_URL"].presence || ENV["DATABASE_URL"]).present? %>
+    url: <%= ENV["CABLE_DATABASE_URL"].presence || ENV["DATABASE_URL"] %>
+    <% end %>

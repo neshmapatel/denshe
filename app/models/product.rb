@@ -62,6 +62,42 @@ class Product < ApplicationRecord
     selling_price.to_d - purchase_price.to_d - packaging_allocation.to_d - shipping_allocation.to_d
   end
 
+  def primary_image
+    return unless images.attached?
+
+    images.find_by(id: primary_image_id) || images.first
+  end
+
+  def primary_image?(attachment)
+    attachment.present? && primary_image&.id == attachment.id
+  end
+
+  def remove_images!(ids)
+    Array(ids).compact_blank.each do |id|
+      images.find_by(id: id)&.purge
+    end
+    images.reset
+  end
+
+  def set_primary_image!(attachment_or_id)
+    return if attachment_or_id.blank?
+
+    id = attachment_or_id.respond_to?(:id) ? attachment_or_id.id : attachment_or_id.to_i
+    return unless images.exists?(id: id)
+
+    update_column(:primary_image_id, id)
+  end
+
+  def ensure_primary_image!
+    if images.attached?
+      return if primary_image_id.present? && images.exists?(id: primary_image_id)
+
+      update_column(:primary_image_id, images.first.id)
+    elsif primary_image_id.present?
+      update_column(:primary_image_id, nil)
+    end
+  end
+
   def adjust_stock!(quantity:, movement_type:, reason:, admin_user: nil, order: nil)
     quantity = quantity.to_i
     raise ArgumentError, "Quantity cannot be zero" if quantity.zero?

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_23_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_23_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -229,6 +229,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_23_100000) do
     t.string "name", null: false
     t.boolean "new_arrival", default: false, null: false
     t.decimal "packaging_allocation", precision: 10, scale: 2, default: "0.0", null: false
+    t.bigint "primary_image_id"
     t.bigint "purchase_id"
     t.decimal "purchase_price", precision: 10, scale: 2, default: "0.0", null: false
     t.integer "quantity_purchased", default: 0, null: false
@@ -245,6 +246,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_23_100000) do
     t.text "whats_included"
     t.index ["category_id"], name: "index_products_on_category_id"
     t.index ["featured"], name: "index_products_on_featured"
+    t.index ["primary_image_id"], name: "index_products_on_primary_image_id"
     t.index ["purchase_id"], name: "index_products_on_purchase_id"
     t.index ["sku"], name: "index_products_on_sku", unique: true
     t.index ["slug"], name: "index_products_on_slug", unique: true
