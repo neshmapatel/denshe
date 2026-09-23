@@ -1,0 +1,42 @@
+<%= form_with url: admin_reports_path, method: :get, local: true do %>
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:end;">
+    <div>
+      <label for="category_id">Category</label><br>
+      <select name="category_id" id="category_id">
+        <option value="">All categories</option>
+        <% Category.ordered.each do |category| %>
+          <option value="<%= category.id %>" <%= "selected" if report.category_id == category.id %>>
+            <%= category.name %>
+          </option>
+        <% end %>
+      </select>
+    </div>
+
+    <div>
+      <label for="supplier_id">Supplier</label><br>
+      <select name="supplier_id" id="supplier_id">
+        <option value="">All suppliers</option>
+        <% Supplier.order(:name).each do |supplier| %>
+          <option value="<%= supplier.id %>" <%= "selected" if report.supplier_id == supplier.id %>>
+            <%= supplier.name %>
+          </option>
+        <% end %>
+      </select>
+    </div>
+
+    <div>
+      <label for="min_price">Purchase price from</label><br>
+      <input type="number" name="min_price" id="min_price" min="0" step="0.01" value="<%= report.min_price %>">
+    </div>
+
+    <div>
+      <label for="max_price">Purchase price to</label><br>
+      <input type="number" name="max_price" id="max_price" min="0" step="0.01" value="<%= report.max_price %>">
+    </div>
+
+    <div>
+      <button type="submit">Apply</button>
+      <%= link_to "Clear", admin_reports_path %>
+    </div>
+  </div>
+<% end %>

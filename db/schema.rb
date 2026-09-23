@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_07_163000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_23_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -122,6 +122,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_163000) do
     t.index ["product_id"], name: "index_inventory_movements_on_product_id"
   end
 
+  create_table "investments", force: :cascade do |t|
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.date "invested_on"
+    t.bigint "investor_id", null: false
+    t.integer "kind", default: 0, null: false
+    t.text "notes"
+    t.bigint "purchase_id"
+    t.datetime "updated_at", null: false
+    t.index ["investor_id"], name: "index_investments_on_investor_id"
+    t.index ["purchase_id"], name: "index_investments_on_purchase_id"
+  end
+
+  create_table "investors", force: :cascade do |t|
+    t.bigint "admin_user_id"
+    t.datetime "created_at", null: false
+    t.string "email"
+    t.string "name", null: false
+    t.text "notes"
+    t.datetime "updated_at", null: false
+    t.index ["admin_user_id"], name: "index_investors_on_admin_user_id"
+    t.index ["name"], name: "index_investors_on_name", unique: true
+  end
+
   create_table "mystery_box_preferences", force: :cascade do |t|
     t.boolean "add_gift_note", default: false, null: false
     t.decimal "box_price", precision: 10, scale: 2, default: "599.0", null: false
@@ -205,6 +229,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_163000) do
     t.string "name", null: false
     t.boolean "new_arrival", default: false, null: false
     t.decimal "packaging_allocation", precision: 10, scale: 2, default: "0.0", null: false
+    t.bigint "purchase_id"
     t.decimal "purchase_price", precision: 10, scale: 2, default: "0.0", null: false
     t.integer "quantity_purchased", default: 0, null: false
     t.decimal "selling_price", precision: 10, scale: 2, null: false
@@ -214,14 +239,49 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_163000) do
     t.string "slug", null: false
     t.integer "status", default: 0, null: false
     t.integer "stock_quantity", default: 0, null: false
+    t.bigint "supplier_id"
     t.datetime "updated_at", null: false
     t.string "weight"
     t.text "whats_included"
     t.index ["category_id"], name: "index_products_on_category_id"
     t.index ["featured"], name: "index_products_on_featured"
+    t.index ["purchase_id"], name: "index_products_on_purchase_id"
     t.index ["sku"], name: "index_products_on_sku", unique: true
     t.index ["slug"], name: "index_products_on_slug", unique: true
     t.index ["status"], name: "index_products_on_status"
+    t.index ["supplier_id"], name: "index_products_on_supplier_id"
+  end
+
+  create_table "purchases", force: :cascade do |t|
+    t.integer "article_count", default: 0, null: false
+    t.decimal "courier_charge", precision: 10, scale: 2, default: "0.0", null: false
+    t.datetime "created_at", null: false
+    t.bigint "funded_by_id"
+    t.decimal "merchandise_total", precision: 10, scale: 2, default: "0.0", null: false
+    t.text "notes"
+    t.date "purchased_on"
+    t.string "reference", null: false
+    t.bigint "supplier_id", null: false
+    t.decimal "tax_amount", precision: 10, scale: 2, default: "0.0", null: false
+    t.decimal "total_amount", precision: 10, scale: 2, default: "0.0", null: false
+    t.datetime "updated_at", null: false
+    t.index ["funded_by_id"], name: "index_purchases_on_funded_by_id"
+    t.index ["reference"], name: "index_purchases_on_reference", unique: true
+    t.index ["supplier_id"], name: "index_purchases_on_supplier_id"
+  end
+
+  create_table "suppliers", force: :cascade do |t|
+    t.string "area"
+    t.string "city"
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.text "notes"
+    t.string "phone"
+    t.string "pin_code"
+    t.string "state"
+    t.datetime "updated_at", null: false
+    t.string "website"
+    t.index ["name"], name: "index_suppliers_on_name", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -230,6 +290,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_163000) do
   add_foreign_key "inventory_movements", "admin_users"
   add_foreign_key "inventory_movements", "orders"
   add_foreign_key "inventory_movements", "products"
+  add_foreign_key "investments", "investors"
+  add_foreign_key "investments", "purchases"
+  add_foreign_key "investors", "admin_users"
   add_foreign_key "mystery_box_preferences", "orders"
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "products"
@@ -237,4 +300,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_163000) do
   add_foreign_key "orders", "addresses", column: "shipping_address_id"
   add_foreign_key "orders", "customers"
   add_foreign_key "products", "categories"
+  add_foreign_key "products", "purchases"
+  add_foreign_key "products", "suppliers"
+  add_foreign_key "purchases", "investors", column: "funded_by_id"
+  add_foreign_key "purchases", "suppliers"
 end

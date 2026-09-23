@@ -45,4 +45,18 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
     assert_equal 180, product.purchase_price
     assert product.inventory_movements.purchase.exists?
   end
+
+  test "admin can open category reports and filter earrings" do
+    post admin_user_session_path, params: {
+      admin_user: { email: @admin.email, password: "denshe-admin-123" }
+    }
+    follow_redirect!
+
+    get admin_reports_path
+    assert_response :success
+
+    get admin_reports_path, params: { category_id: @category.id }
+    assert_response :success
+    assert_select "h3, h2, caption, .panel", text: /Earrings|Totals/i
+  end
 end
