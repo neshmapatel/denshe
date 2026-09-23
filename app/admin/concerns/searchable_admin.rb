@@ -17,7 +17,8 @@ module SearchableAdmin
         return collection unless action_name == "index"
         return collection unless collection.respond_to?(:search)
 
-        collection.search(params[:search])
+        collection = collection.search(params[:search])
+        collection.respond_to?(:with_attached_images) ? collection.with_attached_images : collection
       end
     end
   end

@@ -9,7 +9,8 @@ ActiveAdmin.register Product do
                 :shipping_allocation, :gst_rate, :quantity_purchased, :stock_quantity,
                 :low_stock_threshold, :material, :colour, :dimensions, :weight,
                 :care_instructions, :whats_included, :status, :featured, :new_arrival,
-                :bestseller, :meta_title, :meta_description, images: []
+                :bestseller, :meta_title, :meta_description, :primary_image_id,
+                images: [], remove_image_ids: []
 
   scope :all, default: true
   scope :earrings
@@ -22,6 +23,11 @@ ActiveAdmin.register Product do
   index title: -> { params[:search].present? ? "Products matching “#{params[:search]}”" : "Products" } do
     selectable_column
     id_column
+    column("Image") do |product|
+      if (image = product.primary_image)
+        image_tag url_for(image), width: 48, height: 48, style: "object-fit:cover;border-radius:4px;"
+      end
+    end
     column :name
     column :sku
     column :slug
@@ -107,17 +113,27 @@ ActiveAdmin.register Product do
       end
     end
 
-    panel "Images" do
+    panel "Designs" do
       if resource.images.attached?
-        ul do
-          resource.images.each do |image|
-            li do
-              image_tag url_for(image), width: 240
+        table_for resource.images.attachments do
+          column("Preview") { |image| image_tag url_for(image), width: 180 }
+          column("File", &:filename)
+          column("Storefront") do |image|
+            if resource.primary_image?(image)
+              status_tag "Primary"
+            else
+              button_to "Make primary", set_primary_image_admin_product_path(resource, image_id: image.id), method: :patch
             end
           end
+          column("Remove") do |image|
+            button_to "Remove", remove_image_admin_product_path(resource, image_id: image.id),
+                      method: :delete,
+                      data: { turbo_confirm: "Remove this design from #{resource.name}?" }
+          end
         end
+        para "The primary design is what customers will see first on the storefront."
       else
-        para "No images uploaded yet."
+        para "No designs uploaded yet."
       end
     end
 
@@ -173,9 +189,15 @@ ActiveAdmin.register Product do
       f.input :care_instructions
     end
 
-    f.inputs "Images" do
+    f.inputs "Designs" do
+      product = f.object
+      # ActiveAdmin evaluates this form block twice; render to the buffer only once.
+      if product.persisted? && product.images.attached? && !product.instance_variable_get(:@_admin_designs_rendered)
+        product.instance_variable_set(:@_admin_designs_rendered, true)
+        text_node helpers.render("admin/products/image_manager", product: product)
+      end
       f.input :images, as: :file, input_html: { multiple: true, accept: "image/*" },
-                       hint: "JPEG, PNG, or WebP. Additional uploads are added to the existing gallery."
+                       hint: "JPEG, PNG, or WebP. New uploads are added to the existing designs. Mark one as primary for the storefront."
     end
 
     f.inputs "SEO" do
@@ -191,12 +213,15 @@ ActiveAdmin.register Product do
       extract_uploaded_images
       super
       attach_images
+      resource.ensure_primary_image! if resource.persisted?
     end
 
     def update
+      extract_image_management
       extract_uploaded_images
       super
       attach_images
+      apply_image_management
     end
 
     private
@@ -206,10 +231,38 @@ ActiveAdmin.register Product do
       params[:product].delete(:images) if params[:product]
     end
 
+    def extract_image_management
+      @remove_image_ids = Array(params.dig(:product, :remove_image_ids)).compact_blank
+      @primary_image_id = params.dig(:product, :primary_image_id)
+      return unless params[:product]
+
+      params[:product].delete(:remove_image_ids)
+      params[:product].delete(:primary_image_id)
+    end
+
     def attach_images
       return if resource.errors.any? || @uploaded_images.blank?
 
       resource.images.attach(@uploaded_images)
     end
+
+    def apply_image_management
+      return if resource.errors.any?
+
+      resource.remove_images!(@remove_image_ids)
+      resource.set_primary_image!(@primary_image_id)
+      resource.ensure_primary_image!
+    end
+  end
+
+  member_action :remove_image, method: :delete do
+    resource.remove_images!([ params[:image_id] ])
+    resource.ensure_primary_image!
+    redirect_to admin_product_path(resource), notice: "Design removed."
+  end
+
+  member_action :set_primary_image, method: :patch do
+    resource.set_primary_image!(params[:image_id])
+    redirect_to admin_product_path(resource), notice: "Primary design updated. This image will show first on the storefront."
   end
 end

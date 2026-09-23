@@ -106,4 +106,29 @@ class ProductTest < ActiveSupport::TestCase
 
     assert_equal supplier, product.supplier
   end
+
+  test "can remove a design and keep another as the storefront primary" do
+    product = Product.create!(
+      category: @category,
+      name: "Aurelia Hoops",
+      selling_price: 699,
+      stock_quantity: 2
+    )
+    front = attach_product_image(product, "front.png")
+    side = attach_product_image(product, "side.png")
+    product.ensure_primary_image!
+
+    assert_equal front.id, product.reload.primary_image.id
+
+    product.set_primary_image!(side)
+    assert_equal side.id, product.reload.primary_image.id
+    assert product.primary_image?(side)
+
+    product.remove_images!([ side.id ])
+    product.ensure_primary_image!
+
+    assert_equal 1, product.images.count
+    assert_equal front.id, product.reload.primary_image.id
+    assert_equal front.filename.to_s, "front.png"
+  end
 end

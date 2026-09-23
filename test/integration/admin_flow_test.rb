@@ -116,4 +116,43 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h3, h2, caption, .panel", text: /Earrings|Totals/i
   end
+
+  test "admin can remove a product design and set the storefront primary image" do
+    post admin_user_session_path, params: {
+      admin_user: { email: @admin.email, password: "denshe-admin-123" }
+    }
+    follow_redirect!
+
+    product = Product.create!(
+      category: @category,
+      name: "Aurelia Hoops",
+      sku: "DN-EAR-IMG",
+      selling_price: 699,
+      stock_quantity: 3
+    )
+    front = attach_product_image(product, "front.png")
+    side = attach_product_image(product, "side.png")
+    product.ensure_primary_image!
+
+    get admin_product_path(product)
+    assert_response :success
+    assert_match "Make primary", response.body
+    assert_match "Remove", response.body
+
+    get edit_admin_product_path(product)
+    assert_response :success
+    assert_select "input[name='product[primary_image_id]']", count: 2
+    assert_select "input[name='product[remove_image_ids][]']", count: 2
+
+    patch set_primary_image_admin_product_path(product, image_id: side.id)
+    follow_redirect!
+    assert_response :success
+    assert_equal side.id, product.reload.primary_image.id
+
+    delete remove_image_admin_product_path(product, image_id: side.id)
+    follow_redirect!
+    assert_response :success
+    assert_equal 1, product.reload.images.count
+    assert_equal front.id, product.primary_image.id
+  end
 end
