@@ -1,0 +1,17 @@
+<%= form_with url: url, method: :get, html: { class: "admin-search-bar", role: "search", data: { turbo: false } } do %>
+  <% extra_params.each do |name, value| %>
+    <%= hidden_field_tag name, value %>
+  <% end %>
+  <% if params[:q].respond_to?(:each) %>
+    <% params[:q].each do |key, value| %>
+      <% next if value.blank? %>
+      <%= hidden_field_tag "q[#{key}]", value %>
+    <% end %>
+  <% end %>
+  <%= label_tag :search, "Search" %>
+  <%= search_field_tag :search, params[:search], placeholder: placeholder, autocomplete: "off" %>
+  <%= submit_tag "Search" %>
+  <% if params[:search].present? %>
+    <%= link_to "Clear", url %>
+  <% end %>
+<% end %>

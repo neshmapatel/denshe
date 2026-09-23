@@ -1,5 +1,6 @@
 class AdminUser < ApplicationRecord
   include Ransackable
+  include Searchable
 
   devise :database_authenticatable, :recoverable, :rememberable, :validatable
 
@@ -9,6 +10,10 @@ class AdminUser < ApplicationRecord
 
   validates :name, presence: true
   validates :role, presence: true
+
+  def self.search_columns
+    %w[name email]
+  end
 
   def display_name
     name.presence || email

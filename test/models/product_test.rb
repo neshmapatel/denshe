@@ -39,6 +39,39 @@ class ProductTest < ActiveSupport::TestCase
     end
   end
 
+  test "searches products by name, sku, or slug" do
+    hoops = Product.create!(
+      category: @category,
+      name: "Aurelia Hoops",
+      sku: "DN-EAR-001",
+      selling_price: 699,
+      stock_quantity: 2
+    )
+    Product.create!(
+      category: @category,
+      name: "Pearl Drop Earrings",
+      sku: "DN-EAR-002",
+      selling_price: 599,
+      stock_quantity: 3
+    )
+    rings = Category.create!(name: "Rings", position: 2)
+    ring = Product.create!(
+      category: rings,
+      name: "Quiet Ring",
+      sku: "DN-RNG-010",
+      selling_price: 499,
+      stock_quantity: 1
+    )
+
+    assert_equal [ hoops ], Product.search("aurelia").to_a
+    assert_equal [ hoops ], Product.search("DN-EAR-001").to_a
+    assert_equal [ ring ], Product.search("quiet-ring").to_a
+    assert_equal [ hoops ], Product.earrings.search("hoops").to_a
+    assert_empty Product.earrings.search("quiet")
+    assert_includes Product.search("   "), hoops
+    assert_includes Product.search(nil), hoops
+  end
+
   test "calculates contribution margin from internal cost fields" do
     product = Product.new(
       category: @category,

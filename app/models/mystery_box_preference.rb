@@ -1,5 +1,6 @@
 class MysteryBoxPreference < ApplicationRecord
   include Ransackable
+  include Searchable
 
   belongs_to :order
 
@@ -46,6 +47,14 @@ class MysteryBoxPreference < ApplicationRecord
     special_occasions: 3,
     occasion_mix: 4
   }
+
+  def self.search_columns
+    %w[personal_message gift_note orders.number]
+  end
+
+  def self.search_joins
+    [ :order ]
+  end
 
   validates :recipient_type, presence: true
   validates :box_price, numericality: { greater_than_or_equal_to: 0 }

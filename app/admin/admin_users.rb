@@ -1,5 +1,8 @@
 ActiveAdmin.register AdminUser do
+  extend SearchableAdmin
+
   menu label: "Admin users", priority: 20
+  searchable placeholder: "Search name or email"
 
   permit_params :name, :email, :role, :password, :password_confirmation
 
@@ -13,8 +16,6 @@ ActiveAdmin.register AdminUser do
     actions
   end
 
-  filter :name
-  filter :email
   filter :role
   filter :created_at
 

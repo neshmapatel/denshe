@@ -1,5 +1,8 @@
 ActiveAdmin.register InventoryMovement do
+  extend SearchableAdmin
+
   menu parent: "Catalogue", label: "Inventory", priority: 3
+  searchable placeholder: "Search product name, SKU, slug, or reason"
 
   permit_params :product_id, :quantity, :movement_type, :reason
 

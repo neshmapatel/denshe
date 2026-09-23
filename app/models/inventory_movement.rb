@@ -1,5 +1,6 @@
 class InventoryMovement < ApplicationRecord
   include Ransackable
+  include Searchable
 
   belongs_to :product
   belongs_to :admin_user, optional: true
@@ -19,6 +20,14 @@ class InventoryMovement < ApplicationRecord
   validates :movement_type, presence: true
 
   scope :newest_first, -> { order(created_at: :desc) }
+
+  def self.search_columns
+    %w[reason products.name products.sku products.slug]
+  end
+
+  def self.search_joins
+    [ :product ]
+  end
 
   def to_s
     signed = quantity.positive? ? "+#{quantity}" : quantity.to_s

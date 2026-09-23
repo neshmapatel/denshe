@@ -1,5 +1,6 @@
 class Order < ApplicationRecord
   include Ransackable
+  include Searchable
 
   belongs_to :customer, optional: true
   belongs_to :shipping_address, class_name: "Address", optional: true
@@ -29,6 +30,14 @@ class Order < ApplicationRecord
 
   scope :newest_first, -> { order(created_at: :desc) }
   scope :revenue_paid, -> { where(payment_status: :payment_paid) }
+
+  def self.search_columns
+    %w[number guest_name guest_email guest_phone customers.name customers.email customers.phone]
+  end
+
+  def self.search_joins
+    [ :customer ]
+  end
 
   def to_s
     number.presence || "Order ##{id}"

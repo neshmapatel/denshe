@@ -1,5 +1,6 @@
 class Product < ApplicationRecord
   include Ransackable
+  include Searchable
   include Sluggable
 
   attr_accessor :skip_stock_history
@@ -24,6 +25,11 @@ class Product < ApplicationRecord
   scope :new_arrivals, -> { active.where(new_arrival: true).order(created_at: :desc) }
   scope :low_stock, -> { where("stock_quantity > 0 AND stock_quantity <= low_stock_threshold") }
   scope :out_of_stock, -> { where("stock_quantity <= 0") }
+  scope :earrings, -> { joins(:category).where(categories: { slug: "earrings" }) }
+
+  def self.search_columns
+    %w[name sku slug]
+  end
 
   before_create :sync_opening_purchase_quantity
   after_create :log_opening_stock_movement

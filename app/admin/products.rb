@@ -1,5 +1,8 @@
 ActiveAdmin.register Product do
+  extend SearchableAdmin
+
   menu parent: "Catalogue", priority: 2
+  searchable placeholder: "Search name, SKU, or slug"
 
   permit_params :category_id, :name, :slug, :sku, :description, :short_description,
                 :purchase_price, :selling_price, :compare_at_price, :packaging_allocation,
@@ -9,17 +12,19 @@ ActiveAdmin.register Product do
                 :bestseller, :meta_title, :meta_description, images: []
 
   scope :all, default: true
+  scope :earrings
   scope :active
   scope :draft
   scope :archived
   scope :low_stock
   scope :out_of_stock
 
-  index do
+  index title: -> { params[:search].present? ? "Products matching “#{params[:search]}”" : "Products" } do
     selectable_column
     id_column
     column :name
     column :sku
+    column :slug
     column :category
     column :status
     column("Purchase") { |product| "₹#{product.purchase_price}" }
@@ -30,8 +35,6 @@ ActiveAdmin.register Product do
     actions
   end
 
-  filter :name
-  filter :sku
   filter :category
   filter :status
   filter :featured

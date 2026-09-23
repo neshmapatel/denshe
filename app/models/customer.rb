@@ -1,11 +1,16 @@
 class Customer < ApplicationRecord
   include Ransackable
+  include Searchable
 
   has_many :addresses, dependent: :destroy
   has_many :orders, dependent: :restrict_with_error
 
   validates :name, presence: true
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+
+  def self.search_columns
+    %w[name email phone]
+  end
 
   def to_s
     name

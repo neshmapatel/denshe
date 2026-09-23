@@ -45,4 +45,61 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
     assert_equal 180, product.purchase_price
     assert product.inventory_movements.purchase.exists?
   end
+
+  test "admin can search products by name, sku, or slug including earrings" do
+    post admin_user_session_path, params: {
+      admin_user: { email: @admin.email, password: "denshe-admin-123" }
+    }
+    follow_redirect!
+
+    hoops = Product.create!(
+      category: @category,
+      name: "Aurelia Hoops",
+      sku: "DN-EAR-001",
+      selling_price: 699,
+      stock_quantity: 4
+    )
+    Product.create!(
+      category: @category,
+      name: "Pearl Drop Earrings",
+      sku: "DN-EAR-002",
+      selling_price: 599,
+      stock_quantity: 2
+    )
+    rings = Category.create!(name: "Rings", position: 2)
+    Product.create!(
+      category: rings,
+      name: "Quiet Ring",
+      sku: "DN-RNG-010",
+      selling_price: 499,
+      stock_quantity: 1
+    )
+
+    get admin_dashboard_path
+    assert_response :success
+    assert_select "form.admin-search-bar input[name=search]"
+    assert_select "a[href=?]", admin_products_path(scope: "earrings")
+
+    get admin_products_path, params: { search: "DN-EAR-001" }
+    assert_response :success
+    assert_includes response.body, hoops.name
+    assert_includes response.body, "Search name, SKU, or slug"
+    assert_not_includes response.body, "Quiet Ring"
+
+    get admin_products_path, params: { search: "quiet-ring" }
+    assert_response :success
+    assert_includes response.body, "Quiet Ring"
+    assert_not_includes response.body, "Aurelia Hoops"
+
+    get admin_products_path, params: { scope: "earrings", search: "Pearl" }
+    assert_response :success
+    assert_includes response.body, "Pearl Drop Earrings"
+    assert_not_includes response.body, "Quiet Ring"
+
+    get admin_category_path(@category), params: { search: "aurelia" }
+    assert_response :success
+    assert_includes response.body, "Aurelia Hoops"
+    assert_includes response.body, "Search earrings"
+    assert_not_includes response.body, "Quiet Ring"
+  end
 end

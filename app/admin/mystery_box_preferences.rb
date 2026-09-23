@@ -1,5 +1,8 @@
 ActiveAdmin.register MysteryBoxPreference do
+  extend SearchableAdmin
+
   menu parent: "Sales", label: "Mystery boxes", priority: 3
+  searchable placeholder: "Search order number or note"
 
   permit_params :order_id, :recipient_type, :jewellery_personality, :style_preference,
                 :jewellery_amount, :occasion, :personal_message, :add_gift_note, :gift_note,

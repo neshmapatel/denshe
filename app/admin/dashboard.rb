@@ -4,6 +4,18 @@ ActiveAdmin.register_page "Dashboard" do
   menu priority: 1, label: "Dashboard"
 
   content title: "DeNshe" do
+    panel "Search products" do
+      text_node helpers.admin_search_bar(
+        url: admin_products_path,
+        placeholder: "Search name, SKU, or slug"
+      )
+      para do
+        span link_to "Earrings", admin_products_path(scope: "earrings")
+        text_node " · "
+        span link_to "All products", admin_products_path
+      end
+    end
+
     panel "Catalogue" do
       ul do
         li "Total products: #{Product.count}"

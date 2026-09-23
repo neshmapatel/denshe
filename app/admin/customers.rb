@@ -1,5 +1,8 @@
 ActiveAdmin.register Customer do
+  extend SearchableAdmin
+
   menu parent: "Sales", priority: 2
+  searchable placeholder: "Search name, email, or phone"
 
   permit_params :name, :email, :phone
 
@@ -13,9 +16,7 @@ ActiveAdmin.register Customer do
     actions
   end
 
-  filter :name
-  filter :email
-  filter :phone
+  filter :created_at
 
   show do
     attributes_table do

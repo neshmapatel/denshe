@@ -1,5 +1,8 @@
 ActiveAdmin.register Order do
+  extend SearchableAdmin
+
   menu parent: "Sales", priority: 1
+  searchable placeholder: "Search order number, customer, or email"
 
   permit_params :customer_id, :shipping_address_id, :billing_address_id, :order_type,
                 :status, :subtotal, :shipping_amount, :discount, :total, :payment_status,
@@ -28,7 +31,6 @@ ActiveAdmin.register Order do
     actions
   end
 
-  filter :number
   filter :status
   filter :payment_status
   filter :order_type
