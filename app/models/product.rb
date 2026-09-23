@@ -2,9 +2,11 @@ class Product < ApplicationRecord
   include Ransackable
   include Sluggable
 
-  attr_accessor :skip_stock_history
+  attr_accessor :skip_stock_history, :opening_stock_reason
 
   belongs_to :category
+  belongs_to :supplier, optional: true
+  belongs_to :purchase, optional: true
   has_many :inventory_movements, dependent: :destroy
   has_many :order_items, dependent: :restrict_with_error
   has_many_attached :images
@@ -25,6 +27,7 @@ class Product < ApplicationRecord
   scope :low_stock, -> { where("stock_quantity > 0 AND stock_quantity <= low_stock_threshold") }
   scope :out_of_stock, -> { where("stock_quantity <= 0") }
 
+  before_validation :copy_supplier_from_purchase
   before_create :sync_opening_purchase_quantity
   after_create :log_opening_stock_movement
   after_update :log_direct_stock_edit
@@ -91,13 +94,18 @@ class Product < ApplicationRecord
     self.quantity_purchased = stock_quantity
   end
 
+  def copy_supplier_from_purchase
+    self.supplier ||= purchase&.supplier
+  end
+
   def log_opening_stock_movement
     return if stock_quantity.to_i.zero?
+    return if skip_stock_history
 
     inventory_movements.create!(
       quantity: stock_quantity,
       movement_type: :purchase,
-      reason: "Opening stock"
+      reason: opening_stock_reason.presence || "Opening stock"
     )
   end
 
