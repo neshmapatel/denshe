@@ -1,0 +1,176 @@
+<% page_title "Mystery box" %>
+<% meta description: "Tell DeNshe who a box is for. We choose three to five pieces, from #{price(@price)}, and reply with how to pay." %>
+
+<header class="page-intro page-intro--ink">
+  <div class="page page--narrow">
+    <%= image_tag "denshe-mark-ivory.png", alt: "", class: "page-intro__mark", width: 87, height: 80 %>
+    <p class="eyebrow">From <%= price(@price) %></p>
+    <h1>A box, chosen for someone.</h1>
+    <p class="lede">Three to five pieces. You tell us who they are. We choose the way we would for a friend. You see the pieces when the box is opened.</p>
+  </div>
+</header>
+
+<section class="section section--tight">
+  <div class="page">
+    <ol class="steps">
+      <li>
+        <h3>Answer a few questions</h3>
+        <p>Who it is for, the pieces they reach for, the metal, the day they will wear it.</p>
+      </li>
+      <li>
+        <h3>We choose</h3>
+        <p>From the collection, around who they are and the way they like to wear jewellery.</p>
+      </li>
+      <li>
+        <h3>You decide</h3>
+        <p>We reply with what we have in mind, and how to pay. Nothing on this page charges you.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="section section--sand" id="questions">
+  <div class="page">
+    <div class="section-head section-head--centred">
+      <div class="section-head__text">
+        <p class="eyebrow">The questions</p>
+        <h2>Tell us a little.</h2>
+      </div>
+    </div>
+
+    <div class="fitting"
+         data-controller="fitting"
+         data-fitting-whatsapp-value="<%= brand.whatsapp %>"
+         data-fitting-email-value="<%= brand.email %>"
+         data-fitting-price-value="<%= price(@price) %>">
+      <div class="fitting__progress">
+        <p class="eyebrow" data-fitting-target="progress" aria-live="polite">01 / 06 · Who it’s for</p>
+      </div>
+      <div class="fitting__bar" aria-hidden="true"><span data-fitting-target="bar"></span></div>
+      <p class="fitting__error" data-fitting-target="error" role="alert" hidden>Choose one to continue.</p>
+
+      <div data-fitting-target="step" data-group="recipient" data-label="Who it’s for" data-required="true">
+        <h2>Who is this box for?</h2>
+        <div class="choice-grid">
+          <button type="button" class="choice" data-action="fitting#pick" data-fitting-group-param="recipient" data-fitting-value-param="myself" data-fitting-label-param="A box for me">
+            <span class="choice__title">For me</span>
+            <span class="choice__hint">A small box of my own.</span>
+          </button>
+          <button type="button" class="choice" data-action="fitting#pick" data-fitting-group-param="recipient" data-fitting-value-param="loved_one" data-fitting-label-param="A box for someone I love">
+            <span class="choice__title">Someone I love</span>
+            <span class="choice__hint">I will tell you who, in the note.</span>
+          </button>
+          <button type="button" class="choice" data-action="fitting#pick" data-fitting-group-param="recipient" data-fitting-value-param="surprise_gift" data-fitting-label-param="A surprise box">
+            <span class="choice__title">A surprise</span>
+            <span class="choice__hint">Choose as if you were surprising me.</span>
+          </button>
+        </div>
+      </div>
+
+      <div data-fitting-target="step" data-group="personality" data-label="Personality" data-required="true" hidden>
+        <h2>How should it feel?</h2>
+        <div class="choice-grid">
+          <button type="button" class="choice" data-action="fitting#pick" data-fitting-group-param="personality" data-fitting-value-param="minimal_effortless" data-fitting-label-param="quiet pieces">
+            <span class="choice__title">Quiet</span>
+            <span class="choice__hint">Small, easy, every day.</span>
+          </button>
+          <button type="button" class="choice" data-action="fitting#pick" data-fitting-group-param="personality" data-fitting-value-param="elegant_timeless" data-fitting-label-param="classic pieces">
+            <span class="choice__title">Classic</span>
+            <span class="choice__hint">The thing you reach for without thinking.</span>
+          </button>
+          <button type="button" class="choice" data-action="fitting#pick" data-fitting-group-param="personality" data-fitting-value-param="bold_statement" data-fitting-label-param="bolder pieces">
+            <span class="choice__title">Bold</span>
+            <span class="choice__hint">A piece that enters the room first.</span>
+          </button>
+          <button type="button" class="choice" data-action="fitting#pick" data-fitting-group-param="personality" data-fitting-value-param="mix_of_everything" data-fitting-label-param="a mix of moods">
+            <span class="choice__title">A mix</span>
+            <span class="choice__hint">Some of each.</span>
+          </button>
+        </div>
+      </div>
+
+      <div data-fitting-target="step" data-group="pieces" data-label="Pieces" data-required="true" data-multiple="true" hidden>
+        <h2>What should we lean toward?</h2>
+        <p class="lede">Choose as many as you like.</p>
+        <div class="choice-grid">
+          <% [
+            [ "earrings", "Earrings" ],
+            [ "necklaces", "Necklaces" ],
+            [ "bracelets", "Bracelets" ],
+            [ "rings", "Rings" ],
+            [ "sets", "Sets" ],
+            [ "surprise", "a surprise mix" ]
+          ].each do |value, label| %>
+            <button type="button" class="choice" data-action="fitting#pick" data-fitting-group-param="pieces" data-fitting-value-param="<%= value %>" data-fitting-label-param="<%= label == "a surprise mix" ? label : label.downcase %>">
+              <span class="choice__title"><%= label == "a surprise mix" ? "Surprise me" : label %></span>
+            </button>
+          <% end %>
+        </div>
+      </div>
+
+      <div data-fitting-target="step" data-group="finish" data-label="Metal" data-required="true" data-multiple="true" hidden>
+        <h2>Which metal?</h2>
+        <p class="lede">Choose as many as you like.</p>
+        <div class="choice-grid">
+          <% [
+            [ "gold", "Gold", "gold", "gold" ],
+            [ "silver", "Silver", "silver", "silver" ],
+            [ "rose_gold", "Rose gold", "rose gold", "rose" ],
+            [ "surprise", "Surprise me", "a finish you choose", nil ]
+          ].each do |value, title, label, metal| %>
+            <button type="button" class="choice<%= " choice--metal" if metal %>" data-action="fitting#pick" data-fitting-group-param="finish" data-fitting-value-param="<%= value %>" data-fitting-label-param="<%= label %>">
+              <% if metal %>
+                <span class="choice__metal" data-metal="<%= metal %>" aria-hidden="true"></span>
+              <% end %>
+              <span class="choice__title"><%= title %></span>
+            </button>
+          <% end %>
+        </div>
+      </div>
+
+      <div data-fitting-target="step" data-group="occasion" data-label="Occasion" data-required="true" hidden>
+        <h2>When will they wear it?</h2>
+        <div class="choice-grid">
+          <% [
+            [ "everyday", "Every day", "for every day" ],
+            [ "work", "Work", "for work" ],
+            [ "going_out", "Going out", "for going out" ],
+            [ "special_occasions", "A special day", "for a special day" ],
+            [ "occasion_mix", "A mix of days", "for a mix of days" ]
+          ].each do |value, title, label| %>
+            <button type="button" class="choice" data-action="fitting#pick" data-fitting-group-param="occasion" data-fitting-value-param="<%= value %>" data-fitting-label-param="<%= label %>">
+              <span class="choice__title"><%= title %></span>
+            </button>
+          <% end %>
+        </div>
+      </div>
+
+      <div data-fitting-target="step" data-group="note" data-label="A note" data-required="false" hidden>
+        <h2>Anything we should know?</h2>
+        <label class="field">
+          <span>Optional</span>
+          <textarea data-fitting-target="note" placeholder="She wears gold hoops every day, and never rings."></textarea>
+        </label>
+      </div>
+
+      <div data-fitting-target="review" hidden>
+        <p class="eyebrow">Here is what we heard</p>
+        <p class="fitting__letter" data-fitting-target="letter"></p>
+        <p class="lede">Send it, and we will reply with the pieces we have in mind. From <%= price(@price) %>. Nothing is charged here.</p>
+      </div>
+
+      <div class="fitting__nav">
+        <button type="button" class="btn btn--small" data-action="fitting#back" data-fitting-target="back" hidden>
+          <span>Back</span>
+        </button>
+        <button type="button" class="btn btn--small btn--solid" data-action="fitting#next" data-fitting-target="next">
+          <span>Continue</span>
+        </button>
+        <% send_label = brand.whatsapp.present? ? "Send on WhatsApp" : "Send by email" %>
+        <%= link_to "#", class: "btn btn--solid", data: { fitting_target: "send", action: "fitting#send" }, hidden: true do %>
+          <span><%= send_label %></span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</section>

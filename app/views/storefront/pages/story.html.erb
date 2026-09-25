@@ -1,0 +1,43 @@
+<% page_title "Our story" %>
+<% meta description: "DeNshe began with two friends, two different corners of the world, and a shared love for jewellery that feels like you." %>
+
+<header class="page-intro page-intro--ink">
+  <div class="page page--narrow">
+    <%= image_tag "denshe-wordmark-ivory.png", alt: "DeNshe Jewellery", class: "page-intro__logo", width: 688, height: 293 %>
+    <p class="eyebrow">Our story</p>
+    <h1>Between us.</h1>
+    <p class="lede">Two friends. Two places. One shared love for jewellery.</p>
+  </div>
+</header>
+
+<section class="section">
+  <div class="page prose">
+    <p class="lede">
+      DeNshe began with two friends, two different corners of the world, and a shared love for the little things that make us feel like ourselves.
+    </p>
+    <p>
+      What started as conversations between two continents slowly became a jewellery label built around pieces we’d choose for each other — effortless, personal and meant to be worn your way.
+    </p>
+    <p>DeNshe is, in many ways, what exists between us.</p>
+  </div>
+</section>
+
+<section class="section section--sand">
+  <div class="page centre">
+    <%= render "storefront/shared/ornament", wide: true %>
+    <div class="section-head section-head--centred">
+      <div class="section-head__text">
+        <h2>Worn your way.</h2>
+        <p class="lede">Explore the collection, or let us choose a box around you.</p>
+      </div>
+    </div>
+    <div class="hero__actions">
+      <%= link_to shop_path, class: "btn btn--solid" do %>
+        <span>Explore the collection</span>
+      <% end %>
+      <%= link_to mystery_box_path, class: "btn" do %>
+        <span>Discover the mystery box</span>
+      <% end %>
+    </div>
+  </div>
+</section>

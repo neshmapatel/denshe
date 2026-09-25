@@ -1,0 +1,71 @@
+<div class="facet">
+  <h2 class="facet__title">Collection</h2>
+  <ul class="facet__list">
+    <li>
+      <%= link_to "Everything", shop_path, aria: (@category ? {} : { current: "true" }) %>
+    </li>
+    <% nav_categories.each do |category| %>
+      <li>
+        <%= link_to collection_path(category.slug),
+              aria: (@category&.id == category.id ? { current: "true" } : {}) do %>
+          <%= category.name %>
+          <span><%= category_counts[category.id].to_i %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</div>
+
+<% if @filter.material_options.any? %>
+  <div class="facet">
+    <h2 class="facet__title">Material</h2>
+    <ul class="facet__list">
+      <% @filter.material_options.each do |option| %>
+        <% current = @filter.material == option[:value] %>
+        <li>
+          <%= link_to listing_url(material: (current ? nil : option[:value])),
+                aria: (current ? { current: "true" } : {}) do %>
+            <%= option[:label] %>
+            <span><%= option[:count] %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<% if @filter.colour_options.any? %>
+  <div class="facet">
+    <h2 class="facet__title">Colour</h2>
+    <ul class="facet__list">
+      <% @filter.colour_options.each do |option| %>
+        <% current = @filter.colour == option[:value] %>
+        <li>
+          <%= link_to listing_url(colour: (current ? nil : option[:value])),
+                aria: (current ? { current: "true" } : {}) do %>
+            <%= option[:label] %>
+            <span><%= option[:count] %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<% if @filter.price_options.any? %>
+  <div class="facet">
+    <h2 class="facet__title">Price</h2>
+    <ul class="facet__list">
+      <% @filter.price_options.each do |option| %>
+        <% current = @filter.price == option[:value] %>
+        <li>
+          <%= link_to listing_url(price: (current ? nil : option[:value])),
+                aria: (current ? { current: "true" } : {}) do %>
+            <%= option[:label] %>
+            <span><%= option[:count] %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

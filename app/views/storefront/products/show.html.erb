@@ -1,0 +1,184 @@
+<% page_title(@product.meta_title.presence || @product.name) %>
+<% blurb = customer_copy(@product.meta_description) || customer_copy(@product.short_description) || "#{@product.name}, from DeNshe." %>
+<% meta description: blurb, type: "product" %>
+
+<% images = @product.gallery_images %>
+<% description = customer_copy(@product.description) %>
+<% included = customer_copy(@product.whats_included) %>
+<% care = customer_copy(@product.care_instructions) %>
+<% specs = [] %>
+<% specs << [ "Material", @product.material ] if @product.material.present? %>
+<% specs << [ "Colour", @product.colour.to_s.titleize ] if @product.colour.present? %>
+<% specs << [ "Size", @product.dimensions ] if @product.dimensions.present? %>
+<% specs << [ "Weight", @product.weight ] if @product.weight.present? %>
+<% specs << [ "Reference", @product.sku ] if @product.sku.present? %>
+
+<section class="section section--tight">
+  <div class="page">
+    <%= render "storefront/shared/breadcrumbs", crumbs: [
+          { name: "Shop", url: shop_path },
+          { name: @product.category.name, url: collection_path(@product.category.slug) },
+          { name: @product.name }
+        ] %>
+
+    <article class="detail">
+      <div class="gallery" data-controller="gallery" data-action="keydown->gallery#key">
+        <div class="gallery__stage" data-gallery-target="stage">
+          <% if images.first %>
+            <%= piece_image images.first, size: :stage, alt: @product.name, loading: "eager" %>
+          <% else %>
+            <div class="piece__placeholder">
+              <%= image_tag "denshe-mark-navy.png", alt: "" %>
+              <span>Photograph soon</span>
+            </div>
+          <% end %>
+        </div>
+
+        <% if images.size > 1 %>
+          <div class="gallery__thumbs">
+            <% images.each_with_index do |image, index| %>
+              <button type="button"
+                      class="gallery__thumb"
+                      data-gallery-target="thumb"
+                      data-action="gallery#show"
+                      data-full="<%= url_for(piece_image_source(image, :stage)) %>"
+                      aria-current="<%= index.zero? ? "true" : "false" %>"
+                      aria-label="Photograph <%= index + 1 %> of <%= images.size %>">
+                <%= piece_image image, size: :thumb, alt: "" %>
+              </button>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="detail__info">
+        <div>
+          <p class="eyebrow"><%= link_to @product.category.name, collection_path(@product.category.slug) %></p>
+          <h1 class="detail__title"><%= @product.name %></h1>
+        </div>
+
+        <div>
+          <p class="detail__price">
+            <% if @product.on_sale? %>
+              <del><%= price(@product.compare_at_price) %></del>
+          <ins><%= price(@product.selling_price) %></ins>
+              <span class="badge badge--gold"><%= @product.discount_percentage %>% off</span>
+            <% else %>
+              <%= price(@product.selling_price) %>
+            <% end %>
+          </p>
+          <p class="detail__tax">
+            <%= brand.ships_from %>. Dispatch in <%= brand.dispatch_window %>.
+            Complimentary shipping above <%= price(brand.free_shipping_above) %>.
+          </p>
+        </div>
+
+        <% if customer_copy(@product.short_description) %>
+          <p class="lede"><%= customer_copy(@product.short_description) %></p>
+        <% end %>
+
+        <% if !@product.available_for_sale? %>
+          <p class="stock-note stock-note--out">This piece has found its person.</p>
+        <% elsif @product.one_of_one? %>
+          <p class="stock-note">The only one. Once it leaves, it is gone.</p>
+        <% elsif @product.low_stock? %>
+          <p class="stock-note">Only <%= pluralize(@product.stock_quantity, "piece") %> left.</p>
+        <% else %>
+          <p class="stock-note">In the cabinet, ready to dispatch.</p>
+        <% end %>
+
+        <div class="detail__actions">
+          <% if @product.available_for_sale? %>
+            <% if current_cart.include?(@product) %>
+              <%= link_to cart_path, class: "btn btn--solid btn--block" do %>
+                <span>Selected · Continue</span>
+              <% end %>
+            <% else %>
+              <%= button_to cart_items_path, params: { slug: @product.slug }, class: "btn btn--solid btn--block" do %>
+                <span>Select</span>
+              <% end %>
+            <% end %>
+          <% else %>
+            <% url = enquire_url(@product) %>
+            <%= link_to url, class: "btn btn--solid btn--block", **(external_link?(url) ? { target: "_blank", rel: "noopener" } : {}) do %>
+              <span>Ask for something like it</span>
+            <% end %>
+          <% end %>
+
+          <%= render "storefront/shared/save_button",
+                product: @product,
+                class_name: "btn btn--block",
+                text: "Tuck into your jewellery box",
+                label: "Save #{@product.name} to your jewellery box" %>
+        </div>
+
+        <% if specs.any? %>
+          <dl class="spec-list">
+            <% specs.each do |label, value| %>
+              <dt><%= label %></dt>
+              <dd><%= value %></dd>
+            <% end %>
+          </dl>
+        <% end %>
+
+        <div class="accordion">
+          <% if description.present? %>
+            <details>
+              <summary>About this piece</summary>
+              <div class="accordion__body"><%= simple_format(description) %></div>
+            </details>
+          <% end %>
+          <% if included.present? %>
+            <details>
+              <summary>What arrives</summary>
+              <div class="accordion__body"><%= simple_format(included) %></div>
+            </details>
+          <% end %>
+          <details>
+            <summary>Care</summary>
+            <div class="accordion__body">
+              <%= simple_format(care.presence || "Put it on last, keep it dry, and let it rest apart from other pieces.") %>
+              <p><%= link_to "Read the care guide", care_path, class: "link-quiet" %></p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<% if @related.any? %>
+  <section class="section section--sand">
+    <div class="page">
+      <div class="section-head">
+        <div class="section-head__text">
+          <p class="eyebrow">Alongside it</p>
+          <h2>More <%= @product.category.name.downcase %></h2>
+        </div>
+        <%= link_to "The collection", collection_path(@product.category.slug), class: "link-quiet" %>
+      </div>
+      <div class="product-grid">
+        <% @related.each do |product| %>
+          <%= render "storefront/shared/piece", product: product %>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>
+
+<% offer = {
+  "@context" => "https://schema.org",
+  "@type" => "Product",
+  "name" => @product.name,
+  "description" => blurb,
+  "sku" => @product.sku,
+  "brand" => { "@type" => "Brand", "name" => brand.name },
+  "offers" => {
+    "@type" => "Offer",
+    "priceCurrency" => "INR",
+    "price" => format("%.2f", @product.selling_price),
+    "availability" => (@product.available_for_sale? ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"),
+    "url" => piece_url(@product.slug)
+  }
+} %>
+<%= tag.script(json_escape(offer.to_json).html_safe, type: "application/ld+json") %>

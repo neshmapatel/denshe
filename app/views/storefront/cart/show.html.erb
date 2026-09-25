@@ -1,0 +1,70 @@
+<% page_title "Selected pieces" %>
+<% meta description: "Pieces you have selected from DeNshe, ready for checkout." %>
+
+<section class="section section--tight">
+  <div class="page page--narrow">
+    <%= render "storefront/shared/checkout_steps", current: :pieces %>
+
+    <header class="section-head">
+      <div class="section-head__text">
+        <p class="eyebrow">Your selection</p>
+        <h1>Selected pieces.</h1>
+      </div>
+    </header>
+
+    <% lines = current_cart.items %>
+    <% if lines.empty? %>
+      <div class="empty">
+        <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
+        <h2>Nothing selected yet.</h2>
+        <p>Choose a piece from the collection, then come back here to check out.</p>
+        <%= link_to shop_path, class: "btn btn--solid" do %>
+          <span>Explore the collection</span>
+        <% end %>
+      </div>
+    <% else %>
+      <ul class="bag">
+        <% lines.each do |line| %>
+          <% image = line.product.display_image %>
+          <li class="bag__row<%= " bag__row--plain" unless image %>">
+            <% if image %>
+              <%= link_to piece_path(line.product.slug), class: "bag__photo" do %>
+                <%= piece_image image, size: :thumb, alt: "" %>
+              <% end %>
+            <% end %>
+            <div class="bag__copy">
+              <p class="piece__meta"><%= line.product.category.name %></p>
+              <h2><%= link_to line.product.name, piece_path(line.product.slug) %></h2>
+              <p class="piece__price"><%= price(line.line_total) %></p>
+            </div>
+            <%= button_to "Remove", cart_item_path(line.product.slug), method: :delete, class: "link-quiet bag__remove" %>
+          </li>
+        <% end %>
+      </ul>
+
+      <div class="bag__total">
+        <div>
+          <p>Pieces</p>
+          <p><%= price(current_cart.subtotal) %></p>
+        </div>
+        <div>
+          <p>Shipping</p>
+          <p>
+            <% if current_cart.subtotal >= brand.free_shipping_above %>
+              Complimentary
+            <% else %>
+              Confirmed at payment
+            <% end %>
+          </p>
+        </div>
+        <div class="bag__due">
+          <p>To pay</p>
+          <p><%= price(current_cart.subtotal) %></p>
+        </div>
+        <%= link_to checkout_path, class: "btn btn--solid btn--block" do %>
+          <span>Checkout</span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</section>

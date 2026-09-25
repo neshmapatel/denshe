@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= [content_for(:title), "DeNshe Jewellery"].compact_blank.join(" · ") %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#181868">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="DeNshe">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :meta %>
+    <%= yield :head %>
+
+    <script>document.documentElement.classList.add("js")</script>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet">
+
+    <%= stylesheet_link_tag "application", "storefront", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="storefront"
+        data-controller="shell jewellery-box reveal"
+        data-action="keydown@window->shell#keydown"
+        data-jewellery-box-whatsapp-value="<%= brand.whatsapp %>"
+        data-jewellery-box-email-value="<%= brand.email %>"
+        data-jewellery-box-mark-value="<%= image_path("denshe-mark-navy.png") %>">
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <%= render "storefront/shared/announcement" %>
+    <%= render "storefront/shared/masthead" %>
+
+    <% if flash.any? %>
+      <div class="flash-stack" role="status" aria-live="polite">
+        <% flash.each do |type, message| %>
+          <p class="flash <%= type %>"><%= message %></p>
+        <% end %>
+      </div>
+    <% end %>
+
+    <main id="main">
+      <%= yield %>
+    </main>
+
+    <%= render "storefront/shared/footer" %>
+    <%= render "storefront/shared/jewellery_box_drawer" %>
+    <p class="toast" data-jewellery-box-target="toast" role="status" hidden></p>
+  </body>
+</html>

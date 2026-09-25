@@ -1,0 +1,14 @@
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol>
+    <li><%= link_to "Home", root_path %></li>
+    <% crumbs.each do |crumb| %>
+      <li>
+        <% if crumb[:url] %>
+          <%= link_to crumb[:name], crumb[:url] %>
+        <% else %>
+          <%= crumb[:name] %>
+        <% end %>
+      </li>
+    <% end %>
+  </ol>
+</nav>

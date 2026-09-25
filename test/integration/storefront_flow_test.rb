@@ -1,0 +1,146 @@
+require "test_helper"
+
+class StorefrontFlowTest < ActionDispatch::IntegrationTest
+  setup do
+    @category = Category.create!(name: "Earrings", position: 1)
+    @product = Product.create!(
+      category: @category,
+      name: "Aurelia Hoops",
+      selling_price: 699,
+      purchase_price: 180,
+      stock_quantity: 1,
+      status: :active,
+      colour: "gold",
+      material: "Anti-tarnish",
+      short_description: "Small hoops for every day.",
+      new_arrival: true
+    )
+  end
+
+  test "home introduces the cabinet" do
+    get root_url
+
+    assert_response :success
+    assert_select "h1", /chosen to feel like you/i
+    assert_select "img[alt='DeNshe Jewellery']"
+    assert_select "a", text: /Aurelia Hoops/
+  end
+
+  test "shop, collection, and piece pages render" do
+    get shop_path
+    assert_response :success
+    assert_select "h1", "Every piece"
+    assert_select "article.piece", 1
+
+    get shop_path, params: { material: "Anti-tarnish", sort: "price-asc" }
+    assert_response :success
+    assert_select "article.piece", 1
+
+    get shop_path, params: { material: "Missing metal" }
+    assert_response :success
+    assert_select "h2", "Nothing matches."
+
+    get collection_path(@category.slug)
+    assert_response :success
+    assert_select "h1", "Earrings"
+
+    get piece_path(@product.slug)
+    assert_response :success
+    assert_select "h1", "Aurelia Hoops"
+    assert_select ".stock-note", /only one/i
+  end
+
+  test "story, care, contact, mystery box, and jewellery box render" do
+    get story_path
+    assert_response :success
+    assert_select "h1", /between us/i
+
+    get care_path
+    assert_response :success
+    assert_select "h1", /care guide/i
+
+    get contact_path
+    assert_response :success
+    assert_select "h1", /write to us/i
+
+    get mystery_box_path
+    assert_response :success
+    assert_select "h1", /box/i
+    assert_select "[data-controller='fitting']"
+    assert_select "[data-fitting-value-param='rose_gold']", text: /Rose gold/
+    assert_select "[data-metal='rose']"
+
+    get jewellery_box_path
+    assert_response :success
+    assert_select "h1", /jewellery box/i
+  end
+
+  test "a selected piece can be checked out through to payment" do
+    get shop_path
+    assert_select "button", text: /Select/
+
+    post cart_items_path, params: { slug: @product.slug }
+    assert_redirected_to shop_path
+
+    follow_redirect!
+    assert_select "a", text: /Selected/
+
+    get cart_path
+    assert_response :success
+    assert_select "h1", /selected pieces/i
+    assert_select "a", text: "Aurelia Hoops"
+
+    get checkout_path
+    assert_response :success
+    assert_select "h1", /where should we send it/i
+
+    post checkout_path, params: { checkout: { name: "", phone: "9876543210", line1: "14 Sea Face", city: "Mumbai", state: "Maharashtra", pin_code: "400001", billing_same: "1" } }
+    assert_response :unprocessable_entity
+
+    post checkout_path, params: {
+      checkout: {
+        name: "Aisha Shah",
+        phone: "9876543210",
+        email: "aisha@example.com",
+        line1: "14 Sea Face",
+        city: "Mumbai",
+        state: "Maharashtra",
+        pin_code: "400001",
+        billing_same: "1"
+      }
+    }
+    assert_redirected_to checkout_payment_path
+
+    follow_redirect!
+    assert_response :success
+    assert_select "h1", "Payment."
+    assert_match(/nothing has been charged/i, response.body)
+    assert_match(/Aisha Shah/, response.body)
+    assert_match(/14 Sea Face/, response.body)
+
+    order = Order.order(:id).last
+    assert_equal "unpaid", order.payment_status
+    assert_equal "Aurelia Hoops", order.order_items.sole.name
+    assert_equal 1, @product.reload.stock_quantity
+    assert_equal 0, Cart.new(session).count
+  end
+
+  test "checkout and payment ask for a selection first" do
+    get checkout_path
+    assert_redirected_to cart_path
+
+    get checkout_payment_path
+    assert_redirected_to cart_path
+  end
+
+  test "sold pieces stay reachable and say so" do
+    @product.update!(stock_quantity: 0)
+
+    get piece_path(@product.slug)
+    assert_response :success
+    assert_select ".stock-note", /found its person/i
+
+    get shop_path
+    assert_select "article.piece", 0
+  end
+end

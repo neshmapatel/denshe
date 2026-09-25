@@ -1,0 +1,22 @@
+<% cover = category.cover_product&.gallery_images&.first %>
+<% count = category_counts[category.id].to_i %>
+<% if cover %>
+  <%= link_to collection_path(category.slug), class: "collection-tile" do %>
+    <%= piece_image cover, size: :card, alt: "" %>
+    <span class="collection-tile__veil" aria-hidden="true"></span>
+    <span class="collection-tile__body">
+      <span class="collection-tile__name"><%= category.name %></span>
+      <span class="collection-tile__count"><%= pluralize(count, "piece") %></span>
+      <span class="collection-tile__cue">Open</span>
+    </span>
+  <% end %>
+<% else %>
+  <%= link_to collection_path(category.slug), class: "collection-tile collection-tile--label" do %>
+    <span class="collection-tile__mark"><%= image_tag "denshe-mark-navy.png", alt: "" %></span>
+    <span class="collection-tile__body">
+      <span class="collection-tile__name"><%= category.name %></span>
+      <span class="collection-tile__count"><%= pluralize(count, "piece") %></span>
+      <span class="collection-tile__cue">Open</span>
+    </span>
+  <% end %>
+<% end %>

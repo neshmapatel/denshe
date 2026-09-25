@@ -1,0 +1,68 @@
+<footer class="footer">
+  <div class="page">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <%= image_tag "denshe-wordmark-ivory.png", alt: "DeNshe Jewellery", width: 688, height: 293 %>
+        <p>
+          Jewellery, between us. Pieces chosen to feel personal, effortless and entirely yours.
+        </p>
+        <div class="search-suggestions">
+          <% if instagram_url %>
+            <%= link_to instagram_url, rel: "noopener", target: "_blank",
+                        "aria-label": "DeNshe on Instagram" do %>
+              <%= icon :instagram, size: "1rem" %>
+            <% end %>
+          <% end %>
+          <% if whatsapp_url %>
+            <%= link_to whatsapp_url, rel: "noopener", target: "_blank",
+                        "aria-label": "Message DeNshe on WhatsApp" do %>
+              <%= icon :whatsapp, size: "1rem" %>
+            <% end %>
+          <% end %>
+          <%= link_to "mailto:#{brand.email}", "aria-label": "Email DeNshe" do %>
+            <%= icon :mail, size: "1rem" %>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="footer__column">
+        <h3>Shop</h3>
+        <ul>
+          <li><%= link_to "Everything", shop_path %></li>
+          <li><%= link_to "New in", shop_path(sort: "newest") %></li>
+          <li><%= link_to "Collections", collections_path %></li>
+          <li><%= link_to "Mystery box", mystery_box_path %></li>
+          <li><%= link_to "Your jewellery box", jewellery_box_path %></li>
+        </ul>
+      </div>
+
+      <div class="footer__column">
+        <h3>Collections</h3>
+        <ul>
+          <% if catalogue_live? %>
+            <% nav_categories.first(6).each do |category| %>
+              <li><%= link_to category.name, collection_path(category.slug) %></li>
+            <% end %>
+          <% else %>
+            <li>Arriving soon</li>
+          <% end %>
+        </ul>
+      </div>
+
+      <div class="footer__column">
+        <h3>Help</h3>
+        <ul>
+          <li><%= link_to "Our story", story_path %></li>
+          <li><%= link_to "Care guide", care_path %></li>
+          <li><%= link_to "Contact us", contact_path %></li>
+          <li><%= link_to brand.email, "mailto:#{brand.email}" %></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <p>&copy; <%= Date.current.year %> DeNshe Jewellery.</p>
+      <p>Shipping across India &nbsp;·&nbsp; Dispatch in <%= brand.dispatch_window %></p>
+    </div>
+  </div>
+</footer>
