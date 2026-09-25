@@ -4,6 +4,10 @@ Rails.application.routes.draw do
 
   get "up" => "rails/health#show", as: :rails_health_check
 
+  # Unlocks the storefront in this browser. /admin is never held.
+  get "preview/close", to: "preview#destroy", as: :close_storefront_preview
+  get "preview/:token", to: "preview#create", as: :storefront_preview
+
   scope module: :storefront do
     root "pages#home"
 

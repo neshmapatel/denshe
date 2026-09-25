@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Launching Soon · DeNshe Jewellery</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#101048">
+    <meta name="description" content="DeNshe Jewellery is launching soon.">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Outfit:wght@300;400&display=swap" rel="stylesheet">
+    <%= stylesheet_link_tag "application", "storefront", "data-turbo-track": "reload" %>
+  </head>
+  <body class="launch">
+    <%= yield %>
+  </body>
+</html>
