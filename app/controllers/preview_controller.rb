@@ -10,7 +10,7 @@ class PreviewController < ApplicationController
       httponly: true,
       same_site: :lax
     }
-    redirect_to root_path
+    redirect_to shop_path
   end
 
   def destroy

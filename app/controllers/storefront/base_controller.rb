@@ -31,10 +31,21 @@ module Storefront
     end
 
     def hold_for_launch
-      return unless Rails.application.config.x.storefront_held
-      return if cookies.signed[:storefront_preview] == "1"
+      return unless storefront_held?
+      # The homepage stays on the launch screen until the date, even after preview.
+      return if storefront_preview? && request.path != "/"
 
       render template: "storefront/pages/launching_soon", layout: "launching", status: :ok
+    end
+
+    def storefront_held?
+      return false unless Rails.application.config.x.storefront_held
+
+      Time.current < Rails.application.config.x.storefront_launches_at
+    end
+
+    def storefront_preview?
+      cookies.signed[:storefront_preview] == "1"
     end
   end
 end

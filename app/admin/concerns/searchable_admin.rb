@@ -1,5 +1,5 @@
 module SearchableAdmin
-  def searchable(placeholder:)
+  def searchable(placeholder:, index_includes: [])
     sidebar :search, only: :index, priority: 0 do
       text_node helpers.render(
         partial: "admin/shared/search_bar",
@@ -12,12 +12,14 @@ module SearchableAdmin
     end
 
     controller do
-      def scoped_collection
-        collection = super
+      # define_method so the index_includes given above stays in scope.
+      define_method(:scoped_collection) do
+        collection = super()
         return collection unless action_name == "index"
         return collection unless collection.respond_to?(:search)
 
         collection = collection.search(params[:search])
+        collection = collection.includes(*index_includes) if index_includes.any?
         collection.respond_to?(:with_attached_images) ? collection.with_attached_images : collection
       end
     end

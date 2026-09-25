@@ -14,9 +14,10 @@ Rails.application.config.x.brand = ActiveSupport::OrderedOptions.new.merge(
   dispatch_window: "2 to 4 working days"
 )
 
-# Public storefront stays on the launching page in production until this is
-# turned off. Visit /preview/<token> once to open the full site in that browser.
+# The public homepage stays on "Launching Soon" until noon on 4 October 2026,
+# India time. /preview/<token> opens the rest of the shop in that browser only.
 Rails.application.config.x.storefront_held = ActiveModel::Type::Boolean.new.cast(
   ENV.fetch("STOREFRONT_HELD", Rails.env.production?.to_s)
 )
+Rails.application.config.x.storefront_launches_at = Time.find_zone!("Asia/Kolkata").local(2026, 10, 4, 12, 0, 0)
 Rails.application.config.x.storefront_preview_token = ENV.fetch("STOREFRONT_PREVIEW_TOKEN", "navy-atelier")

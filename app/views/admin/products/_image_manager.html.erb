@@ -3,7 +3,7 @@
   <ul style="list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:1rem;">
     <% product.images.attachments.each do |image| %>
       <li style="width:200px;">
-        <%= image_tag url_for(image), width: 200, style: "display:block;width:200px;height:200px;object-fit:cover;" %>
+        <%= admin_thumb_tag image, 200, width: 200, style: "display:block;width:200px;height:200px;object-fit:cover;" %>
         <label style="display:block;margin-top:0.4rem;">
           <%= radio_button_tag "product[primary_image_id]", image.id, product.primary_image?(image), id: "primary_image_#{image.id}" %>
           Primary for storefront

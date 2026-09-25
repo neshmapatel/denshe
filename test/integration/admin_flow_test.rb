@@ -117,6 +117,20 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
     assert_select "h3, h2, caption, .panel", text: /Earrings|Totals/i
   end
 
+  test "the product index does not query per row" do
+    post admin_user_session_path, params: {
+      admin_user: { email: @admin.email, password: "denshe-admin-123" }
+    }
+    follow_redirect!
+
+    add_indexed_products(3)
+    get admin_products_path
+    baseline = count_queries { get admin_products_path }
+
+    add_indexed_products(4)
+    assert_equal baseline, count_queries { get admin_products_path }
+  end
+
   test "admin can remove a product design and set the storefront primary image" do
     post admin_user_session_path, params: {
       admin_user: { email: @admin.email, password: "denshe-admin-123" }
@@ -154,5 +168,37 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal 1, product.reload.images.count
     assert_equal front.id, product.primary_image.id
+  end
+
+  private
+
+  def add_indexed_products(count)
+    supplier = Supplier.create!(name: "Supplier #{Supplier.count + 1}")
+
+    count.times do
+      product = Product.create!(
+        category: @category,
+        supplier: supplier,
+        name: "Indexed #{Product.count + 1}",
+        selling_price: 499,
+        stock_quantity: 2
+      )
+      attach_product_image(product, "indexed-#{product.id}.png")
+      product.ensure_primary_image!
+      product.adjust_stock!(quantity: -1, movement_type: :customer_order, reason: "Sold")
+    end
+  end
+
+  def count_queries
+    queries = 0
+    # Cached queries count too: they still mean a query per row was written.
+    counter = ->(_name, _start, _finish, _id, payload) do
+      next if payload[:name].in?([ "SCHEMA", "TRANSACTION" ])
+
+      queries += 1
+    end
+
+    ActiveSupport::Notifications.subscribed(counter, "sql.active_record") { yield }
+    queries
   end
 end

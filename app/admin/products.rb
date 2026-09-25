@@ -2,7 +2,7 @@ ActiveAdmin.register Product do
   extend SearchableAdmin
 
   menu parent: "Catalogue", priority: 2
-  searchable placeholder: "Search name, SKU, or slug"
+  searchable placeholder: "Search name, SKU, or slug", index_includes: [ :category, :supplier ]
 
   permit_params :category_id, :supplier_id, :purchase_id, :name, :slug, :sku, :description, :short_description,
                 :purchase_price, :selling_price, :compare_at_price, :packaging_allocation,
@@ -24,9 +24,9 @@ ActiveAdmin.register Product do
     selectable_column
     id_column
     column("Image") do |product|
-      if (image = product.primary_image)
-        image_tag url_for(image), width: 48, height: 48, style: "object-fit:cover;border-radius:4px;"
-      end
+      helpers.admin_thumb_tag(product.primary_image, 48,
+                              width: 48, height: 48,
+                              style: "object-fit:cover;border-radius:4px;")
     end
     column :name
     column :sku
@@ -38,7 +38,7 @@ ActiveAdmin.register Product do
     column("Selling") { |product| "₹#{product.selling_price}" }
     column("Stock", &:stock_quantity)
     column("Purchased", &:quantity_purchased)
-    column("Sold", &:sold_quantity)
+    column("Sold") { |product| sold_quantities[product.id].to_i }
     actions
   end
 
@@ -116,7 +116,7 @@ ActiveAdmin.register Product do
     panel "Designs" do
       if resource.images.attached?
         table_for resource.images.attachments do
-          column("Preview") { |image| image_tag url_for(image), width: 180 }
+          column("Preview") { |image| helpers.admin_thumb_tag(image, 180, width: 180) }
           column("File", &:filename)
           column("Storefront") do |image|
             if resource.primary_image?(image)
@@ -209,6 +209,16 @@ ActiveAdmin.register Product do
   end
 
   controller do
+    helper_method :sold_quantities
+
+    # One grouped query for the whole page instead of a SUM per row.
+    def sold_quantities
+      @sold_quantities ||= InventoryMovement
+                             .where(product_id: collection.map(&:id), movement_type: :customer_order)
+                             .group(:product_id)
+                             .sum("ABS(quantity)")
+    end
+
     def create
       extract_uploaded_images
       super

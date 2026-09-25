@@ -33,7 +33,9 @@ module StorefrontHelper
   def piece_image_source(attachment, size)
     return attachment unless StorefrontHelper.variants_supported? && attachment.variable?
 
-    attachment.variant(resize_to_limit: IMAGE_SIZES.fetch(size), saver: { quality: 82 })
+    # WebP: the originals are PNG straight off a phone, so the same picture is
+    # an order of magnitude smaller here with no visible difference.
+    attachment.variant(format: :webp, resize_to_limit: IMAGE_SIZES.fetch(size), saver: { quality: 82 })
   end
 
   # Indian digit grouping: ₹1,299 and ₹1,20,000.

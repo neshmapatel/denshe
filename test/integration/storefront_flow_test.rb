@@ -150,9 +150,17 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_response :not_found
 
     get storefront_preview_path(Rails.application.config.x.storefront_preview_token)
-    assert_redirected_to root_path
+    assert_redirected_to shop_path
     follow_redirect!
-    assert_select "h1", /chosen to feel like you/i
+    assert_select "article.piece", 1
+
+    get root_url
+    assert_select "h1", "Launching Soon!"
+
+    travel_to Time.find_zone!("Asia/Kolkata").local(2026, 10, 4, 12, 0, 0) do
+      get root_url
+      assert_select "h1", /chosen to feel like you/i
+    end
 
     get close_storefront_preview_path
     assert_redirected_to root_path

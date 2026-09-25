@@ -98,10 +98,13 @@ class Product < ApplicationRecord
     selling_price.to_d - purchase_price.to_d - packaging_allocation.to_d - shipping_allocation.to_d
   end
 
+  # Read from the loaded attachments so an admin list with `with_attached_images`
+  # does not fire a query per row.
   def primary_image
-    return unless images.attached?
+    attachments = images.attachments
+    return if attachments.blank?
 
-    images.find_by(id: primary_image_id) || images.first
+    attachments.find { |attachment| attachment.id == primary_image_id } || attachments.first
   end
 
   # The storefront shows a photograph only when one has been marked primary.
