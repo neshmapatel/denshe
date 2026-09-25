@@ -1,0 +1,53 @@
+<% page_title "Payment" %>
+<% meta description: "Payment for your DeNshe order. Nothing is charged yet." %>
+
+<section class="section section--tight">
+  <div class="page page--narrow">
+    <%= render "storefront/shared/checkout_steps", current: :payment %>
+
+    <header class="section-head">
+      <div class="section-head__text">
+        <p class="eyebrow">Order <%= @order.number %></p>
+        <h1>Payment.</h1>
+        <p class="lede">Your details are saved. Online payment is not open yet, so nothing has been charged.</p>
+      </div>
+    </header>
+
+    <div class="pay">
+      <ul class="checkout__lines">
+        <% @order.order_items.each do |item| %>
+          <li>
+            <span><%= item.quantity %> × <%= item.name %></span>
+            <span><%= price(item.line_total) %></span>
+          </li>
+        <% end %>
+      </ul>
+
+      <div class="bag__due">
+        <p>To pay</p>
+        <p><%= price(@order.total) %></p>
+      </div>
+
+      <div class="pay__addresses">
+        <div>
+          <p class="eyebrow">Shipping</p>
+          <p><%= @order.guest_name %></p>
+          <p><%= @order.shipping_address %></p>
+          <% if @order.guest_phone.present? %>
+            <p><%= @order.guest_phone %></p>
+          <% end %>
+        </div>
+        <div>
+          <p class="eyebrow">Billing</p>
+          <p><%= @order.billing_address %></p>
+        </div>
+      </div>
+
+      <p class="checkout__note">Card and UPI payment will open on this step. This order stays unpaid until then.</p>
+
+      <%= link_to shop_path, class: "btn" do %>
+        <span>Back to the collection</span>
+      <% end %>
+    </div>
+  </div>
+</section>

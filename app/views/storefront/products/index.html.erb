@@ -1,0 +1,96 @@
+<% page_title(@category ? @category.name : "Shop") %>
+<% meta description: @category ? "Shop #{@category.name.downcase} from DeNshe." : "Shop the DeNshe collection. Jewellery for everyday moments and everything in between." %>
+
+<section class="section section--tight">
+  <div class="page">
+    <% crumbs = @category ? [ { name: "Shop", url: shop_path }, { name: @category.name } ] : [ { name: "Shop" } ] %>
+    <%= render "storefront/shared/breadcrumbs", crumbs: crumbs %>
+
+    <header class="section-head">
+      <div class="section-head__text">
+        <p class="eyebrow"><%= @category ? "Collection" : "The collection" %></p>
+        <h1><%= @heading %></h1>
+        <% if @category.nil? && !@filter.filtering? && catalogue_live? %>
+          <p class="lede">A considered collection of jewellery for everyday moments and everything in between.</p>
+        <% end %>
+      </div>
+    </header>
+
+    <% if !catalogue_live? && !@filter.filtering? %>
+      <div class="empty">
+        <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
+        <h2>Pieces we’re loving right now.</h2>
+        <p>
+          A considered collection, gathered for everyday moments. If you would like us to choose for you, build a mystery box.
+        </p>
+        <%= link_to mystery_box_path, class: "btn btn--solid" do %>
+          <span>Build your mystery box</span>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="shop" data-controller="filters">
+        <aside class="shop__rail" id="shop-filters" data-filters-target="rail" data-open="false">
+          <%= render "storefront/shared/facets" %>
+        </aside>
+
+        <div>
+          <div class="shop__toolbar">
+            <p class="shop__count">
+              <%= pluralize(@pagination.total_count, "piece") %>
+            </p>
+            <div class="shop__tools">
+              <button type="button" class="btn btn--small filter-toggle" data-action="filters#toggle" data-filters-target="toggle" aria-expanded="false" aria-controls="shop-filters">
+                <span>Filter<% if @filter.filtering? %> · <%= @filter.applied.size %><% end %></span>
+              </button>
+
+              <%= form_with url: request.path, method: :get, class: "field-inline", data: { action: "change->filters#sort" } do %>
+                <% listing_params.except(:sort).each do |key, value| %>
+                  <%= hidden_field_tag key, value %>
+                <% end %>
+                <label>
+                  Sort
+                  <select name="sort" aria-label="Sort the cabinet">
+                    <% ProductFilter::SORTS.each do |value, label| %>
+                      <option value="<%= value %>" <%= "selected" if @filter.sort == value %>><%= label %></option>
+                    <% end %>
+                  </select>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <% if @filter.applied.any? %>
+            <div class="chips">
+              <% @filter.applied.each do |chip| %>
+                <%= link_to listing_url(chip[:param] => nil), class: "chip" do %>
+                  <%= chip[:label] %>
+                  <%= icon :close %>
+                  <span class="visually-hidden">Remove <%= chip[:label] %></span>
+                <% end %>
+              <% end %>
+              <%= link_to "Clear all", listing_url(q: nil, material: nil, colour: nil, price: nil), class: "chip chip--clear" %>
+            </div>
+          <% end %>
+
+          <% if @products.any? %>
+            <div class="product-grid">
+              <% @products.each do |product| %>
+                <%= render "storefront/shared/piece", product: product %>
+              <% end %>
+            </div>
+            <%= render "storefront/shared/pagination", pagination: @pagination %>
+          <% else %>
+            <div class="empty">
+              <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
+              <h2>Nothing matches.</h2>
+              <p>Widen the search, or look through the collection.</p>
+              <%= link_to listing_url(q: nil, material: nil, colour: nil, price: nil), class: "btn" do %>
+                <span>Clear filters</span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</section>

@@ -1,0 +1,11 @@
+<label class="field">
+  <span><%= label %></span>
+  <%= form.text_field attribute,
+        required: local_assigns.fetch(:required, true),
+        autocomplete: autocomplete,
+        inputmode: local_assigns[:inputmode],
+        aria: { invalid: form.object.errors[attribute].any? } %>
+  <% if form.object.errors[attribute].any? %>
+    <small class="field__error"><%= form.object.errors[attribute].to_sentence %></small>
+  <% end %>
+</label>

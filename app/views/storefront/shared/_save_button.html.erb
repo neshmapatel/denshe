@@ -1,0 +1,9 @@
+<%= button_tag type: "button",
+      class: local_assigns[:class_name] || "piece__save",
+      aria: { pressed: "false", label: label },
+      data: save_piece_params(product).merge(action: "jewellery-box#toggle", save_toggle: product.slug) do %>
+  <%= icon :heart %>
+  <% if local_assigns[:text] %>
+    <span data-save-label><%= text %></span>
+  <% end %>
+<% end %>

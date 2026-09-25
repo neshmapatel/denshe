@@ -1,0 +1,79 @@
+<% page_title "Contact" %>
+<% meta description: "Write to DeNshe in Mumbai about a piece, a mystery box, or an order. We answer by email#{brand.whatsapp.present? ? " and WhatsApp" : ""}." %>
+
+<header class="page-intro">
+  <div class="page page--narrow">
+    <p class="eyebrow"><%= brand.city %></p>
+    <h1>Write to us.</h1>
+    <p class="lede">A piece you want held, a box you want chosen, or a question about something you already wear. We read every note.</p>
+  </div>
+</header>
+
+<section class="section section--tight">
+  <div class="page">
+    <div class="contact-grid">
+      <article class="contact-card">
+        <p class="eyebrow">Email</p>
+        <h3><%= mail_to brand.email, brand.email %></h3>
+        <p>Best for photographs and longer notes. We reply from Mumbai.</p>
+      </article>
+
+      <% if whatsapp_url %>
+        <article class="contact-card">
+          <p class="eyebrow">WhatsApp</p>
+          <h3><%= link_to "Message DeNshe", whatsapp_url, target: "_blank", rel: "noopener" %></h3>
+          <p>Useful when you are holding a piece in the jewellery box and want it set aside today.</p>
+        </article>
+      <% end %>
+
+      <% if instagram_url %>
+        <article class="contact-card">
+          <p class="eyebrow">Instagram</p>
+          <h3><%= link_to "@#{brand.instagram}", instagram_url, target: "_blank", rel: "noopener" %></h3>
+          <p>New lots, as they are photographed.</p>
+        </article>
+      <% end %>
+
+      <article class="contact-card">
+        <p class="eyebrow">Dispatch</p>
+        <h3><%= brand.ships_from %></h3>
+        <p>Orders leave within <%= brand.dispatch_window %>. Shipping is complimentary above <%= price(brand.free_shipping_above) %>.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--sand">
+  <div class="page page--narrow">
+    <div class="section-head section-head--centred">
+      <div class="section-head__text">
+        <p class="eyebrow">A note</p>
+        <h2>This opens a letter in your email app.</h2>
+        <p class="lede">It is addressed to <%= brand.email %>. Nothing is stored on the site.</p>
+      </div>
+    </div>
+
+    <%= form_with url: contact_path, method: :get, html: { class: "form-stack", data: { turbo: false, controller: "note", note_email_value: brand.email, action: "submit->note#send" } } do %>
+      <label class="field">
+        <span>Your name</span>
+        <input type="text" name="name" autocomplete="name">
+      </label>
+      <label class="field">
+        <span>About</span>
+        <select name="subject">
+          <option>A piece in the cabinet</option>
+          <option>A mystery box</option>
+          <option>An order</option>
+          <option>Something else</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Your note</span>
+        <textarea name="message" required placeholder="The piece name, or who the box is for."></textarea>
+      </label>
+      <button type="submit" class="btn btn--solid">
+        <span>Write the letter</span>
+      </button>
+    <% end %>
+  </div>
+</section>

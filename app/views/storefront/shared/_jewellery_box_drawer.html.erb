@@ -1,0 +1,46 @@
+<div class="panel panel--right" id="saved-panel" data-shell-target="saved" role="dialog"
+     aria-modal="true" aria-label="Your jewellery box">
+  <div class="panel__head">
+    <span class="panel__title">Your jewellery box</span>
+    <button type="button" class="panel-close" data-action="shell#close">
+      <%= icon :close %>
+      <span class="visually-hidden">Close your jewellery box</span>
+    </button>
+  </div>
+
+  <div class="panel__body">
+    <ul class="saved-list" data-jewellery-box-target="list"></ul>
+
+    <div class="saved-empty" data-jewellery-box-target="empty">
+      <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
+      <p>Nothing tucked away yet. Tap the heart on a piece and it will wait for you here.</p>
+      <%= link_to "Browse the collection", shop_path, class: "btn btn--small" %>
+    </div>
+  </div>
+
+  <div class="panel__foot">
+    <p class="eyebrow">Saved on this device</p>
+    <p style="font-size:.875rem;color:var(--muted);margin-top:.35rem">
+      Ready to order? Send us the list and we will hold your pieces.
+    </p>
+    <%= link_to "Open the full box", jewellery_box_path, class: "btn btn--small btn--block",
+                style: "margin-top:.85rem" %>
+  </div>
+</div>
+
+<%# Template cloned by the jewellery-box controller for each saved piece. %>
+<template data-jewellery-box-target="template">
+  <li class="saved-item">
+    <a class="saved-item__frame" data-slot="link">
+      <img alt="" data-slot="image">
+    </a>
+    <div>
+      <a class="saved-item__name" data-slot="name-link"></a>
+      <p class="saved-item__price" data-slot="price"></p>
+    </div>
+    <button type="button" class="saved-item__remove" data-slot="remove" data-action="jewellery-box#remove">
+      <%= icon :close %>
+      <span class="visually-hidden">Remove</span>
+    </button>
+  </li>
+</template>

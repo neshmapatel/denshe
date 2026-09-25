@@ -1,0 +1,112 @@
+<% meta description: "DeNshe is a contemporary jewellery label. Thoughtfully curated pieces for everyday moments, and mystery boxes chosen around you." %>
+
+<section class="hero">
+  <div class="hero__panel">
+    <div class="hero__logo-wrap">
+      <%= image_tag "denshe-wordmark-ivory.png", alt: "DeNshe Jewellery", class: "hero__logo", width: 688, height: 293 %>
+    </div>
+    <div class="hero__intro">
+      <p class="eyebrow hero__kicker">Jewellery, between us</p>
+      <h1 class="hero__tagline">A little something,<br>chosen to feel like you.</h1>
+      <p class="hero__copy">
+        Two friends. Different continents. One shared dream — to bring you jewellery that feels personal, effortless and entirely yours.
+      </p>
+    </div>
+    <div class="hero__actions">
+      <%= link_to shop_path, class: "btn btn--ivory btn--solid" do %>
+        <span>Explore the collection</span>
+      <% end %>
+      <%= link_to mystery_box_path, class: "btn btn--ivory" do %>
+        <span>Discover the mystery box</span>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<section class="horizon">
+  <div class="page horizon__layout">
+    <div class="horizon__copy">
+      <p class="horizon__title">Jewellery for the moments<br>that feel like yours.</p>
+      <p class="horizon__note">From everyday little joys to moments worth remembering.</p>
+    </div>
+    <figure class="horizon__figure">
+      <%= image_tag "denshe-moments.jpg", alt: "Pearl and gold jewellery arranged beneath the DeNshe mark", width: 1024, height: 682, loading: "eager" %>
+    </figure>
+  </div>
+</section>
+
+<ol class="promises">
+  <li>
+    <span>01</span>
+    <h2>Thoughtfully curated</h2>
+    <p>Pieces chosen with intention.</p>
+  </li>
+  <li>
+    <span>02</span>
+    <h2>Everyday elegance</h2>
+    <p>Jewellery made to move with you.</p>
+  </li>
+  <li>
+    <span>03</span>
+    <h2>Ready to gift</h2>
+    <p>Little details, made for meaningful moments.</p>
+  </li>
+</ol>
+
+<% loved = @featured.presence || @new_arrivals %>
+<% if loved.any? %>
+  <section class="section" data-reveal>
+    <div class="page">
+      <div class="section-head">
+        <div class="section-head__text">
+          <h2>Pieces we’re loving right now.</h2>
+          <p class="lede">A considered collection of jewellery for everyday moments and everything in between.</p>
+        </div>
+        <%= link_to "View collection", shop_path, class: "link-quiet" %>
+      </div>
+      <div class="product-grid">
+        <% loved.each do |product| %>
+          <%= render "storefront/shared/piece", product: product %>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>
+
+<section class="section <%= "section--sand" if loved.any? %>" data-reveal>
+  <div class="page">
+    <div class="split__body between">
+      <h2>Between us.</h2>
+      <p class="lede">
+        Two lives in two different places.<br>
+        A friendship that never really felt far away.<br>
+        And somewhere along the way, an idea became a dream.
+      </p>
+      <p>
+        DeNshe is that dream — a jewellery label born from the things we love, the conversations we keep coming back to, and the little details that make something feel like yours.
+      </p>
+      <%= link_to "Read our story", story_path, class: "link-quiet" %>
+    </div>
+  </div>
+</section>
+
+<section class="section section--ink" data-reveal>
+  <div class="page centre">
+    <p class="eyebrow">Mystery box</p>
+    <h2>Tell us a little about you.<br>We’ll take care of the rest.</h2>
+    <%= link_to mystery_box_path, class: "btn btn--ivory" do %>
+      <span>Build your mystery box</span>
+    <% end %>
+  </div>
+</section>
+
+<% if instagram_url %>
+  <section class="section" data-reveal>
+    <div class="page centre">
+      <h2>Little moments from DeNshe.</h2>
+      <%= link_to instagram_url, class: "link-quiet", rel: "noopener", target: "_blank" do %>
+        On Instagram
+      <% end %>
+    </div>
+  </section>
+<% end %>

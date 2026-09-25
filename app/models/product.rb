@@ -26,8 +26,15 @@ class Product < ApplicationRecord
   scope :featured_on_home, -> { active.where(featured: true).order(updated_at: :desc) }
   scope :new_arrivals, -> { active.where(new_arrival: true).order(created_at: :desc) }
   scope :low_stock, -> { where("stock_quantity > 0 AND stock_quantity <= low_stock_threshold") }
+  scope :in_stock, -> { where("stock_quantity > 0") }
   scope :out_of_stock, -> { where("stock_quantity <= 0") }
   scope :earrings, -> { joins(:category).where(categories: { slug: "earrings" }) }
+
+  # Everything the storefront is allowed to list. Draft and archived pieces, and
+  # anything already sold, stay out of the customer catalogue.
+  scope :available, -> { active.in_stock }
+  scope :bestsellers, -> { available.where(bestseller: true) }
+  scope :with_storefront_includes, -> { includes(:category, images_attachments: :blob) }
 
   def self.search_columns
     %w[name sku slug]
@@ -58,6 +65,35 @@ class Product < ApplicationRecord
     inventory_movements.where(movement_type: :customer_order).sum("ABS(quantity)")
   end
 
+  # Most of the catalogue is bought a single piece at a time, so a stock of one
+  # is a genuine "there is only this one" rather than a low-stock warning.
+  def one_of_one?
+    stock_quantity == 1
+  end
+
+  def on_sale?
+    compare_at_price.present? && compare_at_price > selling_price
+  end
+
+  def discount_percentage
+    return unless on_sale?
+
+    (((compare_at_price - selling_price) / compare_at_price) * 100).round
+  end
+
+  # Primary image first, then the rest, so galleries and cards agree on order.
+  def gallery_images
+    return ActiveStorage::Attachment.none unless images.attached?
+
+    attachments = images.to_a
+    primary = attachments.find { |attachment| attachment.id == primary_image_id }
+    primary ? [ primary, *(attachments - [ primary ]) ] : attachments
+  end
+
+  def hover_image
+    gallery_images[1]
+  end
+
   def contribution_margin
     selling_price.to_d - purchase_price.to_d - packaging_allocation.to_d - shipping_allocation.to_d
   end
@@ -66,6 +102,13 @@ class Product < ApplicationRecord
     return unless images.attached?
 
     images.find_by(id: primary_image_id) || images.first
+  end
+
+  # The storefront shows a photograph only when one has been marked primary.
+  def display_image
+    return if primary_image_id.blank?
+
+    gallery_images.find { |attachment| attachment.id == primary_image_id }
   end
 
   def primary_image?(attachment)

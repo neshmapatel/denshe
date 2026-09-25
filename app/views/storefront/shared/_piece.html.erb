@@ -1,0 +1,60 @@
+<% image = product.display_image %>
+<article class="piece<%= " piece--text" unless image %>">
+  <% if image %>
+    <div class="piece__frame">
+      <%= piece_image image, size: :card, alt: "" %>
+    </div>
+  <% end %>
+
+  <div class="badges">
+    <% if product.on_sale? %>
+      <span class="badge badge--gold"><%= product.discount_percentage %>% off</span>
+    <% end %>
+    <% if product.new_arrival? %>
+      <span class="badge">New</span>
+    <% end %>
+    <% if product.bestseller? %>
+      <span class="badge badge--paper">Bestseller</span>
+    <% end %>
+    <% unless product.available_for_sale? %>
+      <span class="badge badge--sold">Sold</span>
+    <% end %>
+  </div>
+
+  <%= render "storefront/shared/save_button",
+        product: product,
+        label: "Save #{product.name} to your jewellery box" %>
+
+  <div class="piece__body">
+    <%= link_to piece_path(product.slug), class: "piece__link" do %>
+      <p class="piece__meta">
+        <%= product.category.name %>
+        <% if product.colour.present? %>
+          · <%= product.colour.titleize %>
+        <% end %>
+      </p>
+      <h3 class="piece__name"><%= product.name %></h3>
+    <% end %>
+    <p class="piece__price">
+      <% if product.on_sale? %>
+        <del><%= price(product.compare_at_price) %></del>
+        <ins><%= price(product.selling_price) %></ins>
+      <% else %>
+        <%= price(product.selling_price) %>
+      <% end %>
+    </p>
+  </div>
+
+  <% if product.available_for_sale? %>
+    <% if current_cart.include?(product) %>
+      <%= link_to cart_path, class: "btn btn--small btn--block piece__select" do %>
+        <span>Selected</span>
+      <% end %>
+    <% else %>
+      <%= button_to cart_items_path, params: { slug: product.slug },
+            class: "btn btn--small btn--solid btn--block", form_class: "piece__select" do %>
+        <span>Select</span>
+      <% end %>
+    <% end %>
+  <% end %>
+</article>

@@ -1,0 +1,19 @@
+<% if pagination.many_pages? %>
+  <nav class="pagination" aria-label="Pages">
+    <% if pagination.previous_page %>
+      <%= link_to "Previous", listing_url(page: pagination.previous_page), rel: "prev" %>
+    <% end %>
+    <% pagination.series.each do |number| %>
+      <% if number.nil? %>
+        <span class="is-gap" aria-hidden="true">…</span>
+      <% elsif number == pagination.page %>
+        <span aria-current="page"><%= number %></span>
+      <% else %>
+        <%= link_to number, listing_url(page: number) %>
+      <% end %>
+    <% end %>
+    <% if pagination.next_page %>
+      <%= link_to "Next", listing_url(page: pagination.next_page), rel: "next" %>
+    <% end %>
+  </nav>
+<% end %>

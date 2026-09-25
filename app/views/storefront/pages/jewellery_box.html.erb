@@ -1,0 +1,34 @@
+<% page_title "Your jewellery box" %>
+<% meta description: "Pieces you have tucked aside on this device. Send the list to DeNshe when you are ready, and we will hold them." %>
+
+<header class="page-intro">
+  <div class="page page--narrow">
+    <p class="eyebrow">Saved on this device</p>
+    <h1>Your jewellery box.</h1>
+    <p class="lede">Tap the heart on a piece and it waits here. When the list feels right, send it to us and we will hold those pieces for you.</p>
+  </div>
+</header>
+
+<section class="section section--tight">
+  <div class="page page--narrow">
+    <p data-jewellery-box-target="summary">Nothing tucked away yet.</p>
+
+    <ul class="saved-list saved-list--page" data-jewellery-box-target="list" hidden></ul>
+
+    <div class="saved-empty" data-jewellery-box-target="empty">
+      <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
+      <p>The box is empty. Hearts in the cabinet add a piece without taking it off the shelf.</p>
+      <%= link_to shop_path, class: "btn btn--small" do %>
+        <span>Browse the cabinet</span>
+      <% end %>
+    </div>
+
+    <div class="box-actions">
+      <% label = brand.whatsapp.present? ? "Send this box on WhatsApp" : "Send this box by email" %>
+      <%= link_to "#", class: "btn btn--solid", data: { jewellery_box_target: "share" }, hidden: true do %>
+        <span><%= label %></span>
+      <% end %>
+      <p class="eyebrow">We reply with how to pay. This page does not charge you.</p>
+    </div>
+  </div>
+</section>

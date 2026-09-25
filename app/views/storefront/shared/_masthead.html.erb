@@ -1,0 +1,127 @@
+<header class="masthead" data-controller="masthead">
+  <div class="masthead__inner">
+    <button type="button"
+            class="icon-button masthead__menu-toggle"
+            data-action="shell#toggleMenu"
+            aria-controls="menu-panel"
+            aria-expanded="false">
+      <%= icon :menu %>
+      <span class="visually-hidden">Menu</span>
+    </button>
+
+    <nav class="masthead__nav masthead__nav--start" aria-label="Primary">
+      <%= link_to "Shop", shop_path, class: "nav-link",
+                  "aria-current": ("page" if request.path == shop_path || request.path.start_with?("/pieces")) %>
+
+      <div class="nav-group">
+        <%= link_to "Collections", collections_path, class: "nav-link",
+                    "aria-current": ("page" if request.path.start_with?("/collections")) %>
+        <% if catalogue_live? %>
+          <div class="nav-panel">
+            <% nav_categories.each do |category| %>
+              <%= link_to collection_path(category.slug) do %>
+                <%= category.name %>
+                <span><%= category_counts[category.id].to_i %></span>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <%= link_to "Mystery box", mystery_box_path, class: "nav-link",
+                  "aria-current": ("page" if current_page?(mystery_box_path)) %>
+    </nav>
+
+    <%= link_to root_path, class: "masthead__brand", "aria-label": "DeNshe Jewellery, home" do %>
+      <%= image_tag "denshe-wordmark-navy.png", alt: "DeNshe Jewellery", width: 688, height: 293 %>
+    <% end %>
+
+    <nav class="masthead__nav masthead__nav--end" aria-label="Secondary">
+      <%= link_to "Our story", story_path, class: "nav-link",
+                  "aria-current": ("page" if current_page?(story_path)) %>
+
+      <button type="button" class="icon-button" data-action="shell#toggleSearch"
+              aria-controls="search-panel" aria-expanded="false">
+        <%= icon :search %>
+        <span class="visually-hidden">Search</span>
+      </button>
+
+      <%= link_to cart_path, class: "icon-button", aria: { current: ("page" if current_page?(cart_path)) } do %>
+        <%= icon :bag %>
+        <span class="visually-hidden">Selected pieces</span>
+        <span class="icon-button__count" <%= "hidden" if current_cart.count.zero? %>><%= current_cart.count %></span>
+      <% end %>
+
+      <button type="button" class="icon-button" data-action="shell#toggleSaved"
+              aria-controls="saved-panel" aria-expanded="false">
+        <%= icon :heart %>
+        <span class="visually-hidden">Your jewellery box</span>
+        <span class="icon-button__count" data-jewellery-box-target="count" hidden>0</span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<div class="scrim" data-shell-target="scrim" data-action="click->shell#close"></div>
+
+<div class="search-panel" id="search-panel" data-shell-target="search" role="dialog"
+     aria-modal="true" aria-label="Search the collection">
+  <%= form_with url: shop_path, method: :get, data: { turbo_frame: "_top" } do |form| %>
+    <div class="search-field">
+      <%= icon :search %>
+      <%= form.search_field :q, value: params[:q], placeholder: "Search for hoops, kadas, pendants…",
+                            data: { shell_target: "searchInput" }, autocomplete: "off",
+                            "aria-label": "Search for a piece" %>
+      <button type="button" class="panel-close" data-action="shell#close">
+        <%= icon :close %>
+        <span class="visually-hidden">Close search</span>
+      </button>
+    </div>
+    <div class="search-suggestions">
+      <span class="eyebrow">Try</span>
+      <% %w[Hoops Studs Kada Pendant Anti-tarnish].each do |term| %>
+        <%= link_to term, shop_path(q: term) %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<div class="panel panel--left" id="menu-panel" data-shell-target="menu" role="dialog"
+     aria-modal="true" aria-label="Menu">
+  <div class="panel__head">
+    <span class="panel__title">Menu</span>
+    <button type="button" class="panel-close" data-action="shell#close">
+      <%= icon :close %>
+      <span class="visually-hidden">Close menu</span>
+    </button>
+  </div>
+
+  <div class="panel__body">
+    <nav class="panel-nav" aria-label="Mobile">
+      <%= link_to "Shop all", shop_path %>
+      <%= link_to "Mystery box", mystery_box_path %>
+      <%= link_to "Our story", story_path %>
+      <%= link_to "Care guide", care_path %>
+      <%= link_to "Contact", contact_path %>
+    </nav>
+
+    <% if catalogue_live? %>
+      <div class="panel-nav__group">
+        <p class="eyebrow">Collections</p>
+        <nav class="panel-nav" aria-label="Collections">
+          <% nav_categories.each do |category| %>
+            <%= link_to collection_path(category.slug) do %>
+              <%= category.name %>
+              <span><%= category_counts[category.id].to_i %></span>
+            <% end %>
+          <% end %>
+        </nav>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="panel__foot">
+    <%= link_to "Selected pieces", cart_path, class: "btn btn--small btn--block" %>
+    <%= link_to "Your jewellery box", jewellery_box_path, class: "btn btn--small btn--block" %>
+  </div>
+</div>

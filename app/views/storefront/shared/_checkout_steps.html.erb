@@ -1,0 +1,25 @@
+<ol class="checkout-steps">
+  <li>
+    <% if current == :pieces %>
+      <span aria-current="step">Pieces</span>
+    <% else %>
+      <%= link_to "Pieces", cart_path %>
+    <% end %>
+  </li>
+  <li>
+    <% if current == :details %>
+      <span aria-current="step">Details</span>
+    <% elsif current == :payment %>
+      <span>Details</span>
+    <% else %>
+      <%= link_to "Details", checkout_path %>
+    <% end %>
+  </li>
+  <li>
+    <% if current == :payment %>
+      <span aria-current="step">Payment</span>
+    <% else %>
+      <span>Payment</span>
+    <% end %>
+  </li>
+</ol>

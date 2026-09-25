@@ -1,0 +1,31 @@
+<% page_title "Collections" %>
+<% meta description: "Browse DeNshe by collection: earrings, necklaces, rings, kadas, and the rest of the cabinet." %>
+
+<header class="page-intro">
+  <div class="page page--narrow">
+    <p class="eyebrow">The cabinet</p>
+    <h1>Collections</h1>
+    <p class="lede">A small set of shelves. Open one, and take your time.</p>
+  </div>
+</header>
+
+<section class="section section--tight">
+  <div class="page">
+    <% if @categories.any? %>
+      <div class="collection-grid" data-reveal>
+        <% @categories.each do |category| %>
+          <%= render "storefront/shared/collection_tile", category: category %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="empty">
+        <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
+        <h2>The shelves are being named.</h2>
+        <p>Collections appear here as soon as a piece in them is ready to offer.</p>
+        <%= link_to story_path, class: "btn" do %>
+          <span>Our story</span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</section>
