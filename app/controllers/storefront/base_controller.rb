@@ -2,6 +2,8 @@ module Storefront
   class BaseController < ApplicationController
     layout "storefront"
 
+    before_action :hold_for_launch
+
     helper_method :nav_categories, :category_counts, :catalogue_live?, :brand, :current_cart
 
     private
@@ -26,6 +28,13 @@ module Storefront
 
     def current_cart
       @current_cart ||= Cart.new(session)
+    end
+
+    def hold_for_launch
+      return unless Rails.application.config.x.storefront_held
+      return if cookies.signed[:storefront_preview] == "1"
+
+      render template: "storefront/pages/launching_soon", layout: "launching", status: :ok
     end
   end
 end

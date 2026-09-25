@@ -133,6 +133,35 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to cart_path
   end
 
+  test "a held storefront shows launching soon until the preview link" do
+    previous = Rails.application.config.x.storefront_held
+    Rails.application.config.x.storefront_held = true
+
+    get root_url
+    assert_response :success
+    assert_select "h1", "Launching Soon!"
+    assert_select "img[alt='DeNshe Jewellery']"
+
+    get shop_path
+    assert_select "h1", "Launching Soon!"
+    assert_select "article.piece", 0
+
+    get storefront_preview_path("wrong-token")
+    assert_response :not_found
+
+    get storefront_preview_path(Rails.application.config.x.storefront_preview_token)
+    assert_redirected_to root_path
+    follow_redirect!
+    assert_select "h1", /chosen to feel like you/i
+
+    get close_storefront_preview_path
+    assert_redirected_to root_path
+    follow_redirect!
+    assert_select "h1", "Launching Soon!"
+  ensure
+    Rails.application.config.x.storefront_held = previous
+  end
+
   test "sold pieces stay reachable and say so" do
     @product.update!(stock_quantity: 0)
 

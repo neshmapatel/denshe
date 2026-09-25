@@ -615,6 +615,49 @@
   border-color: var(--line-strong);
 }
 
+/* ---------------------------------------------------------- launching soon */
+
+.launch {
+  min-height: 100vh;
+  background:
+    radial-gradient(70% 80% at 50% 18%, #202090 0%, transparent 58%),
+    linear-gradient(180deg, #101048 0%, #181868 48%, #101048 100%);
+  color: var(--ivory);
+}
+
+.launch__panel {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1.75rem;
+  padding: 3rem 1.5rem;
+}
+
+.launch__logo {
+  width: min(16.5rem, 68vw);
+}
+
+.launch__ornament {
+  color: var(--ivory);
+}
+
+.launch h1 {
+  font-size: clamp(3rem, 2rem + 4vw, 5.5rem);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.launch p {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(247, 243, 236, 0.78);
+}
+
 /* ------------------------------------------------------------------ hero */
 
 .hero {
