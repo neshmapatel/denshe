@@ -155,4 +155,39 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
     assert_equal 1, product.reload.images.count
     assert_equal front.id, product.primary_image.id
   end
+
+  test "a second product with the same SKU explains the problem instead of erroring" do
+    Product.create!(category: @category, name: "Heart Cuff Kada", selling_price: 1200, sku: "MV-KDA-001")
+    post admin_user_session_path, params: {
+      admin_user: { email: @admin.email, password: "denshe-admin-123" }
+    }
+
+    assert_no_difference -> { Product.count } do
+      post admin_products_path, params: {
+        product: {
+          category_id: @category.id,
+          name: "Heart Cuff Kada",
+          sku: "MV-KDA-001",
+          selling_price: 1200,
+          status: "draft"
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_match(/already/i, response.body)
+  end
+
+  test "product list photos are served from this site" do
+    product = Product.create!(category: @category, name: "Leaf Kada", selling_price: 1400, stock_quantity: 1)
+    product.images.attach(io: StringIO.new("image-bytes"), filename: "leaf.jpg", content_type: "image/jpeg")
+    product.ensure_primary_image!
+    post admin_user_session_path, params: {
+      admin_user: { email: @admin.email, password: "denshe-admin-123" }
+    }
+
+    get admin_products_path
+    assert_response :success
+    assert_match %r{/rails/active_storage/blobs/proxy/}, response.body
+  end
 end

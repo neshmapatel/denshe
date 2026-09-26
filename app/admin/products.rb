@@ -25,7 +25,8 @@ ActiveAdmin.register Product do
     id_column
     column("Image") do |product|
       if (image = product.primary_image)
-        image_tag url_for(image), width: 48, height: 48, style: "object-fit:cover;border-radius:4px;"
+        image_tag rails_storage_proxy_path(image), width: 48, height: 48, alt: "",
+                  style: "object-fit:cover;border-radius:4px;"
       end
     end
     column :name
@@ -116,7 +117,7 @@ ActiveAdmin.register Product do
     panel "Designs" do
       if resource.images.attached?
         table_for resource.images.attachments do
-          column("Preview") { |image| image_tag url_for(image), width: 180 }
+          column("Preview") { |image| image_tag rails_storage_proxy_path(image), width: 180, alt: "" }
           column("File", &:filename)
           column("Storefront") do |image|
             if resource.primary_image?(image)
@@ -148,7 +149,7 @@ ActiveAdmin.register Product do
     end
   end
 
-  form do |f|
+  form html: { multipart: true, data: { turbo: false } } do |f|
     f.semantic_errors
     f.inputs "Basic" do
       f.input :category
@@ -211,17 +212,23 @@ ActiveAdmin.register Product do
   controller do
     def create
       extract_uploaded_images
-      super
-      attach_images
-      resource.ensure_primary_image! if resource.persisted?
+      super do |success, _failure|
+        success.html { redirect_after_images(:created) }
+      end
+    rescue ActiveRecord::RecordNotUnique
+      flag_duplicate_product
+      render :new, status: :unprocessable_entity
     end
 
     def update
       extract_image_management
       extract_uploaded_images
-      super
-      attach_images
-      apply_image_management
+      super do |success, _failure|
+        success.html { redirect_after_images(:updated) }
+      end
+    rescue ActiveRecord::RecordNotUnique
+      flag_duplicate_product
+      render :edit, status: :unprocessable_entity
     end
 
     private
@@ -241,9 +248,46 @@ ActiveAdmin.register Product do
     end
 
     def attach_images
-      return if resource.errors.any? || @uploaded_images.blank?
+      return true if resource.errors.any? || @uploaded_images.blank? || !resource.persisted?
 
       resource.images.attach(@uploaded_images)
+      resource.ensure_primary_image!
+      true
+    rescue StandardError => error
+      raise unless storage_error?(error)
+
+      Rails.logger.error("Product image upload failed: #{error.class}: #{error.message}")
+      false
+    end
+
+    def storage_error?(error)
+      error.class.name.start_with?("Aws::", "ActiveStorage::")
+    end
+
+    def redirect_after_images(action)
+      notice = "Product was successfully #{action}."
+      if attach_images && apply_pending_image_changes
+        redirect_to resource_path(resource), notice: notice
+      else
+        redirect_to edit_admin_product_path(resource),
+                    alert: "#{notice} The photo could not be stored. Please upload it again from this page."
+      end
+    end
+
+    def apply_pending_image_changes
+      return true unless action_name == "update"
+
+      apply_image_management
+      true
+    rescue StandardError => error
+      raise unless storage_error?(error)
+
+      Rails.logger.error("Product image change failed: #{error.class}: #{error.message}")
+      false
+    end
+
+    def flag_duplicate_product
+      resource.errors.add(:base, "This product is already saved. Check the product list, or use a different SKU.")
     end
 
     def apply_image_management

@@ -107,6 +107,14 @@ class ProductTest < ActiveSupport::TestCase
     assert_equal supplier, product.supplier
   end
 
+  test "allows more than one product with no SKU" do
+    Product.create!(category: @category, name: "Heart Cuff Kada", selling_price: 1200, sku: "")
+    second = Product.create!(category: @category, name: "Leaf Kada", selling_price: 1400, sku: " ")
+
+    assert_nil second.sku
+    assert_equal 2, Product.where(sku: nil).count
+  end
+
   test "can remove a design and keep another as the storefront primary" do
     product = Product.create!(
       category: @category,

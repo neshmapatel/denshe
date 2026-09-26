@@ -41,6 +41,7 @@ class Product < ApplicationRecord
   end
 
   before_validation :copy_supplier_from_purchase
+  before_validation :nilify_blank_sku
   before_create :sync_opening_purchase_quantity
   after_create :log_opening_stock_movement
   after_update :log_direct_stock_edit
@@ -181,6 +182,12 @@ class Product < ApplicationRecord
 
   def copy_supplier_from_purchase
     self.supplier ||= purchase&.supplier
+  end
+
+  # The unique index treats "" as a real value, so a second product left without
+  # a SKU raises a database error instead of saving.
+  def nilify_blank_sku
+    self.sku = nil if sku.blank?
   end
 
   def log_opening_stock_movement
