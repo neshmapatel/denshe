@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   ActiveAdmin.routes(self)
 
   get "up" => "rails/health#show", as: :rails_health_check
+  get "sitemap.xml", to: "sitemaps#show", as: :sitemap, defaults: { format: :xml }
 
   # Unlocks the storefront in this browser. /admin is never held.
   get "preview/close", to: "preview#destroy", as: :close_storefront_preview
