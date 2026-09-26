@@ -20,7 +20,7 @@ class MahavirLotSeedTest < ActiveSupport::TestCase
     assert_equal 5250, purchase.total_amount
     assert_equal 11, purchase.products.joins(:category).where(categories: { name: "Kadas" }).count
     assert_equal 4, purchase.products.joins(:category).where(categories: { name: "Bracelets" }).count
-    assert_equal 5, purchase.products.joins(:category).where(categories: { name: "Anti-tarnish" }).count
+    assert_equal 5, purchase.products.joins(:category).where(categories: { name: "Combo" }).count
     assert_equal 3, purchase.products.joins(:category).where(categories: { name: "Handchains" }).count
     assert_equal 29, purchase.products.joins(:category).where(categories: { name: "Chain Pendants" }).count
     assert_equal 10, purchase.products.joins(:category).where(categories: { name: "Earrings" }).count

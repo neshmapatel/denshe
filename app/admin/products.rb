@@ -25,8 +25,8 @@ ActiveAdmin.register Product do
     id_column
     column("Image") do |product|
       if (image = product.primary_image)
-        image_tag rails_storage_proxy_path(image), width: 48, height: 48, alt: "",
-                  style: "object-fit:cover;border-radius:4px;"
+        fullscreen_button image, alt: product.name, width: 48, height: 48,
+                           style: "object-fit:cover;border-radius:4px;"
       end
     end
     column :name
@@ -117,7 +117,7 @@ ActiveAdmin.register Product do
     panel "Designs" do
       if resource.images.attached?
         table_for resource.images.attachments do
-          column("Preview") { |image| image_tag rails_storage_proxy_path(image), width: 180, alt: "" }
+          column("Preview") { |image| fullscreen_button image, alt: resource.name, width: 180, style: "width:180px;height:auto;object-fit:cover;" }
           column("File", &:filename)
           column("Storefront") do |image|
             if resource.primary_image?(image)

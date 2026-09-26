@@ -1,0 +1,52 @@
+button.lightbox-trigger {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 0;
+  cursor: zoom-in;
+}
+
+.lightbox {
+  width: 100vw;
+  width: 100dvw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: #101048;
+}
+
+.lightbox::backdrop {
+  background: rgba(8, 8, 40, 0.94);
+}
+
+.lightbox__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.lightbox__cancel {
+  position: fixed;
+  top: max(0.85rem, env(safe-area-inset-top));
+  right: max(0.85rem, env(safe-area-inset-right));
+  z-index: 2;
+  margin: 0;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid rgba(247, 243, 236, 0.45);
+  border-radius: 999px;
+  background: #f7f3ec;
+  color: #101048;
+  font-family: Outfit, sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}

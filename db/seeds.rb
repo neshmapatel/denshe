@@ -16,15 +16,13 @@ end
 
 [
   [ "Earrings", 1 ],
-  [ "Necklaces", 2 ],
-  [ "Rings", 3 ],
-  [ "Bracelets", 4 ],
-  [ "Sets", 5 ],
-  [ "Other", 6 ],
-  [ "Kadas", 7 ],
-  [ "Handchains", 8 ],
-  [ "Chain Pendants", 9 ],
-  [ "Anti-tarnish", 10 ]
+  [ "Rings", 2 ],
+  [ "Bracelets", 3 ],
+  [ "Sets", 4 ],
+  [ "Kadas", 5 ],
+  [ "Handchains", 6 ],
+  [ "Chain Pendants", 7 ],
+  [ "Combo", 8 ]
 ].each do |name, position|
   Category.find_or_create_by!(name: name) do |category|
     category.position = position
@@ -35,3 +33,4 @@ load Rails.root.join("db/seeds/investors.rb")
 load Rails.root.join("db/seeds/mahavir_enterprise.rb")
 load Rails.root.join("db/seeds/celestia.rb")
 load Rails.root.join("db/seeds/investments.rb")
+load Rails.root.join("db/seeds/local_showcase.rb") if Rails.env.development?

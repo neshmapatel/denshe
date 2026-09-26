@@ -21,7 +21,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Outfit:wght@200;300;400;500&display=swap" rel="stylesheet">
 
-    <%= stylesheet_link_tag "application", "storefront", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "storefront", "image_lightbox", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
@@ -33,7 +33,7 @@
         data-jewellery-box-mark-value="<%= image_path("denshe-mark-navy.png") %>">
     <a class="skip-link" href="#main">Skip to content</a>
 
-    <%= render "storefront/shared/announcement" %>
+    <%= render "storefront/shared/announcement" unless controller_name == "pages" && action_name == "mystery_box" %>
     <%= render "storefront/shared/masthead" %>
 
     <% if flash.any? %>
@@ -49,6 +49,7 @@
     </main>
 
     <%= render "storefront/shared/footer" %>
+    <%= render "shared/image_lightbox" %>
     <%= render "storefront/shared/jewellery_box_drawer" %>
     <p class="toast" data-jewellery-box-target="toast" role="status" hidden></p>
   </body>

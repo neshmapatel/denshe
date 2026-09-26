@@ -39,7 +39,7 @@ items = [
   { name: "The Charming Grace Anti-Tarnish Adjustable Fashion Ring", price: 40, category: "Rings", material: "Anti-tarnish" },
   { name: "The Regal Grace Anti-Tarnish Adjustable Fashion Ring", price: 50, category: "Rings", material: "Anti-tarnish" },
   { name: "The Sunlit Story Anti-Tarnish Adjustable Fashion Ring", price: 40, category: "Rings", material: "Anti-tarnish" },
-  { name: "The Charming Desire Anti-Tarnish Pendant Necklace", price: 90, category: "Necklaces", material: "Anti-tarnish" },
+  { name: "The Charming Desire Anti-Tarnish Pendant Necklace", price: 90, category: "Combo", material: "Anti-tarnish" },
   { name: "D-Mimi-0073", price: 28, category: "Earrings" },
   { name: "The Chic Treasure Fashion Earrings", price: 28, category: "Earrings" },
   { name: "The Twilight Noor Fashion Earrings", price: 36, category: "Earrings" },
