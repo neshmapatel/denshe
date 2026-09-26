@@ -1,5 +1,15 @@
-<p class="announcement">
-  Thoughtfully curated
-  <span aria-hidden="true">&nbsp;·&nbsp;</span>
-  Complimentary shipping above <%= price(brand.free_shipping_above) %>
-</p>
+<% message = "See something you love? Don't overthink it. We have just one of each design. Some love stories are simply not meant to be shared." %>
+<div class="announcement" role="region" aria-label="<%= message %>">
+  <div class="announcement__track" aria-hidden="true">
+    <% 2.times do |copy| %>
+      <div class="announcement__group" <%= "aria-hidden=true" if copy.positive? %>>
+        <% 3.times do %>
+          <p class="announcement__item">
+            <span><%= message %></span>
+            <span class="announcement__dot" aria-hidden="true">·</span>
+          </p>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

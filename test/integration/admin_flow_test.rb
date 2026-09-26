@@ -137,6 +137,8 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
     get admin_product_path(product)
     assert_response :success
     assert_match "Make primary", response.body
+    assert_select "button[data-fullscreen-src]", minimum: 2
+    assert_select "button.lightbox__cancel", text: "Cancel"
     assert_match "Remove", response.body
 
     get edit_admin_product_path(product)

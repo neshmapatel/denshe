@@ -72,7 +72,7 @@ lot = [
     ]
   },
   {
-    category: "Anti-tarnish",
+    category: "Combo",
     sku_prefix: "MV-ATN",
     colour: "gold",
     material: "Anti-tarnish",

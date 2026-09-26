@@ -95,7 +95,7 @@
         <div class="choice-grid">
           <% [
             [ "earrings", "Earrings" ],
-            [ "necklaces", "Necklaces" ],
+            [ "chain pendant", "Chain Pendant" ],
             [ "bracelets", "Bracelets" ],
             [ "rings", "Rings" ],
             [ "sets", "Sets" ],
@@ -115,7 +115,6 @@
           <% [
             [ "gold", "Gold", "gold", "gold" ],
             [ "silver", "Silver", "silver", "silver" ],
-            [ "rose_gold", "Rose gold", "rose gold", "rose" ],
             [ "surprise", "Surprise me", "a finish you choose", nil ]
           ].each do |value, title, label, metal| %>
             <button type="button" class="choice<%= " choice--metal" if metal %>" data-action="fitting#pick" data-fitting-group-param="finish" data-fitting-value-param="<%= value %>" data-fitting-label-param="<%= label %>">

@@ -19,7 +19,7 @@ class CelestiaLotSeedTest < ActiveSupport::TestCase
     assert_equal 1510.50, purchase.total_amount
     assert_equal 7, purchase.products.joins(:category).where(categories: { name: "Rings" }).count
     assert_equal 1, purchase.products.joins(:category).where(categories: { name: "Sets" }).count
-    assert_equal 1, purchase.products.joins(:category).where(categories: { name: "Necklaces" }).count
+    assert_equal 1, purchase.products.joins(:category).where(categories: { name: "Combo" }).count
     assert_equal 30, purchase.products.joins(:category).where(categories: { name: "Earrings" }).count
     assert_equal "The Delicate Wish Silver-Tone Fashion Earrings", Product.find_by!(sku: "CL-10082-001").name
     assert purchase.products.all? { |product| product.stock_quantity == 1 }

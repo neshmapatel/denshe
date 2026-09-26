@@ -22,10 +22,37 @@
         ] %>
 
     <article class="detail">
-      <div class="gallery" data-controller="gallery" data-action="keydown->gallery#key">
-        <div class="gallery__stage" data-gallery-target="stage">
-          <% if images.first %>
-            <%= piece_image images.first, size: :stage, alt: @product.name, loading: "eager" %>
+      <% looping = images.size > 1 %>
+      <div class="gallery"
+           data-controller="gallery"
+           data-gallery-count-value="<%= images.size %>"
+           data-action="keydown->gallery#key mouseenter->gallery#pause mouseleave->gallery#play focusin->gallery#pause focusout->gallery#play">
+        <div class="gallery__stage">
+          <% if images.any? %>
+            <% if looping %>
+              <button type="button" class="gallery__nav gallery__nav--prev" data-action="gallery#previous" aria-label="Previous photograph">
+                <%= icon :arrow_right %>
+              </button>
+            <% end %>
+            <div class="gallery__track" data-gallery-target="track" tabindex="0">
+              <% slides = looping ? [ images.last, *images, images.first ] : images %>
+              <% slides.each_with_index do |image, index| %>
+                <% clone = looping && (index.zero? || index == slides.size - 1) %>
+                <div class="gallery__slide" data-gallery-target="slide" <%= "aria-hidden=true" if clone %>>
+                  <%= fullscreen_button image,
+                        alt: @product.name,
+                        preview: piece_image_source(image, :stage),
+                        class: "gallery__open",
+                        loading: (index == (looping ? 1 : 0) ? "eager" : "lazy"),
+                        decoding: "async" %>
+                </div>
+              <% end %>
+            </div>
+            <% if looping %>
+              <button type="button" class="gallery__nav gallery__nav--next" data-action="gallery#next" aria-label="Next photograph">
+                <%= icon :arrow_right %>
+              </button>
+            <% end %>
           <% else %>
             <div class="piece__placeholder">
               <%= image_tag "denshe-mark-navy.png", alt: "" %>
@@ -34,15 +61,15 @@
           <% end %>
         </div>
 
-        <% if images.size > 1 %>
+        <% if looping %>
           <div class="gallery__thumbs">
             <% images.each_with_index do |image, index| %>
               <button type="button"
                       class="gallery__thumb"
                       data-gallery-target="thumb"
                       data-action="gallery#show"
-                      data-full="<%= url_for(piece_image_source(image, :stage)) %>"
-                      aria-current="<%= index.zero? ? "true" : "false" %>"
+                      data-index="<%= index %>"
+                      <%= "aria-current=true" if index.zero? %>
                       aria-label="Photograph <%= index + 1 %> of <%= images.size %>">
                 <%= piece_image image, size: :thumb, alt: "" %>
               </button>
@@ -77,14 +104,12 @@
           <p class="lede"><%= customer_copy(@product.short_description) %></p>
         <% end %>
 
-        <% if !@product.available_for_sale? %>
+        <div class="piece-note">
+          <p class="piece-note__kicker">A little more personal.</p>
+          <p>This design is available as a single piece. Once it's yours, it's yours alone.</p>
+        </div>
+        <% unless @product.available_for_sale? %>
           <p class="stock-note stock-note--out">This piece has found its person.</p>
-        <% elsif @product.one_of_one? %>
-          <p class="stock-note">The only one. Once it leaves, it is gone.</p>
-        <% elsif @product.low_stock? %>
-          <p class="stock-note">Only <%= pluralize(@product.stock_quantity, "piece") %> left.</p>
-        <% else %>
-          <p class="stock-note">In the cabinet, ready to dispatch.</p>
         <% end %>
 
         <div class="detail__actions">

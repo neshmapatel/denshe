@@ -22,6 +22,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", /chosen to feel like you/i
+    assert_match "See something you love?", response.body
     assert_select "img[alt='DeNshe Jewellery']"
     assert_select "a", text: /Aurelia Hoops/
   end
@@ -47,7 +48,10 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     get piece_path(@product.slug)
     assert_response :success
     assert_select "h1", "Aurelia Hoops"
-    assert_select ".stock-note", /only one/i
+    assert_select "dialog.lightbox"
+    assert_select "button.lightbox__cancel", text: "Cancel"
+    assert_select ".piece-note__kicker", "A little more personal."
+    assert_select ".piece-note", /single piece/
   end
 
   test "story, care, contact, mystery box, and jewellery box render" do
@@ -69,6 +73,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     get mystery_box_path
     assert_response :success
     assert_select "h1", /box/i
+    assert_no_match "See something you love?", response.body
     assert_select "[data-controller='fitting']"
     assert_select "[data-fitting-value-param='rose_gold']", text: /Rose gold/
     assert_select "[data-metal='rose']"
