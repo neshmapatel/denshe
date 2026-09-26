@@ -53,7 +53,10 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
   test "story, care, contact, mystery box, and jewellery box render" do
     get story_path
     assert_response :success
-    assert_select "h1", /between us/i
+    assert_select "h1", /two friends/i
+    assert_select "h2", text: "Okay, but who are we?"
+    assert_select "p.story__moment", text: /Let's actually do it/
+    assert_select "h2", text: "Worn your way."
 
     get care_path
     assert_response :success

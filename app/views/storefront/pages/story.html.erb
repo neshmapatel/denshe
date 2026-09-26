@@ -1,43 +1,110 @@
 <% page_title "Our story" %>
 <% meta description: "DeNshe began with two friends, two different corners of the world, and a shared love for jewellery that feels like you." %>
 
-<header class="page-intro page-intro--ink">
-  <div class="page page--narrow">
-    <%= image_tag "denshe-wordmark-ivory.png", alt: "DeNshe Jewellery", class: "page-intro__logo", width: 688, height: 293 %>
-    <p class="eyebrow">Our story</p>
-    <h1>Between us.</h1>
-    <p class="lede">Two friends. Two places. One shared love for jewellery.</p>
-  </div>
-</header>
-
-<section class="section">
-  <div class="page prose">
-    <p class="lede">
-      DeNshe began with two friends, two different corners of the world, and a shared love for the little things that make us feel like ourselves.
-    </p>
-    <p>
-      What started as conversations between two continents slowly became a jewellery label built around pieces we’d choose for each other — effortless, personal and meant to be worn your way.
-    </p>
-    <p>DeNshe is, in many ways, what exists between us.</p>
-  </div>
-</section>
-
-<section class="section section--sand">
-  <div class="page centre">
-    <%= render "storefront/shared/ornament", wide: true %>
-    <div class="section-head section-head--centred">
-      <div class="section-head__text">
-        <h2>Worn your way.</h2>
-        <p class="lede">Explore the collection, or let us choose a box around you.</p>
+<article class="story">
+  <header class="story__chapter">
+    <div class="page page--narrow">
+      <p class="eyebrow">Between us</p>
+      <h1>Two friends. Two places. One shared love for jewellery.</h1>
+      <div class="story__body">
+        <p>DeNshe began with two friends, two different corners of the world, and a shared love for the little things that make us feel like ourselves.</p>
+        <p>What started as conversations between two continents slowly became a jewellery label built around pieces we’d choose for each other — effortless, personal and meant to be worn your way.</p>
+        <p>DeNshe is, in many ways, what exists between us.</p>
       </div>
     </div>
-    <div class="hero__actions">
-      <%= link_to shop_path, class: "btn btn--solid" do %>
-        <span>Explore the collection</span>
-      <% end %>
-      <%= link_to mystery_box_path, class: "btn" do %>
-        <span>Discover the mystery box</span>
-      <% end %>
+  </header>
+
+  <section class="story__chapter">
+    <div class="page page--narrow">
+      <h2>Okay, but who are we?</h2>
+      <div class="story__body">
+        <p>If you've actually clicked “Read Our Story”, first of all...</p>
+        <p class="story__aside">we genuinely didn't expect you to.</p>
+        <p>Most people see a jewellery brand, look at a few pretty pieces and keep scrolling. Fair enough.</p>
+        <p>
+          But if you're still here — hi.<br>
+          We're glad you came.
+        </p>
+        <p>We're Neshma and Devanshi. Two friends who, about a year ago, had a conversation that went something like:</p>
+        <p>“What if we started a jewellery brand?”</p>
+        <p>
+          We talked about it.<br>
+          We imagined it.<br>
+          We probably overthought it.
+        </p>
+        <p>And then...</p>
+        <p>we did absolutely nothing about it.</p>
+        <p>Life happened. Work happened. Distance happened.</p>
+        <p>So the idea quietly went into that very large folder in our brains called:</p>
+        <p>“We'll do this someday.”</p>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
+
+  <section class="story__chapter story__chapter--open">
+    <div class="page page--narrow">
+      <h2>And then, somehow... we came back to it.</h2>
+      <div class="story__body">
+        <p>A year later, the conversation came back.</p>
+        <p>Except this time, it didn't end with “that would be nice.”</p>
+        <p>It became:</p>
+        <p class="story__moment">“Okay. Let's actually do it.”</p>
+        <p>And suddenly there were names to shortlist, jewellery to choose, packaging to figure out, a website to build and approximately a million tiny decisions to make.</p>
+        <p>And, of course, several moments of:</p>
+        <p>“Wait. Are we actually doing this?”</p>
+        <p>
+          Yes.<br>
+          Apparently, we were.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="story__chapter">
+    <div class="page page--narrow">
+      <h2>That's how DeNshe began.</h2>
+      <div class="story__body">
+        <p>Not with everything figured out.</p>
+        <p>Just two friends, a slightly delayed idea, a lot of conversations and the feeling that maybe we should finally give it a chance.</p>
+        <p>We wanted DeNshe to feel like the kind of jewellery we'd choose for each other — something you could wear every day, dress up with, gift to someone, or simply buy because...</p>
+        <p class="story__liked">“you liked it.”</p>
+        <p>No big occasion required.</p>
+        <p>Just your kind of little something.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="story__chapter">
+    <div class="page page--narrow">
+      <h2>Oh... you're still reading?</h2>
+      <div class="story__body">
+        <p class="story__aside">Okay, now we're impressed.</p>
+        <p>So here's the part we really want you to know:</p>
+        <p>DeNshe isn't just about jewellery.</p>
+        <p>It's about the little things that connect people — across places, busy days and time zones.</p>
+        <p>Sometimes an idea needs a year.</p>
+        <p>Sometimes it needs two friends.</p>
+        <p>And sometimes it just needs someone to finally say:</p>
+        <p>“Okay. Let's do it.”</p>
+        <p>So, thank you for coming this far.</p>
+        <p>Welcome to DeNshe.</p>
+        <p class="story__signoff">We're really happy you're here.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="page centre">
+      <h2>Worn your way.</h2>
+      <p class="lede">Explore the collection, or let us choose a box around you.</p>
+      <div class="hero__actions">
+        <%= link_to shop_path, class: "btn btn--ivory btn--solid" do %>
+          <span>Explore the collection</span>
+        <% end %>
+        <%= link_to mystery_box_path, class: "btn btn--ivory" do %>
+          <span>Discover the mystery box</span>
+        <% end %>
+      </div>
+    </div>
+  </section>
+</article>

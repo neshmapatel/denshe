@@ -31,6 +31,8 @@ Rails.application.configure do
     else
       :local
     end
+  # Safari shows a broken image when the photo is a redirect to R2. Serve it from this site.
+  config.active_storage.resolve_model_to_route = :rails_storage_proxy
 
   # Heroku terminates SSL at the router. Without this, Active Storage signs http://
   # disk URLs and the browser blocks them on the https admin.
