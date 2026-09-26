@@ -1,6 +1,7 @@
 <% page_title(@product.meta_title.presence || @product.name) %>
-<% blurb = customer_copy(@product.meta_description) || customer_copy(@product.short_description) || "#{@product.name}, from DeNshe." %>
-<% meta description: blurb, type: "product" %>
+<% blurb = customer_copy(@product.meta_description) || customer_copy(@product.short_description) || "#{@product.name}, #{@product.category.name.downcase} from DeNshe." %>
+<% lead_image = @product.display_image || @product.gallery_images.first %>
+<% meta description: blurb, type: "product", image: (url_for(lead_image) if lead_image) %>
 
 <% images = @product.gallery_images %>
 <% description = customer_copy(@product.description) %>
@@ -166,19 +167,13 @@
   </section>
 <% end %>
 
-<% offer = {
-  "@context" => "https://schema.org",
-  "@type" => "Product",
-  "name" => @product.name,
-  "description" => blurb,
-  "sku" => @product.sku,
-  "brand" => { "@type" => "Brand", "name" => brand.name },
-  "offers" => {
-    "@type" => "Offer",
-    "priceCurrency" => "INR",
-    "price" => format("%.2f", @product.selling_price),
-    "availability" => (@product.available_for_sale? ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"),
-    "url" => piece_url(@product.slug)
-  }
-} %>
-<%= tag.script(json_escape(offer.to_json).html_safe, type: "application/ld+json") %>
+<%= structured_data product_structured_data(@product, description: blurb) %>
+<%= structured_data(
+      "@context" => "https://schema.org",
+      "@type" => "BreadcrumbList",
+      "itemListElement" => [
+        { "@type" => "ListItem", "position" => 1, "name" => "Shop", "item" => shop_url },
+        { "@type" => "ListItem", "position" => 2, "name" => @product.category.name, "item" => collection_url(@product.category.slug) },
+        { "@type" => "ListItem", "position" => 3, "name" => @product.name, "item" => piece_url(@product.slug) }
+      ]
+    ) %>

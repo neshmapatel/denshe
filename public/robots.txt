@@ -1,1 +1,11 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+# Search engines may read the shop. Admin, checkout, and private pages stay out.
+User-agent: *
+Disallow: /admin
+Disallow: /admin_users
+Disallow: /cart
+Disallow: /checkout
+Disallow: /jewellery-box
+Disallow: /preview
+Disallow: /up
+
+Sitemap: https://denshe.shop/sitemap.xml

@@ -17,6 +17,43 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     )
   end
 
+  test "public pages tell search engines what they are" do
+    get root_url
+    assert_select "link[rel=canonical][href=?]", "http://www.example.com/"
+    assert_select "meta[name=description]"
+    assert_match "Organization", response.body
+    assert_select "meta[name=robots][content=?]", "index, follow"
+
+    get piece_path(@product.slug)
+    assert_select "link[rel=canonical][href=?]", "http://www.example.com/pieces/#{@product.slug}"
+    assert_match "schema.org/InStock", response.body
+    assert_match "699.00", response.body
+
+    get cart_path
+    assert_select "meta[name=robots][content=?]", "noindex, follow"
+
+    get sitemap_path
+    assert_response :success
+    assert_match piece_url(@product.slug), response.body
+    assert_no_match %r{/cart}, response.body
+    assert_no_match %r{/admin}, response.body
+
+    draft = Product.create!(
+      category: @category,
+      name: "Hidden Kada",
+      selling_price: 400,
+      stock_quantity: 1,
+      status: :draft
+    )
+    get sitemap_path
+    assert_no_match piece_url(draft.slug), response.body
+
+    get "/robots.txt"
+    assert_response :success
+    assert_match "Sitemap: https://denshe.shop/sitemap.xml", response.body
+    assert_match "Disallow: /admin", response.body
+  end
+
   test "home introduces the cabinet" do
     get root_url
 

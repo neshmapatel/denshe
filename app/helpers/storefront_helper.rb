@@ -66,19 +66,74 @@ module StorefrontHelper
     content_for(:title) { title } if title
   end
 
-  def meta(description: nil, image: nil, type: "website")
+  # index: false for pages that should not appear in Google (cart, checkout).
+  def meta(description: nil, image: nil, type: "website", index: true)
+    canonical = "#{request.base_url}#{request.path}"
+    picture = absolute_asset(image)
+    title = content_for(:title).presence || brand.name
+
     content_for :meta do
       safe_join([
         tag.meta(name: "description", content: description),
+        tag.link(rel: "canonical", href: canonical),
+        tag.meta(name: "robots", content: index ? "index, follow" : "noindex, follow"),
         tag.meta(property: "og:site_name", content: brand.name),
         tag.meta(property: "og:type", content: type),
-        tag.meta(property: "og:title", content: content_for(:title) || brand.name),
+        tag.meta(property: "og:locale", content: "en_IN"),
+        tag.meta(property: "og:title", content: title),
         tag.meta(property: "og:description", content: description),
-        tag.meta(property: "og:image", content: image || image_url("denshe-logo.jpg")),
-        tag.meta(property: "og:url", content: request.original_url),
-        tag.meta(name: "twitter:card", content: "summary_large_image")
+        tag.meta(property: "og:image", content: picture),
+        tag.meta(property: "og:url", content: canonical),
+        tag.meta(name: "twitter:card", content: "summary_large_image"),
+        tag.meta(name: "twitter:title", content: title),
+        tag.meta(name: "twitter:description", content: description),
+        tag.meta(name: "twitter:image", content: picture)
       ].compact, "\n")
     end
+  end
+
+  def absolute_asset(image)
+    source = image.presence || image_url("denshe-logo.jpg")
+    source = source.to_s
+    return source if source.start_with?("http://", "https://")
+
+    path = source.start_with?("/") ? source : "/#{source}"
+    "#{request.base_url}#{path}"
+  end
+
+  def structured_data(data)
+    tag.script(json_escape(data.to_json).html_safe, type: "application/ld+json")
+  end
+
+  def product_structured_data(product, description:)
+    data = {
+      "@context" => "https://schema.org",
+      "@type" => "Product",
+      "name" => product.name,
+      "description" => description,
+      "brand" => { "@type" => "Brand", "name" => brand.name },
+      "category" => product.category.name,
+      "url" => piece_url(product.slug)
+    }
+    data["sku"] = product.sku if product.sku.present?
+    data["color"] = product.colour if product.colour.present?
+    data["material"] = product.material if product.material.present?
+
+    image = product.display_image || product.gallery_images.first
+    data["image"] = absolute_asset(url_for(image)) if image
+
+    if product.selling_price.to_d.positive?
+      data["offers"] = {
+        "@type" => "Offer",
+        "priceCurrency" => "INR",
+        "price" => format("%.2f", product.selling_price),
+        "availability" => (product.available_for_sale? ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"),
+        "itemCondition" => "https://schema.org/NewCondition",
+        "url" => piece_url(product.slug)
+      }
+    end
+
+    data
   end
 
   def enquire_url(product)

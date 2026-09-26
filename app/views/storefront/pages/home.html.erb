@@ -1,4 +1,27 @@
-<% meta description: "DeNshe is a contemporary jewellery label. Thoughtfully curated pieces for everyday moments, and mystery boxes chosen around you." %>
+<% meta description: "DeNshe is a contemporary jewellery label from Mumbai. Earrings, kadas, and everyday pieces, plus mystery boxes chosen around you." %>
+<%= structured_data(
+      "@context" => "https://schema.org",
+      "@graph" => [
+        {
+          "@type" => "Organization",
+          "name" => brand.name,
+          "url" => root_url,
+          "logo" => absolute_asset(image_url("denshe-logo.jpg")),
+          "email" => brand.email,
+          "sameAs" => [ instagram_url ].compact
+        },
+        {
+          "@type" => "WebSite",
+          "name" => "#{brand.name} Jewellery",
+          "url" => root_url,
+          "potentialAction" => {
+            "@type" => "SearchAction",
+            "target" => "#{shop_url}?q={search_term_string}",
+            "query-input" => "required name=search_term_string"
+          }
+        }
+      ]
+    ) %>
 
 <section class="hero">
   <div class="hero__panel">
