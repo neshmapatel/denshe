@@ -133,6 +133,47 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_equal 0, Cart.new(session).count
   end
 
+  test "another shopper sees a piece that is already in a cart" do
+    get piece_path(@product.slug)
+    assert_match "1 available", response.body
+
+    post cart_items_path, params: { slug: @product.slug }
+
+    open_session do |other|
+      other.get piece_path(@product.slug)
+      other.assert_no_match "1 available", other.response.body
+      other.assert_select "p.stock-note", text: "Someone has already added this to their cart."
+      other.assert_select "button", text: /Select/, count: 0
+
+      other.get shop_path
+      other.assert_match "Someone has already added this to their cart.", other.response.body
+
+      other.post cart_items_path, params: { slug: @product.slug }
+      other.assert_redirected_to shop_path
+      other.follow_redirect!
+      other.assert_match "Someone has already added Aurelia Hoops to their cart.", other.response.body
+    end
+  end
+
+  test "available quantity drops by what other carts are holding" do
+    @product.update!(stock_quantity: 3)
+
+    post cart_items_path, params: { slug: @product.slug }
+    get piece_path(@product.slug)
+    assert_match "2 available", response.body
+    assert_select "a", text: /Selected/
+
+    open_session do |other|
+      other.get piece_path(@product.slug)
+      assert_match "2 available", other.response.body
+      other.post cart_items_path, params: { slug: @product.slug }
+      other.follow_redirect!
+    end
+
+    get piece_path(@product.slug)
+    assert_match "1 available", response.body
+  end
+
   test "checkout and payment ask for a selection first" do
     get checkout_path
     assert_redirected_to cart_path

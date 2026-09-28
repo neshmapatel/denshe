@@ -1202,6 +1202,17 @@
   color: var(--gold);
 }
 
+.piece__available {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.piece__available--held {
+  color: var(--ink);
+}
+
 /* Save control floats over the image but stays above the card-wide link. */
 .piece__save {
   position: absolute;
