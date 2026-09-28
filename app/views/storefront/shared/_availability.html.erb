@@ -1,0 +1,5 @@
+<% if held_by_someone_else?(product) %>
+  <p class="piece__available piece__available--held">Someone has already added this to their cart.</p>
+<% elsif product.available_for_sale? && quantity_left(product).positive? %>
+  <p class="piece__available"><%= availability_copy(quantity_left(product)) %></p>
+<% end %>

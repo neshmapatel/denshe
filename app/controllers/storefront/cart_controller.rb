@@ -6,8 +6,11 @@ module Storefront
     def create
       product = Product.available.find_by!(slug: params[:slug])
 
-      if current_cart.add(product)
+      case current_cart.add(product)
+      when :added
         redirect_back fallback_location: shop_path, notice: "#{product.name} is selected."
+      when :held
+        redirect_back fallback_location: shop_path, alert: "Someone has already added #{product.name} to their cart."
       else
         redirect_back fallback_location: shop_path, alert: "#{product.name} is no longer available."
       end

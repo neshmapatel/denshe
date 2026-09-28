@@ -43,9 +43,10 @@
         <%= price(product.selling_price) %>
       <% end %>
     </p>
+    <%= render "storefront/shared/availability", product: product %>
   </div>
 
-  <% if product.available_for_sale? %>
+  <% if product.available_for_sale? && !held_by_someone_else?(product) %>
     <% if current_cart.include?(product) %>
       <%= link_to cart_path, class: "btn btn--small btn--block piece__select" do %>
         <span>Selected</span>

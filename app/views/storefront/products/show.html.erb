@@ -94,6 +94,9 @@
               <%= price(@product.selling_price) %>
             <% end %>
           </p>
+          <% unless held_by_someone_else?(@product) %>
+            <%= render "storefront/shared/availability", product: @product %>
+          <% end %>
           <p class="detail__tax">
             <%= brand.ships_from %>. Dispatch in <%= brand.dispatch_window %>.
             Complimentary shipping above <%= price(brand.free_shipping_above) %>.
@@ -108,12 +111,14 @@
           <p class="piece-note__kicker">A little more personal.</p>
           <p>This design is available as a single piece. Once it's yours, it's yours alone.</p>
         </div>
-        <% unless @product.available_for_sale? %>
+        <% if held_by_someone_else?(@product) %>
+          <p class="stock-note">Someone has already added this to their cart.</p>
+        <% elsif !@product.available_for_sale? %>
           <p class="stock-note stock-note--out">This piece has found its person.</p>
         <% end %>
 
         <div class="detail__actions">
-          <% if @product.available_for_sale? %>
+          <% if @product.available_for_sale? && !held_by_someone_else?(@product) %>
             <% if current_cart.include?(@product) %>
               <%= link_to cart_path, class: "btn btn--solid btn--block" do %>
                 <span>Selected · Continue</span>
@@ -123,7 +128,7 @@
                 <span>Select</span>
               <% end %>
             <% end %>
-          <% else %>
+          <% elsif !@product.available_for_sale? %>
             <% url = enquire_url(@product) %>
             <%= link_to url, class: "btn btn--solid btn--block", **(external_link?(url) ? { target: "_blank", rel: "noopener" } : {}) do %>
               <span>Ask for something like it</span>

@@ -37,6 +37,24 @@ module StorefrontHelper
   end
 
   # Indian digit grouping: ₹1,299 and ₹1,20,000.
+  # Units still free to select: stock, minus other carts, minus this shopper's own selection.
+  def quantity_left(product)
+    others = holds_by_others[product.id].to_i
+    [ product.stock_quantity - others - current_cart.quantity_of(product), 0 ].max
+  end
+
+  def held_by_someone_else?(product)
+    product.available_for_sale? && !current_cart.include?(product) && quantity_left(product).zero?
+  end
+
+  def availability_copy(count)
+    "#{count} available"
+  end
+
+  def holds_by_others
+    @holds_by_others ||= CartHold.quantities_held_by_others(current_cart.session_key)
+  end
+
   def price(amount)
     amount = amount.to_d
     number_to_currency(
