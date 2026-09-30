@@ -26,7 +26,7 @@ gem "json", "~> 2.16"
 gem "devise", "~> 5.0"
 
 # Functional admin for product, inventory, and order management
-gem "activeadmin", "4.0.0.beta22"
+gem "activeadmin", "4.0.0.beta23"
 gem "activeadmin_assets"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
