@@ -59,6 +59,23 @@ ActiveAdmin.register Order do
       row :created_at
     end
 
+    panel "Payments" do
+      if resource.payments.any?
+        table_for resource.payments.order(created_at: :desc) do
+          column(:gateway) { |payment| payment.payment_gateway.name }
+          column :status
+          column("Amount") { |payment| "₹#{payment.amount}" }
+          column :gateway_order_id
+          column :gateway_payment_id
+          column :error_code
+          column :error_message
+          column :created_at
+        end
+      else
+        para "No payment attempts yet."
+      end
+    end
+
     panel "Items" do
       table_for resource.order_items do
         column :name

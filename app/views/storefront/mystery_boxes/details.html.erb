@@ -1,0 +1,87 @@
+<% page_title "Your details" %>
+<% meta description: "Name and shipping details for a DeNshe mystery box." %>
+
+<section class="section section--tight">
+  <div class="page">
+    <header class="section-head">
+      <div class="section-head__text">
+        <p class="eyebrow">Mystery box · <%= price(@box[:price]) %></p>
+        <h1>We have recorded your response.</h1>
+        <p class="lede">Add your name and where we should send the box. Then continue to payment. This is a <%= @box[:pieces].sub("pieces", "products") %> box.</p>
+      </div>
+    </header>
+
+    <div class="checkout">
+      <%= form_with model: @checkout, url: mystery_box_details_path, scope: :checkout, class: "form-stack checkout__form",
+            data: { controller: "checkout" } do |form| %>
+        <% if @checkout.errors[:base].any? %>
+          <p class="field__error" role="alert"><%= @checkout.errors[:base].to_sentence %></p>
+        <% end %>
+
+        <fieldset class="form-stack">
+          <legend class="eyebrow">Your name</legend>
+          <%= render "storefront/checkout/field", form: form, attribute: :name, label: "Full name", autocomplete: "name" %>
+          <%= render "storefront/checkout/field", form: form, attribute: :phone, label: "Mobile number", autocomplete: "tel", inputmode: "numeric" %>
+          <%= render "storefront/checkout/field", form: form, attribute: :email, label: "Email", autocomplete: "email", required: false %>
+        </fieldset>
+
+        <fieldset class="form-stack">
+          <legend class="eyebrow">Shipping address</legend>
+          <%= render "storefront/checkout/field", form: form, attribute: :line1, label: "Address line 1", autocomplete: "address-line1" %>
+          <%= render "storefront/checkout/field", form: form, attribute: :line2, label: "Address line 2", autocomplete: "address-line2", required: false %>
+          <div class="checkout__pair">
+            <%= render "storefront/checkout/field", form: form, attribute: :city, label: "City", autocomplete: "address-level2" %>
+            <%= render "storefront/checkout/field", form: form, attribute: :pin_code, label: "PIN code", autocomplete: "postal-code", inputmode: "numeric" %>
+          </div>
+          <label class="field">
+            <span>State</span>
+            <%= form.select :state, Checkout::STATES, { include_blank: "Select a state" }, autocomplete: "address-level1", aria: { invalid: @checkout.errors[:state].any? } %>
+            <% if @checkout.errors[:state].any? %>
+              <small class="field__error"><%= @checkout.errors[:state].to_sentence %></small>
+            <% end %>
+          </label>
+        </fieldset>
+
+        <label class="check">
+          <%= form.check_box :billing_same, data: { checkout_target: "same", action: "checkout#sync" } %>
+          <span>Billing address is the same</span>
+        </label>
+
+        <fieldset class="form-stack" data-checkout-target="billing">
+          <legend class="eyebrow">Billing address</legend>
+          <%= render "storefront/checkout/field", form: form, attribute: :billing_line1, label: "Address line 1", autocomplete: "billing address-line1", required: false %>
+          <%= render "storefront/checkout/field", form: form, attribute: :billing_line2, label: "Address line 2", autocomplete: "billing address-line2", required: false %>
+          <div class="checkout__pair">
+            <%= render "storefront/checkout/field", form: form, attribute: :billing_city, label: "City", autocomplete: "billing address-level2", required: false %>
+            <%= render "storefront/checkout/field", form: form, attribute: :billing_pin_code, label: "PIN code", autocomplete: "billing postal-code", inputmode: "numeric", required: false %>
+          </div>
+          <label class="field">
+            <span>State</span>
+            <%= form.select :billing_state, Checkout::STATES, { include_blank: "Select a state" }, autocomplete: "billing address-level1", aria: { invalid: @checkout.errors[:billing_state].any? } %>
+            <% if @checkout.errors[:billing_state].any? %>
+              <small class="field__error"><%= @checkout.errors[:billing_state].to_sentence %></small>
+            <% end %>
+          </label>
+        </fieldset>
+
+        <%= form.button class: "btn btn--solid" do %>
+          <span>Continue to payment</span>
+        <% end %>
+      <% end %>
+
+      <aside class="bag__total checkout__summary">
+        <p class="eyebrow">Your box</p>
+        <ul class="checkout__lines">
+          <li>
+            <span><%= @box[:pieces].sub("pieces", "products").capitalize %></span>
+            <span><%= price(@box[:price]) %></span>
+          </li>
+        </ul>
+        <div class="bag__due">
+          <p>To pay</p>
+          <p><%= price(@box[:price]) %></p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

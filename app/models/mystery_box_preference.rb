@@ -4,14 +4,25 @@ class MysteryBoxPreference < ApplicationRecord
 
   belongs_to :order
 
+  BOXES = [
+    { key: "799", price: 799, min: 5, max: 6, pieces: "5 to 6 pieces" },
+    { key: "899", price: 899, min: 7, max: 8, pieces: "7 to 8 pieces" },
+    { key: "1199", price: 1199, min: 12, max: 13, pieces: "12 to 13 pieces" }
+  ].freeze
+
   CATEGORY_CHOICES = [
     "earrings",
+    "chain pendant",
     "necklaces",
     "bracelets",
     "rings",
     "sets",
     "surprise"
   ].freeze
+
+  def self.box_for(key)
+    BOXES.find { |box| box[:key] == key.to_s }
+  end
 
   FINISH_CHOICES = [
     "gold",
@@ -69,6 +80,7 @@ class MysteryBoxPreference < ApplicationRecord
 
   def summary_lines
     {
+      "Box" => "₹#{box_price.to_i} · #{piece_count_min} to #{piece_count_max} pieces",
       "Recipient" => recipient_type&.humanize,
       "Personality" => jewellery_personality&.humanize,
       "Preferred pieces" => preferred_categories.map(&:humanize).join(", ").presence,

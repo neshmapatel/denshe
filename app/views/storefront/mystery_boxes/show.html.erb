@@ -1,12 +1,12 @@
 <% page_title "Mystery box" %>
-<% meta description: "Tell DeNshe who a box is for. We choose three to five pieces, from #{price(@price)}, and reply with how to pay." %>
+<% meta description: "Choose a DeNshe mystery box, from #{price(799)}. Tell us who it is for, then add your details and pay." %>
 
 <header class="page-intro page-intro--ink">
   <div class="page page--narrow">
     <%= image_tag "denshe-mark-ivory.png", alt: "", class: "page-intro__mark", width: 87, height: 80 %>
-    <p class="eyebrow">From <%= price(@price) %></p>
+    <p class="eyebrow">From <%= price(799) %></p>
     <h1>A box, chosen for someone.</h1>
-    <p class="lede">Three to five pieces. You tell us who they are. We choose the way we would for a friend. You see the pieces when the box is opened.</p>
+    <p class="lede">You choose how many pieces. You tell us who they are. We choose the way we would for a friend. You see the pieces when the box is opened.</p>
   </div>
 </header>
 
@@ -23,7 +23,7 @@
       </li>
       <li>
         <h3>You decide</h3>
-        <p>We reply with what we have in mind, and how to pay. Nothing on this page charges you.</p>
+        <p>Add your name and where to send the box, then pay. We pack from the collection around your answers.</p>
       </li>
     </ol>
   </div>
@@ -39,17 +39,26 @@
     </div>
 
     <div class="fitting"
-         data-controller="fitting"
-         data-fitting-whatsapp-value="<%= brand.whatsapp %>"
-         data-fitting-email-value="<%= brand.email %>"
-         data-fitting-price-value="<%= price(@price) %>">
+         data-controller="fitting">
       <div class="fitting__progress">
-        <p class="eyebrow" data-fitting-target="progress" aria-live="polite">01 / 06 · Who it’s for</p>
+        <p class="eyebrow" data-fitting-target="progress" aria-live="polite">01 / 07 · Which box</p>
       </div>
       <div class="fitting__bar" aria-hidden="true"><span data-fitting-target="bar"></span></div>
       <p class="fitting__error" data-fitting-target="error" role="alert" hidden>Choose one to continue.</p>
 
-      <div data-fitting-target="step" data-group="recipient" data-label="Who it’s for" data-required="true">
+      <div data-fitting-target="step" data-group="box" data-label="Which box" data-required="true">
+        <h2>Which box?</h2>
+        <div class="choice-grid">
+          <% MysteryBoxPreference::BOXES.each do |box| %>
+            <button type="button" class="choice" data-action="fitting#pick" data-fitting-group-param="box" data-fitting-value-param="<%= box[:key] %>" data-fitting-label-param="a <%= box[:pieces] %> box">
+              <span class="choice__title"><%= price(box[:price]) %></span>
+              <span class="choice__hint"><%= box[:pieces].sub("pieces", "products") %></span>
+            </button>
+          <% end %>
+        </div>
+      </div>
+
+      <div data-fitting-target="step" data-group="recipient" data-label="Who it’s for" data-required="true" hidden>
         <h2>Who is this box for?</h2>
         <div class="choice-grid">
           <button type="button" class="choice" data-action="fitting#pick" data-fitting-group-param="recipient" data-fitting-value-param="myself" data-fitting-label-param="A box for me">
@@ -95,7 +104,7 @@
         <div class="choice-grid">
           <% [
             [ "earrings", "Earrings" ],
-            [ "necklaces", "Necklaces" ],
+            [ "chain pendant", "Chain Pendant" ],
             [ "bracelets", "Bracelets" ],
             [ "rings", "Rings" ],
             [ "sets", "Sets" ],
@@ -155,7 +164,7 @@
       <div data-fitting-target="review" hidden>
         <p class="eyebrow">Here is what we heard</p>
         <p class="fitting__letter" data-fitting-target="letter"></p>
-        <p class="lede">Send it, and we will reply with the pieces we have in mind. From <%= price(@price) %>. Nothing is charged here.</p>
+        <p class="lede">We have recorded your response. Continue to add your name, shipping details, and payment.</p>
       </div>
 
       <div class="fitting__nav">
@@ -165,9 +174,10 @@
         <button type="button" class="btn btn--small btn--solid" data-action="fitting#next" data-fitting-target="next">
           <span>Continue</span>
         </button>
-        <% send_label = brand.whatsapp.present? ? "Send on WhatsApp" : "Send by email" %>
-        <%= link_to "#", class: "btn btn--solid", data: { fitting_target: "send", action: "fitting#send" }, hidden: true do %>
-          <span><%= send_label %></span>
+        <%= form_with url: mystery_box_path, data: { fitting_target: "form" } do %>
+          <button type="submit" class="btn btn--solid" data-fitting-target="send" data-action="fitting#send" hidden>
+            <span>Continue to your details</span>
+          </button>
         <% end %>
       </div>
     </div>

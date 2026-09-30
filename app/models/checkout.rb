@@ -84,6 +84,48 @@ class Checkout
     end
   end
 
+  def place_mystery_box!(box, answers)
+    return if invalid?
+
+    Order.transaction do
+      shipping = Address.create!(shipping_attributes)
+      billing = billing_same ? shipping : Address.create!(billing_attributes)
+      order = Order.create!(
+        order_type: :mystery_box,
+        guest_name: name.to_s.strip,
+        guest_phone: phone,
+        guest_email: email.presence,
+        shipping_address: shipping,
+        billing_address: billing,
+        subtotal: box[:price],
+        shipping_amount: 0,
+        discount: 0,
+        total: box[:price],
+        status: :pending,
+        payment_status: :unpaid,
+        customer_notes: answers["note"].presence
+      )
+      order.order_items.create!(
+        name: "Mystery box, #{box[:pieces]}",
+        quantity: 1,
+        unit_price: box[:price],
+        item_type: :mystery_box
+      )
+      order.create_mystery_box_preference!(
+        recipient_type: answers["recipient"],
+        jewellery_personality: answers["personality"],
+        preferred_categories: answers["pieces"],
+        preferred_finishes: answers["finish"],
+        occasion: answers["occasion"],
+        personal_message: answers["note"].presence,
+        box_price: box[:price],
+        piece_count_min: box[:min],
+        piece_count_max: box[:max]
+      )
+      order
+    end
+  end
+
   private
 
   def shipping_attributes

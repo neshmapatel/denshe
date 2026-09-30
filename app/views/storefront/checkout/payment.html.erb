@@ -9,7 +9,7 @@
       <div class="section-head__text">
         <p class="eyebrow">Order <%= @order.number %></p>
         <h1>Payment.</h1>
-        <p class="lede">Your details are saved. Online payment is not open yet, so nothing has been charged.</p>
+        <p class="lede">Your details are saved. Nothing has been charged yet.</p>
       </div>
     </header>
 
@@ -43,7 +43,26 @@
         </div>
       </div>
 
-      <p class="checkout__note">Card and UPI payment will open on this step. This order stays unpaid until then.</p>
+      <% if RazorpayGateway.configured? %>
+        <% latest = @order.payments.order(created_at: :desc).first %>
+        <div data-controller="payment"
+             data-payment-key-value="<%= RazorpayGateway.key_id %>"
+             data-payment-create-url-value="<%= checkout_razorpay_order_path %>"
+             data-payment-verify-url-value="<%= checkout_payment_verify_path %>"
+             data-payment-failure-url-value="<%= checkout_payment_failure_path %>">
+          <% saved_error = latest&.error_message if latest&.failed? || latest&.cancelled? %>
+          <p class="field__error" data-payment-target="error" <%= "hidden" if saved_error.blank? %>><%= saved_error %></p>
+          <button type="button" class="btn btn--solid btn--block" data-action="payment#pay">
+            <span>Pay <%= price(@order.total) %></span>
+          </button>
+          <% if RazorpayGateway.key_id.start_with?("rzp_test_") %>
+            <p class="checkout__note">Test mode. UPI success@razorpay, or a domestic test card. International cards are declined.</p>
+          <% end %>
+        </div>
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+      <% else %>
+        <p class="checkout__note">Online payment is not configured yet, so this order stays unpaid.</p>
+      <% end %>
 
       <%= link_to shop_path, class: "btn" do %>
         <span>Back to the collection</span>

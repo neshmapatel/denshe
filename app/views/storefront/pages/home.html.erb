@@ -53,27 +53,7 @@
   </li>
 </ol>
 
-<% loved = @featured.presence || @new_arrivals %>
-<% if loved.any? %>
-  <section class="section" data-reveal>
-    <div class="page">
-      <div class="section-head">
-        <div class="section-head__text">
-          <h2>Pieces we’re loving right now.</h2>
-          <p class="lede">A considered collection of jewellery for everyday moments and everything in between.</p>
-        </div>
-        <%= link_to "View collection", shop_path, class: "link-quiet" %>
-      </div>
-      <div class="product-grid">
-        <% loved.each do |product| %>
-          <%= render "storefront/shared/piece", product: product %>
-        <% end %>
-      </div>
-    </div>
-  </section>
-<% end %>
-
-<section class="section <%= "section--sand" if loved.any? %>" data-reveal>
+<section class="section" data-reveal>
   <div class="page">
     <div class="split__body between">
       <h2>Between us.</h2>

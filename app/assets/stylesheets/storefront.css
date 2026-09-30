@@ -1524,6 +1524,23 @@
   }
 }
 
+.detail__media {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.clips {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.clips__player {
+  width: 100%;
+  max-height: 36rem;
+  background: var(--sand);
+}
+
 .gallery {
   display: grid;
   gap: 0.75rem;
@@ -2625,6 +2642,10 @@ html.js [data-reveal][data-revealed="true"] {
   flex-wrap: wrap;
   gap: 0.75rem;
   align-items: center;
+}
+
+.fitting__nav form {
+  display: inline;
 }
 
 .fitting__error {

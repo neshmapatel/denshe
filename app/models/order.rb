@@ -6,6 +6,7 @@ class Order < ApplicationRecord
   belongs_to :shipping_address, class_name: "Address", optional: true
   belongs_to :billing_address, class_name: "Address", optional: true
   has_many :order_items, dependent: :destroy
+  has_many :payments, dependent: :destroy
   has_many :inventory_movements, dependent: :nullify
   has_one :mystery_box_preference, dependent: :destroy
 

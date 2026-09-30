@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_28_080000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_28_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -222,6 +222,37 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_28_080000) do
     t.index ["status"], name: "index_orders_on_status"
   end
 
+  create_table "payment_gateways", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_payment_gateways_on_code", unique: true
+  end
+
+  create_table "payments", force: :cascade do |t|
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "INR", null: false
+    t.string "error_code"
+    t.text "error_message"
+    t.string "error_reason"
+    t.string "error_source"
+    t.string "error_step"
+    t.string "gateway_order_id"
+    t.string "gateway_payment_id"
+    t.bigint "order_id", null: false
+    t.bigint "payment_gateway_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["gateway_order_id"], name: "index_payments_on_gateway_order_id"
+    t.index ["gateway_payment_id"], name: "index_payments_on_gateway_payment_id"
+    t.index ["order_id"], name: "index_payments_on_order_id"
+    t.index ["payment_gateway_id"], name: "index_payments_on_payment_gateway_id"
+    t.index ["status"], name: "index_payments_on_status"
+  end
+
   create_table "products", force: :cascade do |t|
     t.boolean "bestseller", default: false, null: false
     t.text "care_instructions"
@@ -313,6 +344,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_28_080000) do
   add_foreign_key "orders", "addresses", column: "billing_address_id"
   add_foreign_key "orders", "addresses", column: "shipping_address_id"
   add_foreign_key "orders", "customers"
+  add_foreign_key "payments", "orders"
+  add_foreign_key "payments", "payment_gateways"
   add_foreign_key "products", "categories"
   add_foreign_key "products", "purchases"
   add_foreign_key "products", "suppliers"
