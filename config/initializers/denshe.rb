@@ -7,7 +7,7 @@ Rails.application.config.x.brand = ActiveSupport::OrderedOptions.new.merge(
   email: ENV.fetch("DENSHE_CONTACT_EMAIL", "hello@denshe.in"),
   # Digits only, including the country code, e.g. 919876543210.
   whatsapp: ENV["DENSHE_WHATSAPP_NUMBER"].presence,
-  instagram: ENV.fetch("DENSHE_INSTAGRAM_HANDLE", "denshe.jewellery"),
+  instagram: ENV.fetch("DENSHE_INSTAGRAM_HANDLE", "denshe__"),
   city: "Mumbai, India",
   ships_from: "Dispatched from Mumbai",
   free_shipping_above: 999,

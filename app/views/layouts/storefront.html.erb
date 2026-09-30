@@ -33,7 +33,7 @@
         data-jewellery-box-mark-value="<%= image_path("denshe-mark-navy.png") %>">
     <a class="skip-link" href="#main">Skip to content</a>
 
-    <%= render "storefront/shared/announcement" unless controller_name == "pages" && action_name == "mystery_box" %>
+    <%= render "storefront/shared/announcement" unless controller_name == "mystery_boxes" && action_name == "show" %>
     <%= render "storefront/shared/masthead" %>
 
     <% if flash.any? %>

@@ -22,9 +22,16 @@ Rails.application.routes.draw do
     get "checkout", to: "checkout#new", as: :checkout
     post "checkout", to: "checkout#create"
     get "checkout/payment", to: "checkout#payment", as: :checkout_payment
+    get "checkout/success", to: "checkout#success", as: :checkout_success
+    post "checkout/razorpay-order", to: "checkout#create_payment", as: :checkout_razorpay_order
+    post "checkout/verify-payment", to: "checkout#verify_payment", as: :checkout_payment_verify
+    post "checkout/payment-failed", to: "checkout#record_payment_failure", as: :checkout_payment_failure
 
     get "jewellery-box", to: "pages#jewellery_box", as: :jewellery_box
-    get "mystery-box", to: "pages#mystery_box", as: :mystery_box
+    get "mystery-box", to: "mystery_boxes#show", as: :mystery_box
+    post "mystery-box", to: "mystery_boxes#create"
+    get "mystery-box/details", to: "mystery_boxes#details", as: :mystery_box_details
+    post "mystery-box/details", to: "mystery_boxes#place"
     get "our-story", to: "pages#story", as: :story
     get "care-guide", to: "pages#care", as: :care
     get "contact", to: "pages#contact", as: :contact

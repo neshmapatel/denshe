@@ -23,6 +23,7 @@
 
     <article class="detail">
       <% looping = images.size > 1 %>
+      <div class="detail__media">
       <div class="gallery"
            data-controller="gallery"
            data-gallery-count-value="<%= images.size %>"
@@ -76,6 +77,19 @@
             <% end %>
           </div>
         <% end %>
+      </div>
+
+      <% if @product.clips.attached? %>
+        <div class="clips">
+          <% @product.clips.each do |clip| %>
+            <%= video_tag rails_blob_path(clip),
+                  controls: true,
+                  playsinline: true,
+                  preload: "metadata",
+                  class: "clips__player" %>
+          <% end %>
+        </div>
+      <% end %>
       </div>
 
       <div class="detail__info">

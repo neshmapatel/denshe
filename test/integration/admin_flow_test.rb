@@ -192,4 +192,42 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match %r{/rails/active_storage/blobs/proxy/}, response.body
   end
+
+  test "admin can upload a short clip and remove it" do
+    post admin_user_session_path, params: {
+      admin_user: { email: @admin.email, password: "denshe-admin-123" }
+    }
+    product = Product.create!(category: @category, name: "Aurelia Hoops", selling_price: 699, stock_quantity: 1, status: :active)
+    clip = Tempfile.new([ "turn", ".mp4" ])
+    clip.binmode
+    clip.write("clip-bytes")
+    clip.rewind
+    upload = Rack::Test::UploadedFile.new(clip.path, "video/mp4", true, original_filename: "turn.mp4")
+
+    patch admin_product_path(product), params: { product: { clips: [ upload ] } }
+    follow_redirect!
+    assert_response :success
+    assert product.reload.clips.attached?
+    assert_match "turn.mp4", response.body
+
+    get edit_admin_product_path(product)
+    assert_select "input[type=file][name='product[clips][]']"
+    assert_select "input[name='product[remove_clip_ids][]']"
+
+    notes = Tempfile.new([ "notes", ".txt" ])
+    notes.write("nope")
+    notes.rewind
+    bad = Rack::Test::UploadedFile.new(notes.path, "text/plain", false, original_filename: "notes.txt")
+    patch admin_product_path(product), params: { product: { clips: [ bad ] } }
+    follow_redirect!
+    assert_match "MP4, MOV, or WebM", flash[:alert]
+    assert_equal 1, product.reload.clips.count
+
+    delete remove_clip_admin_product_path(product, clip_id: product.clips.first.id)
+    follow_redirect!
+    assert_not product.reload.clips.attached?
+  ensure
+    clip&.close!
+    notes&.close!
+  end
 end

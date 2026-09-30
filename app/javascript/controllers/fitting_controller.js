@@ -1,9 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
-// A short consultation. Nothing is stored; the last step opens WhatsApp or email.
+// A short consultation. The last step saves the answers, then asks for delivery details.
 export default class extends Controller {
-  static targets = [ "step", "progress", "bar", "error", "back", "next", "review", "letter", "send", "note" ]
-  static values = { whatsapp: String, email: String, price: String }
+  static targets = [ "step", "progress", "bar", "error", "back", "next", "review", "letter", "send", "note", "form" ]
 
   connect() {
     this.index = 0
@@ -16,7 +15,9 @@ export default class extends Controller {
   }
 
   pick(event) {
-    const { group, value, label } = event.params
+    const group = event.params.group
+    const value = String(event.params.value)
+    const label = event.params.label
     const step = event.currentTarget.closest("[data-fitting-target='step']")
     const current = this.state[group] || []
 
@@ -56,9 +57,28 @@ export default class extends Controller {
   }
 
   send(event) {
-    if (!this.sendTarget.getAttribute("href") || this.sendTarget.getAttribute("href") === "#") {
-      event.preventDefault()
-    }
+    event.preventDefault()
+    if (!this.hasFormTarget) return
+
+    this.formTarget.querySelectorAll("[data-fitting-field]").forEach((node) => node.remove())
+    const one = (group) => (this.state[group] || [])[0]?.value || ""
+    this.addField("mystery_box[box]", one("box"))
+    this.addField("mystery_box[recipient]", one("recipient"))
+    this.addField("mystery_box[personality]", one("personality"))
+    this.addField("mystery_box[occasion]", one("occasion"))
+    this.addField("mystery_box[note]", this.hasNoteTarget ? this.noteTarget.value.trim() : "");
+    (this.state.pieces || []).forEach((item) => this.addField("mystery_box[pieces][]", item.value));
+    (this.state.finish || []).forEach((item) => this.addField("mystery_box[finish][]", item.value))
+    this.formTarget.requestSubmit()
+  }
+
+  addField(name, value) {
+    const input = document.createElement("input")
+    input.type = "hidden"
+    input.name = name
+    input.value = value
+    input.dataset.fittingField = "true"
+    this.formTarget.appendChild(input)
   }
 
   show() {
@@ -104,7 +124,7 @@ export default class extends Controller {
     const labels = (group) => (this.state[group] || []).map((item) => item.label)
     const list = this.sentenceList(labels("pieces"))
     const finish = this.sentenceList(labels("finish"))
-    const bits = [ labels("recipient")[0], labels("personality")[0] ]
+    const bits = [ labels("box")[0], labels("recipient")[0], labels("personality")[0] ]
     if (list) bits.push(`leaning toward ${list}`)
     if (finish) bits.push(`in ${finish}`)
     bits.push(labels("occasion")[0])
@@ -115,24 +135,6 @@ export default class extends Controller {
     if (note) letter = `${letter} ${note}`
 
     this.letterTarget.textContent = letter
-
-    const message = [
-      `Hello DeNshe, I would like a mystery box (from ${this.priceValue}).`,
-      "",
-      letter,
-      "",
-      "Please tell me what you would choose, and how to pay."
-    ].join("\n")
-
-    const href = this.whatsappValue
-      ? `https://wa.me/${this.whatsappValue}?text=${encodeURIComponent(message)}`
-      : `mailto:${this.emailValue}?subject=${encodeURIComponent("A mystery box")}&body=${encodeURIComponent(message)}`
-
-    this.sendTarget.href = href
-    if (href.startsWith("http")) {
-      this.sendTarget.target = "_blank"
-      this.sendTarget.rel = "noopener"
-    }
   }
 
   sentenceList(items) {

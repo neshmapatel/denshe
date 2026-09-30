@@ -11,6 +11,12 @@ class Product < ApplicationRecord
   has_many :inventory_movements, dependent: :destroy
   has_many :order_items, dependent: :restrict_with_error
   has_many_attached :images
+  has_many_attached :clips
+
+  CLIP_CONTENT_TYPES = %w[video/mp4 video/quicktime video/webm].freeze
+  CLIP_EXTENSIONS = %w[.mp4 .mov .webm].freeze
+  MAX_CLIPS = 3
+  MAX_CLIP_BYTES = 25.megabytes
 
   enum :status, { draft: 0, active: 1, archived: 2 }
 
@@ -116,6 +122,50 @@ class Product < ApplicationRecord
     attachment.present? && primary_image&.id == attachment.id
   end
 
+  def attach_clips!(uploads)
+    files = Array(uploads).compact_blank
+    return [] if files.empty?
+
+    problems = []
+    room = [ MAX_CLIPS - clips.attachments.size, 0 ].max
+    accepted = []
+
+    files.each do |file|
+      unless self.class.acceptable_clip?(file)
+        problems << "#{clip_label(file)} must be an MP4, MOV, or WebM clip under 25 MB."
+        next
+      end
+
+      if accepted.size >= room
+        problems << "A piece can have up to three clips."
+        break
+      end
+
+      accepted << file
+    end
+
+    clips.attach(accepted.map { |file| clip_attachment(file) }) if accepted.any?
+    problems.uniq
+  end
+
+  def self.acceptable_clip?(file)
+    size = file.size.to_i
+    return false unless size.positive? && size <= MAX_CLIP_BYTES
+
+    type = file.content_type.to_s.split(";").first
+    return true if CLIP_CONTENT_TYPES.include?(type)
+
+    name = file.try(:original_filename).to_s.downcase
+    type.in?([ "", "application/octet-stream" ]) && CLIP_EXTENSIONS.any? { |extension| name.end_with?(extension) }
+  end
+
+  def remove_clips!(ids)
+    Array(ids).compact_blank.each do |id|
+      clips.find_by(id: id)&.purge
+    end
+    clips.reset
+  end
+
   def remove_images!(ids)
     Array(ids).compact_blank.each do |id|
       images.find_by(id: id)&.purge
@@ -173,6 +223,32 @@ class Product < ApplicationRecord
   end
 
   private
+
+  def clip_label(file)
+    file.try(:original_filename).presence || "That clip"
+  end
+
+  def clip_attachment(file)
+    io = file.respond_to?(:tempfile) ? file.tempfile : file
+    io.rewind if io.respond_to?(:rewind)
+
+    {
+      io: io,
+      filename: clip_label(file),
+      content_type: clip_content_type(file)
+    }
+  end
+
+  def clip_content_type(file)
+    type = file.content_type.to_s.split(";").first
+    return type if CLIP_CONTENT_TYPES.include?(type)
+
+    case File.extname(clip_label(file)).downcase
+    when ".mov" then "video/quicktime"
+    when ".webm" then "video/webm"
+    else "video/mp4"
+    end
+  end
 
   def sync_opening_purchase_quantity
     return if quantity_purchased.to_i.positive? || stock_quantity.to_i <= 0

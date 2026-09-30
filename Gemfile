@@ -1,5 +1,7 @@
 source "https://rubygems.org"
 
+gem "dotenv-rails", groups: [ :development, :test ]
+
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.1.3", ">= 8.1.3.1"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
@@ -52,6 +54,9 @@ gem "image_processing", "~> 1.2"
 
 # S3-compatible client for Cloudflare R2 / Amazon S3 in production
 gem "aws-sdk-s3", require: false
+
+# Razorpay Standard Checkout. The key secret stays on the server.
+gem "razorpay"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

@@ -139,4 +139,32 @@ class ProductTest < ActiveSupport::TestCase
     assert_equal front.id, product.reload.primary_image.id
     assert_equal front.filename.to_s, "front.png"
   end
+
+  test "keeps short video clips and refuses everything else" do
+    product = Product.create!(category: @category, name: "Aurelia Hoops", selling_price: 699, stock_quantity: 1)
+    clip = uploaded_clip("turn.mp4", "video/mp4")
+    notes = uploaded_clip("notes.txt", "text/plain")
+    huge = Struct.new(:size, :content_type, :original_filename).new(26.megabytes, "video/mp4", "long.mp4")
+
+    assert_equal [], product.attach_clips!([ clip ])
+    assert_equal [ "notes.txt must be an MP4, MOV, or WebM clip under 25 MB." ], product.attach_clips!([ notes ])
+    assert_not Product.acceptable_clip?(huge)
+    assert product.reload.clips.attached?
+    assert_equal "video/mp4", product.clips.first.content_type
+
+    3.times { |index| product.attach_clips!([ uploaded_clip("extra-#{index}.mp4", "video/mp4") ]) }
+    assert_equal 3, product.clips.count
+    assert_equal [ "A piece can have up to three clips." ], product.attach_clips!([ uploaded_clip("fourth.mp4", "video/mp4") ])
+  ensure
+    @clip_files&.each(&:close!)
+  end
+
+  def uploaded_clip(name, type)
+    file = Tempfile.new([ "clip", File.extname(name) ])
+    file.binmode
+    file.write("clip-bytes")
+    file.rewind
+    @clip_files = Array(@clip_files) << file
+    Rack::Test::UploadedFile.new(file.path, type, true, original_filename: name)
+  end
 end

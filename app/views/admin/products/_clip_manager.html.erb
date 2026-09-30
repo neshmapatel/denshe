@@ -1,0 +1,15 @@
+<div class="product-clip-manager">
+  <p>Mark a clip to remove it when you save. New files are added to the ones already here.</p>
+  <ul style="list-style:none;padding:0;display:grid;gap:1rem;">
+    <% product.clips.each do |clip| %>
+      <li>
+        <%= video_tag rails_blob_path(clip), controls: true, playsinline: true, preload: "metadata", style: "width:280px;max-width:100%;" %>
+        <p style="margin:0.4rem 0;"><%= clip.filename %></p>
+        <label style="display:block;">
+          <%= check_box_tag "product[remove_clip_ids][]", clip.id, false, id: "remove_clip_#{clip.id}" %>
+          Remove this clip
+        </label>
+      </li>
+    <% end %>
+  </ul>
+</div>

@@ -10,7 +10,7 @@ module Storefront
     def show
       # Sold pieces stay reachable so shared links and search results never 404;
       # the page itself makes the sold-out state obvious.
-      @product = Product.active.with_storefront_includes.find_by!(slug: params[:slug])
+      @product = Product.active.with_storefront_includes.includes(clips_attachments: :blob).find_by!(slug: params[:slug])
       @related = related_pieces
     end
 

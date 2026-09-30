@@ -10,7 +10,7 @@ ActiveAdmin.register Product do
                 :low_stock_threshold, :material, :colour, :dimensions, :weight,
                 :care_instructions, :whats_included, :status, :featured, :new_arrival,
                 :bestseller, :meta_title, :meta_description, :primary_image_id,
-                images: [], remove_image_ids: []
+                images: [], remove_image_ids: [], clips: [], remove_clip_ids: []
 
   scope :all, default: true
   scope :earrings
@@ -138,6 +138,25 @@ ActiveAdmin.register Product do
       end
     end
 
+    panel "Clips" do
+      if resource.clips.attached?
+        resource.clips.each do |clip|
+          div do
+            text_node video_tag(rails_blob_path(clip), controls: true, playsinline: true, preload: "metadata", style: "width:280px;max-width:100%;")
+          end
+          para clip.filename.to_s
+          div do
+            button_to "Remove", remove_clip_admin_product_path(resource, clip_id: clip.id),
+                      method: :delete,
+                      data: { turbo_confirm: "Remove this clip from #{resource.name}?" }
+          end
+        end
+        para "Short clips play beside the photographs on the piece page."
+      else
+        para "No clips uploaded yet."
+      end
+    end
+
     panel "Stock history" do
       table_for resource.inventory_movements.newest_first.limit(20) do
         column(:when, &:created_at)
@@ -201,6 +220,16 @@ ActiveAdmin.register Product do
                        hint: "JPEG, PNG, or WebP. New uploads are added to the existing designs. Mark one as primary for the storefront."
     end
 
+    f.inputs "Clips" do
+      product = f.object
+      if product.persisted? && product.clips.attached? && !product.instance_variable_get(:@_admin_clips_rendered)
+        product.instance_variable_set(:@_admin_clips_rendered, true)
+        text_node helpers.render("admin/products/clip_manager", product: product)
+      end
+      f.input :clips, as: :file, input_html: { multiple: true, accept: "video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" },
+                      hint: "Short clips only. MP4, MOV, or WebM, up to 25 MB each. A piece can keep three."
+    end
+
     f.inputs "SEO" do
       f.input :meta_title
       f.input :meta_description
@@ -212,6 +241,7 @@ ActiveAdmin.register Product do
   controller do
     def create
       extract_uploaded_images
+      extract_uploaded_clips
       super do |success, _failure|
         success.html { redirect_after_images(:created) }
       end
@@ -223,6 +253,7 @@ ActiveAdmin.register Product do
     def update
       extract_image_management
       extract_uploaded_images
+      extract_uploaded_clips
       super do |success, _failure|
         success.html { redirect_after_images(:updated) }
       end
@@ -238,6 +269,11 @@ ActiveAdmin.register Product do
       params[:product].delete(:images) if params[:product]
     end
 
+    def extract_uploaded_clips
+      @uploaded_clips = Array(params.dig(:product, :clips)).compact_blank
+      params[:product].delete(:clips) if params[:product]
+    end
+
     def extract_image_management
       @remove_image_ids = Array(params.dig(:product, :remove_image_ids)).compact_blank
       @primary_image_id = params.dig(:product, :primary_image_id)
@@ -245,6 +281,7 @@ ActiveAdmin.register Product do
 
       params[:product].delete(:remove_image_ids)
       params[:product].delete(:primary_image_id)
+      @remove_clip_ids = Array(params[:product].delete(:remove_clip_ids)).compact_blank
     end
 
     def attach_images
@@ -266,12 +303,28 @@ ActiveAdmin.register Product do
 
     def redirect_after_images(action)
       notice = "Product was successfully #{action}."
-      if attach_images && apply_pending_image_changes
+      images_stored = attach_images
+      changes_stored = apply_pending_image_changes
+      problems = []
+      problems << "The photo could not be stored. Please upload it again from this page." unless images_stored && changes_stored
+      problems.concat(attach_clips)
+
+      if problems.empty?
         redirect_to resource_path(resource), notice: notice
       else
-        redirect_to edit_admin_product_path(resource),
-                    alert: "#{notice} The photo could not be stored. Please upload it again from this page."
+        redirect_to edit_admin_product_path(resource), alert: "#{notice} #{problems.to_sentence}."
       end
+    end
+
+    def attach_clips
+      return [] if resource.errors.any? || @uploaded_clips.blank? || !resource.persisted?
+
+      resource.attach_clips!(@uploaded_clips)
+    rescue StandardError => error
+      raise unless storage_error?(error)
+
+      Rails.logger.error("Product clip upload failed: #{error.class}: #{error.message}")
+      [ "The clip could not be stored. Please upload it again from this page." ]
     end
 
     def apply_pending_image_changes
@@ -294,6 +347,7 @@ ActiveAdmin.register Product do
       return if resource.errors.any?
 
       resource.remove_images!(@remove_image_ids)
+      resource.remove_clips!(@remove_clip_ids)
       resource.set_primary_image!(@primary_image_id)
       resource.ensure_primary_image!
     end
@@ -303,6 +357,11 @@ ActiveAdmin.register Product do
     resource.remove_images!([ params[:image_id] ])
     resource.ensure_primary_image!
     redirect_to admin_product_path(resource), notice: "Design removed."
+  end
+
+  member_action :remove_clip, method: :delete do
+    resource.remove_clips!([ params[:clip_id] ])
+    redirect_to admin_product_path(resource), notice: "Clip removed."
   end
 
   member_action :set_primary_image, method: :patch do

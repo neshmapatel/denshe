@@ -24,7 +24,8 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_select "h1", /chosen to feel like you/i
     assert_match "See something you love?", response.body
     assert_select "img[alt='DeNshe Jewellery']"
-    assert_select "a", text: /Aurelia Hoops/
+    assert_no_match "Pieces we’re loving right now", response.body
+    assert_no_match "View collection", response.body
   end
 
   test "shop, collection, and piece pages render" do
@@ -52,6 +53,10 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_select "button.lightbox__cancel", text: "Cancel"
     assert_select ".piece-note__kicker", "A little more personal."
     assert_select ".piece-note", /single piece/
+
+    @product.clips.attach(io: StringIO.new("clip-bytes"), filename: "turn.mp4", content_type: "video/mp4")
+    get piece_path(@product.slug)
+    assert_select "video.clips__player", 1
   end
 
   test "story, care, contact, mystery box, and jewellery box render" do
@@ -75,12 +80,58 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_select "h1", /box/i
     assert_no_match "See something you love?", response.body
     assert_select "[data-controller='fitting']"
-    assert_select "[data-fitting-value-param='rose_gold']", text: /Rose gold/
-    assert_select "[data-metal='rose']"
+    assert_select "[data-fitting-value-param='799']", text: /799/
+    assert_select "[data-fitting-value-param='899']", text: /899/
+    assert_select "[data-fitting-value-param='1199']", text: /1,199/
+    assert_no_match "Send by email", response.body
 
     get jewellery_box_path
     assert_response :success
     assert_select "h1", /jewellery box/i
+  end
+
+  test "a mystery box continues to name, shipping, and payment" do
+    get mystery_box_details_path
+    assert_redirected_to mystery_box_path
+
+    post mystery_box_path, params: {
+      mystery_box: {
+        box: "899",
+        recipient: "myself",
+        personality: "minimal_effortless",
+        occasion: "everyday",
+        pieces: [ "earrings" ],
+        finish: [ "gold" ],
+        note: "Gold hoops."
+      }
+    }
+    assert_redirected_to mystery_box_details_path
+    follow_redirect!
+    assert_match "We have recorded your response", response.body
+
+    assert_difference -> { Order.mystery_box.count }, 1 do
+      post mystery_box_details_path, params: {
+        checkout: {
+          name: "Aisha Shah",
+          phone: "9876543210",
+          email: "aisha@example.com",
+          line1: "14 Sea Face",
+          city: "Mumbai",
+          state: "Maharashtra",
+          pin_code: "400001",
+          billing_same: "1"
+        }
+      }
+    end
+    assert_redirected_to checkout_payment_path
+    order = Order.mystery_box.order(:id).last
+    assert_equal 899, order.total
+    preference = order.mystery_box_preference
+    assert_equal 7, preference.piece_count_min
+    assert_equal 8, preference.piece_count_max
+    assert_equal "Gold hoops.", preference.personal_message
+    follow_redirect!
+    assert_match "Mystery box, 7 to 8 pieces", response.body
   end
 
   test "a selected piece can be checked out through to payment" do
@@ -180,6 +231,9 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
 
     get checkout_payment_path
     assert_redirected_to cart_path
+
+    get checkout_success_path
+    assert_redirected_to cart_path
   end
 
   test "a held storefront shows launching soon until the preview link" do
@@ -211,6 +265,113 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     Rails.application.config.x.storefront_held = previous
   end
 
+  test "razorpay payment is verified before the order is marked paid" do
+    place_order
+    order = Order.order(:id).last
+
+    get checkout_success_path
+    assert_redirected_to checkout_payment_path
+    fake = Struct.new(:id, :amount, :currency).new("order_test_1", 69900, "INR")
+    with_razorpay_orders(Class.new { define_singleton_method(:create) { |*| fake } }) do
+      post checkout_razorpay_order_path, as: :json
+    end
+    assert_response :success
+    assert_equal "order_test_1", JSON.parse(response.body).fetch("order_id")
+
+    post checkout_payment_verify_path, params: {
+      razorpay_order_id: "order_test_1",
+      razorpay_payment_id: "pay_test_1",
+      razorpay_signature: "not-the-signature"
+    }, as: :json
+    assert_response :bad_request
+    payment = order.reload.payments.sole
+    assert order.payment_failed?
+    assert payment.failed?
+    assert_equal "Payment could not be verified.", payment.error_message
+
+    post checkout_payment_verify_path, params: { razorpay_order_id: "order_test_1" }, as: :json
+    assert_response :bad_request
+    assert order.reload.payment_failed?
+
+    signature = OpenSSL::HMAC.hexdigest(
+      "SHA256",
+      ENV.fetch("RAZORPAY_KEY_SECRET"),
+      "order_test_1|pay_test_1"
+    )
+    post checkout_payment_verify_path, params: {
+      razorpay_order_id: "order_test_1",
+      razorpay_payment_id: "pay_test_1",
+      razorpay_signature: signature
+    }, as: :json
+    assert_response :success
+    assert_equal checkout_success_path, JSON.parse(response.body).fetch("redirect")
+    assert order.reload.payment_paid?
+    assert_equal "pay_test_1", order.payment_reference
+    assert_equal "razorpay", order.payment_method
+    assert order.payments.sole.paid?
+    assert_nil order.payments.sole.error_message
+
+    get checkout_payment_path
+    assert_redirected_to checkout_success_path
+    follow_redirect!
+    assert_select "h1", /Hey/
+    assert_match "Your order has been placed", response.body
+    assert_match "495894589459", response.body
+    assert_match "neshmapatel1399@gmail.com", response.body
+
+    get checkout_success_path
+    assert_response :success
+  end
+
+  test "a declined card is stored on the payment" do
+    place_order
+    fake = Struct.new(:id, :amount, :currency).new("order_test_9", 69900, "INR")
+    with_razorpay_orders(Class.new { define_singleton_method(:create) { |*| fake } }) do
+      post checkout_razorpay_order_path, as: :json
+    end
+
+    post checkout_payment_failure_path, params: {
+      status: "failed",
+      gateway_order_id: "order_test_9",
+      gateway_payment_id: "pay_declined",
+      error_code: "BAD_REQUEST_ERROR",
+      error_message: "International cards are not supported",
+      error_source: "business",
+      error_step: "payment_authentication",
+      error_reason: "international_transaction_not_allowed"
+    }, as: :json
+
+    assert_response :success
+    order = Order.order(:id).last.reload
+    payment = order.payments.sole
+    assert order.payment_failed?
+    assert payment.failed?
+    assert_equal "International cards are not supported", payment.error_message
+    assert_equal "international_transaction_not_allowed", payment.error_reason
+    assert_equal "pay_declined", payment.gateway_payment_id
+    assert_equal "Razorpay", payment.payment_gateway.name
+  end
+
+  test "razorpay order creation rejects a tiny amount and reports auth failure" do
+    place_order
+    Order.order(:id).last.update!(total: 0.5)
+
+    post checkout_razorpay_order_path, as: :json
+    assert_response :bad_request
+
+    Order.order(:id).last.update!(total: 699)
+    failing = Class.new do
+      define_singleton_method(:create) { |*| raise Razorpay::Error.new("BAD_REQUEST_ERROR", 401) }
+    end
+    with_razorpay_orders(failing) do
+      post checkout_razorpay_order_path, as: :json
+    end
+    assert_response :unauthorized
+    order = Order.order(:id).last.reload
+    assert order.payment_failed?
+    assert_equal "BAD_REQUEST_ERROR", order.payments.sole.error_code
+  end
+
   test "sold pieces stay reachable and say so" do
     @product.update!(stock_quantity: 0)
 
@@ -220,5 +381,32 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
 
     get shop_path
     assert_select "article.piece", 0
+  end
+
+  private
+
+  def with_razorpay_orders(client)
+    previous = RazorpayGateway.orders
+    RazorpayGateway.orders = client
+    yield
+  ensure
+    RazorpayGateway.orders = previous
+  end
+
+  def place_order
+    post cart_items_path, params: { slug: @product.slug }
+    post checkout_path, params: {
+      checkout: {
+        name: "Aisha Shah",
+        phone: "9876543210",
+        email: "aisha@example.com",
+        line1: "14 Sea Face",
+        city: "Mumbai",
+        state: "Maharashtra",
+        pin_code: "400001",
+        billing_same: "1"
+      }
+    }
+    follow_redirect!
   end
 end

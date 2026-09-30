@@ -1,0 +1,22 @@
+<% page_title "Order placed" %>
+<% meta description: "Your DeNshe order has been placed." %>
+
+<section class="section section--tight">
+  <div class="page page--narrow">
+    <header class="section-head">
+      <div class="section-head__text">
+        <p class="eyebrow">Order <%= @order.number %></p>
+        <h1>Hey<% if @order.guest_name.present? %>, <%= @order.guest_name.split.first %><% end %>.</h1>
+        <p class="lede">Your order has been placed. Our team will reach out to you in case of any queries.</p>
+      </div>
+    </header>
+
+    <div class="pay">
+      <p>If you have a question or a problem, call <%= link_to "495894589459", "tel:495894589459" %> or email us at <%= mail_to "neshmapatel1399@gmail.com" %>.</p>
+
+      <%= link_to shop_path, class: "btn btn--solid" do %>
+        <span>Back to the collection</span>
+      <% end %>
+    </div>
+  </div>
+</section>
