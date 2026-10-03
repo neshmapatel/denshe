@@ -14,6 +14,10 @@ module RazorpayGateway
     key_id.present? && key_secret.present?
   end
 
+  def webhook_configured?
+    webhook_secret.present?
+  end
+
   def key_id
     ENV["RAZORPAY_KEY_ID"].presence
   end
@@ -33,7 +37,21 @@ module RazorpayGateway
     ActiveSupport::SecurityUtils.secure_compare(expected, signature)
   end
 
+  # Webhooks sign the raw request body with the webhook secret.
+  def valid_webhook_signature?(body, signature)
+    return false if body.blank? || signature.blank? || webhook_secret.blank?
+
+    expected = OpenSSL::HMAC.hexdigest("SHA256", webhook_secret, body.to_s)
+    return false unless signature.bytesize == expected.bytesize
+
+    ActiveSupport::SecurityUtils.secure_compare(expected, signature)
+  end
+
   def key_secret
     ENV["RAZORPAY_KEY_SECRET"].presence
+  end
+
+  def webhook_secret
+    ENV["RAZORPAY_WEBHOOK_SECRET"].presence
   end
 end

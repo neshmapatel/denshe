@@ -48,11 +48,65 @@ class Order < ApplicationRecord
     customer&.name.presence || guest_name.presence || "Guest"
   end
 
+  # Idempotent. Marks the order paid and reduces catalogue stock once.
+  def capture_payment!(gateway_payment_id:, payment: nil)
+    transaction do
+      lock!
+      if payment_paid?
+        sync_paid_payment!(payment, gateway_payment_id)
+        return self
+      end
+
+      sync_paid_payment!(payment, gateway_payment_id)
+      update!(
+        payment_status: :payment_paid,
+        status: :paid,
+        payment_method: "razorpay",
+        payment_reference: gateway_payment_id.to_s.presence || payment_reference
+      )
+      deduct_catalogue_stock!
+    end
+
+    self
+  end
+
   private
 
   def assign_order_number
     return if number.present?
 
     update_column(:number, format("DN%04d", 1000 + id))
+  end
+
+  def sync_paid_payment!(payment, gateway_payment_id)
+    return if payment.nil?
+
+    payment.update!(
+      status: :paid,
+      gateway_payment_id: gateway_payment_id.to_s.presence || payment.gateway_payment_id,
+      error_code: nil,
+      error_message: nil,
+      error_source: nil,
+      error_step: nil,
+      error_reason: nil
+    )
+  end
+
+  def deduct_catalogue_stock!
+    order_items.includes(:product).each do |item|
+      product = item.product
+      next if product.nil? || !item.catalogue?
+      next if inventory_movements.exists?(product_id: product.id, movement_type: :customer_order)
+
+      quantity = [ item.quantity.to_i, product.stock_quantity.to_i ].min
+      next if quantity <= 0
+
+      product.adjust_stock!(
+        quantity: -quantity,
+        movement_type: :customer_order,
+        reason: "Paid order #{number}",
+        order: self
+      )
+    end
   end
 end

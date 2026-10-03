@@ -336,6 +336,14 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_equal "razorpay", order.payment_method
     assert order.payments.sole.paid?
     assert_nil order.payments.sole.error_message
+    assert_equal 0, @product.reload.stock_quantity
+    assert_equal 1, order.inventory_movements.where(movement_type: :customer_order).count
+
+    get checkout_payment_status_path, as: :json
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal true, body.fetch("paid")
+    assert_equal checkout_success_path, body.fetch("redirect")
 
     get checkout_payment_path
     assert_redirected_to checkout_success_path
@@ -347,6 +355,58 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
 
     get checkout_success_path
     assert_response :success
+  end
+
+  test "razorpay webhook marks the order paid when the browser misses the callback" do
+    place_order
+    order = Order.order(:id).last
+    fake = Struct.new(:id, :amount, :currency).new("order_hook_1", 69900, "INR")
+    with_razorpay_orders(Class.new { define_singleton_method(:create) { |*| fake } }) do
+      post checkout_razorpay_order_path, as: :json
+    end
+
+    previous_secret = ENV["RAZORPAY_WEBHOOK_SECRET"]
+    ENV["RAZORPAY_WEBHOOK_SECRET"] = "webhook_test_secret"
+    body = {
+      event: "payment.captured",
+      payload: {
+        payment: {
+          entity: {
+            id: "pay_hook_1",
+            order_id: "order_hook_1",
+            status: "captured",
+            amount: 69900
+          }
+        }
+      }
+    }.to_json
+    signature = OpenSSL::HMAC.hexdigest("SHA256", "webhook_test_secret", body)
+
+    post webhooks_razorpay_path,
+         params: body,
+         headers: {
+           "CONTENT_TYPE" => "application/json",
+           "X-Razorpay-Signature" => signature
+         }
+
+    assert_response :ok
+    assert order.reload.payment_paid?
+    assert_equal "pay_hook_1", order.payment_reference
+    assert order.payments.sole.paid?
+    assert_equal 0, @product.reload.stock_quantity
+
+    # Idempotent on a second delivery.
+    post webhooks_razorpay_path,
+         params: body,
+         headers: {
+           "CONTENT_TYPE" => "application/json",
+           "X-Razorpay-Signature" => signature
+         }
+    assert_response :ok
+    assert_equal 0, @product.reload.stock_quantity
+    assert_equal 1, order.inventory_movements.where(movement_type: :customer_order).count
+  ensure
+    ENV["RAZORPAY_WEBHOOK_SECRET"] = previous_secret
   end
 
   test "a declined card is stored on the payment" do

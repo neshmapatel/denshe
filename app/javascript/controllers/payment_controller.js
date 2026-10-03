@@ -1,9 +1,27 @@
 import { Controller } from "@hotwired/stimulus"
 
 // Opens Razorpay Standard Checkout for the order already saved on the server.
+// UPI QR paid on another phone often never fires the browser handler, so we
+// also poll the server (and rely on the Razorpay webhook) until the order is paid.
 export default class extends Controller {
   static targets = [ "error" ]
-  static values = { key: String, createUrl: String, verifyUrl: String, failureUrl: String }
+  static values = {
+    key: String,
+    createUrl: String,
+    verifyUrl: String,
+    failureUrl: String,
+    statusUrl: String
+  }
+
+  connect() {
+    this.finished = false
+    this.pollTimer = null
+    if (this.hasStatusUrlValue) this.pollStatus({ quiet: true })
+  }
+
+  disconnect() {
+    this.stopPolling()
+  }
 
   pay(event) {
     event.preventDefault()
@@ -23,6 +41,8 @@ export default class extends Controller {
   open(order) {
     if (!window.Razorpay) throw new Error("Payment could not be loaded. Refresh and try again.")
 
+    this.startPolling()
+
     const checkout = new window.Razorpay({
       key: this.keyValue,
       amount: order.amount,
@@ -31,17 +51,23 @@ export default class extends Controller {
       name: "DeNshe",
       handler: (payload) => {
         this.finished = true
+        this.stopPolling()
         this.verify(payload)
       },
       modal: {
         ondismiss: () => {
           if (this.finished) return
 
-          this.showError("Payment was cancelled. Nothing was charged.")
-          this.report({
-            status: "cancelled",
-            gateway_order_id: order.order_id,
-            error_message: "Payment was cancelled. Nothing was charged."
+          this.pollStatus().then((body) => {
+            if (body && body.paid) return
+
+            this.stopPolling()
+            this.showError("Payment was cancelled. Nothing was charged.")
+            this.report({
+              status: "cancelled",
+              gateway_order_id: order.order_id,
+              error_message: "Payment was cancelled. Nothing was charged."
+            })
           })
         }
       }
@@ -49,6 +75,7 @@ export default class extends Controller {
 
     checkout.on("payment.failed", (response) => {
       this.finished = true
+      this.stopPolling()
       const error = (response && response.error) || {}
       const metadata = error.metadata || {}
       const description = error.description || "Payment failed. Nothing was charged."
@@ -65,6 +92,41 @@ export default class extends Controller {
       })
     })
     checkout.open()
+  }
+
+  startPolling() {
+    this.stopPolling()
+    this.pollTimer = window.setInterval(() => this.pollStatus(), 2500)
+  }
+
+  stopPolling() {
+    if (this.pollTimer) {
+      window.clearInterval(this.pollTimer)
+      this.pollTimer = null
+    }
+  }
+
+  pollStatus({ quiet = false } = {}) {
+    if (!this.hasStatusUrlValue) return Promise.resolve(null)
+
+    return fetch(this.statusUrlValue, {
+      method: "GET",
+      credentials: "same-origin",
+      headers: { Accept: "application/json" }
+    })
+      .then((response) => response.json().catch(() => ({})))
+      .then((body) => {
+        if (body && body.paid) {
+          this.finished = true
+          this.stopPolling()
+          window.location = body.redirect || "/checkout/success"
+        }
+        return body
+      })
+      .catch(() => {
+        if (!quiet) return null
+        return null
+      })
   }
 
   report(details) {

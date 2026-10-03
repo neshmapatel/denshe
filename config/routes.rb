@@ -25,6 +25,7 @@ Rails.application.routes.draw do
     get "checkout/success", to: "checkout#success", as: :checkout_success
     post "checkout/razorpay-order", to: "checkout#create_payment", as: :checkout_razorpay_order
     post "checkout/verify-payment", to: "checkout#verify_payment", as: :checkout_payment_verify
+    get "checkout/payment-status", to: "checkout#payment_status", as: :checkout_payment_status
     post "checkout/payment-failed", to: "checkout#record_payment_failure", as: :checkout_payment_failure
 
     get "jewellery-box", to: "pages#jewellery_box", as: :jewellery_box
@@ -38,4 +39,8 @@ Rails.application.routes.draw do
   end
 
   get "search", to: redirect { |_params, request| "/shop?#{request.query_string}" }
+
+  namespace :webhooks do
+    post "razorpay", to: "razorpay#create"
+  end
 end
