@@ -1,7 +1,7 @@
 module Storefront
   class CheckoutController < BaseController
     before_action :require_pieces, only: [ :new, :create ]
-    before_action :load_order, only: [ :payment, :success, :create_payment, :verify_payment, :record_payment_failure ]
+    before_action :load_order, only: [ :payment, :success, :create_payment, :verify_payment, :payment_status, :record_payment_failure ]
 
     def new
       @checkout = Checkout.new
@@ -71,21 +71,21 @@ module Storefront
         return render json: { error: "Payment could not be verified." }, status: :bad_request
       end
 
-      ApplicationRecord.transaction do
-        payment&.update!(status: :paid, gateway_payment_id: payment_id, error_code: nil, error_message: nil, error_source: nil, error_step: nil, error_reason: nil)
-        @order.update!(
-          payment_status: :payment_paid,
-          status: :paid,
-          payment_method: "razorpay",
-          payment_reference: payment_id
-        )
-      end
+      @order.capture_payment!(gateway_payment_id: payment_id, payment: payment)
       render json: { ok: true, redirect: checkout_success_path }
+    end
+
+    def payment_status
+      render json: {
+        paid: @order.payment_paid?,
+        redirect: (@order.payment_paid? ? checkout_success_path : nil)
+      }
     end
 
     def record_payment_failure
       payment = attempt_for(params[:gateway_order_id].presence || session[:razorpay_order_id])
       return render json: { error: "Payment attempt was not found." }, status: :not_found if payment.nil? || payment.paid?
+      return render json: { ok: true, paid: true, redirect: checkout_success_path } if @order.payment_paid?
 
       if params[:status] == "cancelled"
         payment.update!(status: :cancelled, error_message: params[:error_message].presence || "Payment was cancelled.")

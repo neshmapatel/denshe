@@ -49,6 +49,7 @@
              data-payment-key-value="<%= RazorpayGateway.key_id %>"
              data-payment-create-url-value="<%= checkout_razorpay_order_path %>"
              data-payment-verify-url-value="<%= checkout_payment_verify_path %>"
+             data-payment-status-url-value="<%= checkout_payment_status_path %>"
              data-payment-failure-url-value="<%= checkout_payment_failure_path %>">
           <% saved_error = latest&.error_message if latest&.failed? || latest&.cancelled? %>
           <p class="field__error" data-payment-target="error" <%= "hidden" if saved_error.blank? %>><%= saved_error %></p>
@@ -57,6 +58,8 @@
           </button>
           <% if RazorpayGateway.key_id.start_with?("rzp_test_") %>
             <p class="checkout__note">Test mode. UPI success@razorpay, or a domestic test card. International cards are declined.</p>
+          <% else %>
+            <p class="checkout__note">After you pay with UPI, wait a moment on this page. We will take you to the confirmation once Razorpay confirms it.</p>
           <% end %>
         </div>
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
