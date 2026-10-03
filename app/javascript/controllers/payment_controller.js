@@ -120,7 +120,15 @@ export default class extends Controller {
           this.finished = true
           this.stopPolling()
           window.location = body.redirect || "/checkout/success"
+          return body
         }
+
+        if (body && body.failed) {
+          this.finished = true
+          this.stopPolling()
+          this.showError(body.error || "Payment failed. Nothing was charged.")
+        }
+
         return body
       })
       .catch(() => {

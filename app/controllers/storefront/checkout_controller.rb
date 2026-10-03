@@ -76,8 +76,12 @@ module Storefront
     end
 
     def payment_status
+      latest = @order.payments.order(created_at: :desc).first
+      failed = @order.payment_failed? || latest&.failed?
       render json: {
         paid: @order.payment_paid?,
+        failed: failed && !@order.payment_paid?,
+        error: (failed && !@order.payment_paid? ? latest&.error_message : nil),
         redirect: (@order.payment_paid? ? checkout_success_path : nil)
       }
     end
