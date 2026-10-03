@@ -7,6 +7,13 @@ module StorefrontHelper
     stage: [ 1400, 1867 ]
   }.freeze
 
+  # Lifestyle art that stands in for a product photo on a collection tile.
+  COLLECTION_COVERS = {
+    "bracelets" => "collection-bracelets.jpg",
+    "earrings" => "collection-earrings.jpg",
+    "chain-pendants" => "collection-chain-pendants.jpg"
+  }.freeze
+
   # Active Storage needs libvips (or ImageMagick) to build variants. Production
   # has it; a bare development machine often does not, so fall back to the
   # original file instead of serving a broken image.
@@ -19,6 +26,10 @@ module StorefrontHelper
     rescue LoadError, StandardError
       false
     end
+  end
+
+  def collection_cover(category)
+    COLLECTION_COVERS[category.slug]
   end
 
   def piece_image(attachment, size: :card, **options)

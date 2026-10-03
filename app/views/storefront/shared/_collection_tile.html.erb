@@ -1,8 +1,13 @@
 <% cover = category.cover_product&.gallery_images&.first %>
+<% art = collection_cover(category) %>
 <% count = category_counts[category.id].to_i %>
-<% if cover %>
+<% if art || cover %>
   <%= link_to collection_path(category.slug), class: "collection-tile" do %>
-    <%= piece_image cover, size: :card, alt: "" %>
+    <% if art %>
+      <%= image_tag art, alt: "" %>
+    <% else %>
+      <%= piece_image cover, size: :card, alt: "" %>
+    <% end %>
     <span class="collection-tile__veil" aria-hidden="true"></span>
     <span class="collection-tile__body">
       <span class="collection-tile__name"><%= category.name %></span>

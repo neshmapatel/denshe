@@ -46,6 +46,32 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", "Earrings"
 
+    bracelets = Category.create!(name: "Bracelets", position: 2)
+    Product.create!(
+      category: bracelets,
+      name: "Link Bracelet",
+      selling_price: 499,
+      purchase_price: 120,
+      stock_quantity: 1,
+      status: :active
+    )
+    get collections_path
+    assert_response :success
+    assert_select "a.collection-tile[href='#{collection_path(bracelets.slug)}'] img[src*='collection-bracelets']"
+    assert_select "a.collection-tile[href='#{collection_path(@category.slug)}'] img[src*='collection-earrings']"
+
+    pendants = Category.create!(name: "Chain Pendants", position: 3)
+    Product.create!(
+      category: pendants,
+      name: "Wave Pendant",
+      selling_price: 799,
+      purchase_price: 200,
+      stock_quantity: 1,
+      status: :active
+    )
+    get collections_path
+    assert_select "a.collection-tile[href='#{collection_path(pendants.slug)}'] img[src*='collection-chain-pendants']"
+
     get piece_path(@product.slug)
     assert_response :success
     assert_select "h1", "Aurelia Hoops"
