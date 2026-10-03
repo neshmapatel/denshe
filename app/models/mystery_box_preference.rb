@@ -5,9 +5,9 @@ class MysteryBoxPreference < ApplicationRecord
   belongs_to :order
 
   BOXES = [
-    { key: "799", price: 799, min: 5, max: 6, pieces: "5 to 6 pieces" },
-    { key: "899", price: 899, min: 7, max: 8, pieces: "7 to 8 pieces" },
-    { key: "1199", price: 1199, min: 12, max: 13, pieces: "12 to 13 pieces" }
+    { key: "799", price: 799, min: 4, max: 5, pieces: "4 to 5 pieces" },
+    { key: "899", price: 899, min: 6, max: 7, pieces: "6 to 7 pieces" },
+    { key: "1199", price: 1199, min: 10, max: 12, pieces: "10 to 12 pieces" }
   ].freeze
 
   CATEGORY_CHOICES = [

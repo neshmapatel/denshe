@@ -153,11 +153,11 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     order = Order.mystery_box.order(:id).last
     assert_equal 899, order.total
     preference = order.mystery_box_preference
-    assert_equal 7, preference.piece_count_min
-    assert_equal 8, preference.piece_count_max
+    assert_equal 6, preference.piece_count_min
+    assert_equal 7, preference.piece_count_max
     assert_equal "Gold hoops.", preference.personal_message
     follow_redirect!
-    assert_match "Mystery box, 7 to 8 pieces", response.body
+    assert_match "Mystery box, 6 to 7 pieces", response.body
   end
 
   test "a selected piece can be checked out through to payment" do
@@ -343,6 +343,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     body = JSON.parse(response.body)
     assert_equal true, body.fetch("paid")
+    assert_equal false, body.fetch("failed")
     assert_equal checkout_success_path, body.fetch("redirect")
 
     get checkout_payment_path
