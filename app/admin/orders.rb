@@ -18,11 +18,18 @@ ActiveAdmin.register Order do
   scope :cancelled
   scope("Mystery boxes") { |orders| orders.mystery_box }
 
+  controller do
+    def scoped_collection
+      super.includes(:customer, order_items: :product)
+    end
+  end
+
   index do
     selectable_column
     id_column
     column :number
     column("Customer", &:customer_display_name)
+    column("Products") { |order| order.order_items.map { |item| item.product&.name || item.name }.join(", ") }
     column :order_type
     column :status
     column :payment_status
@@ -77,8 +84,15 @@ ActiveAdmin.register Order do
     end
 
     panel "Items" do
-      table_for resource.order_items do
-        column :name
+      table_for resource.order_items.includes(:product) do
+        column("Product") do |item|
+          if item.product
+            link_to item.product.name, admin_product_path(item.product)
+          else
+            item.name
+          end
+        end
+        column :item_type
         column :sku
         column :quantity
         column("Unit price") { |item| "₹#{item.unit_price}" }
