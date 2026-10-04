@@ -1,5 +1,5 @@
 # Name and delivery details collected before payment. Placing the order records
-# it as unpaid. No payment is taken here.
+# it as unpaid, takes catalogue stock off the shop, and does not charge.
 class Checkout
   include ActiveModel::Model
   include ActiveModel::Attributes
@@ -89,7 +89,11 @@ class Checkout
         )
       end
 
+      order.reserve_catalogue_stock!
       order
+    rescue ArgumentError => e
+      errors.add(:base, e.message)
+      raise ActiveRecord::Rollback
     end.tap { |order| OrderMailer.notify_created(order) if order }
   end
 

@@ -223,8 +223,13 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     order = Order.order(:id).last
     assert_equal "unpaid", order.payment_status
     assert_equal "Aurelia Hoops", order.order_items.sole.name
-    assert_equal 1, @product.reload.stock_quantity
+    assert_equal 0, @product.reload.stock_quantity
+    assert_equal 1, order.inventory_movements.where(movement_type: :customer_order).count
     assert_equal 0, Cart.new(session).count
+
+    get shop_path
+    assert_response :success
+    assert_no_match "Aurelia Hoops", response.body
   end
 
   test "another shopper sees a piece that is already in a cart" do

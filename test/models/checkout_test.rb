@@ -28,7 +28,9 @@ class CheckoutTest < ActiveSupport::TestCase
     assert_equal 1, order.order_items.count
     assert_equal 80, order.shipping_amount
     assert_equal 779, order.total
-    assert_equal 1, @product.reload.stock_quantity
+    assert_equal 0, @product.reload.stock_quantity
+    assert_equal 1, order.inventory_movements.where(movement_type: :customer_order).count
+    assert_not @product.available_for_sale?
   end
 
   test "waives shipping at the free shipping threshold" do

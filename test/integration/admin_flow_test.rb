@@ -180,6 +180,38 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
     assert_match(/already/i, response.body)
   end
 
+  test "admin order pages list the products on the order" do
+    post admin_user_session_path, params: {
+      admin_user: { email: @admin.email, password: "denshe-admin-123" }
+    }
+    product = Product.create!(
+      category: @category,
+      name: "Silver Heart Stud Earrings",
+      sku: "DN-EAR-100",
+      selling_price: 180,
+      stock_quantity: 1,
+      status: :active
+    )
+    order = Order.create!(guest_name: "neshma", guest_email: "neshma@example.com", subtotal: 180, total: 180)
+    order.order_items.create!(
+      product: product,
+      name: product.name,
+      sku: product.sku,
+      quantity: 1,
+      unit_price: 180,
+      item_type: :catalogue
+    )
+
+    get admin_orders_path
+    assert_response :success
+    assert_match "Silver Heart Stud Earrings", response.body
+
+    get admin_order_path(order)
+    assert_response :success
+    assert_match "Silver Heart Stud Earrings", response.body
+    assert_match admin_product_path(product), response.body
+  end
+
   test "product list photos are served from this site" do
     product = Product.create!(category: @category, name: "Leaf Kada", selling_price: 1400, stock_quantity: 1)
     product.images.attach(io: StringIO.new("image-bytes"), filename: "leaf.jpg", content_type: "image/jpeg")

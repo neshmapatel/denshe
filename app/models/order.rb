@@ -48,7 +48,13 @@ class Order < ApplicationRecord
     customer&.name.presence || guest_name.presence || "Guest"
   end
 
-  # Idempotent. Marks the order paid and reduces catalogue stock once.
+  # Takes catalogue pieces off the shop as soon as the order is placed.
+  # Safe to call again — each product is only reduced once per order.
+  def reserve_catalogue_stock!
+    deduct_catalogue_stock!
+  end
+
+  # Idempotent. Marks the order paid. Stock was already reserved at place.
   def capture_payment!(gateway_payment_id:, payment: nil)
     transaction do
       lock!
@@ -98,15 +104,19 @@ class Order < ApplicationRecord
       next if product.nil? || !item.catalogue?
       next if inventory_movements.exists?(product_id: product.id, movement_type: :customer_order)
 
-      quantity = [ item.quantity.to_i, product.stock_quantity.to_i ].min
-      next if quantity <= 0
+      needed = item.quantity.to_i
+      available = product.stock_quantity.to_i
+      if available < needed
+        raise ArgumentError, "#{product.name} is no longer available."
+      end
 
       product.adjust_stock!(
-        quantity: -quantity,
+        quantity: -needed,
         movement_type: :customer_order,
-        reason: "Paid order #{number}",
+        reason: "Order #{number}",
         order: self
       )
     end
   end
 end
+

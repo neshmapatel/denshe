@@ -29,4 +29,34 @@ class OrderTest < ActiveSupport::TestCase
     assert_includes Order.search("aisha@example.com"), order
     assert_not_includes Order.search("meera"), other
   end
+
+  test "reserves catalogue stock once when the order is placed" do
+    category = Category.create!(name: "Earrings", position: 1)
+    product = Product.create!(
+      category: category,
+      name: "Aurelia Hoops",
+      selling_price: 699,
+      stock_quantity: 1,
+      status: :active
+    )
+    order = Order.create!(guest_name: "Aisha", subtotal: 699, total: 699)
+    order.order_items.create!(
+      product: product,
+      name: product.name,
+      sku: product.sku,
+      quantity: 1,
+      unit_price: 699,
+      item_type: :catalogue
+    )
+
+    order.reserve_catalogue_stock!
+
+    assert_equal 0, product.reload.stock_quantity
+    assert_equal 1, order.inventory_movements.where(movement_type: :customer_order).count
+    assert_not product.available_for_sale?
+
+    order.capture_payment!(gateway_payment_id: "pay_test")
+    assert_equal 0, product.reload.stock_quantity
+    assert_equal 1, order.inventory_movements.where(movement_type: :customer_order).count
+  end
 end
