@@ -113,7 +113,7 @@
           <% end %>
           <p class="detail__tax">
             <%= brand.ships_from %>. Dispatch in <%= brand.dispatch_window %>.
-            Complimentary shipping above <%= price(brand.free_shipping_above) %>.
+            Shipping <%= price(brand.standard_shipping) %> below <%= price(brand.free_shipping_above) %>; complimentary above.
           </p>
         </div>
 

@@ -37,7 +37,7 @@
       <article class="contact-card">
         <p class="eyebrow">Dispatch</p>
         <h3><%= brand.ships_from %></h3>
-        <p>Orders leave within <%= brand.dispatch_window %>. Shipping is complimentary above <%= price(brand.free_shipping_above) %>.</p>
+        <p>Orders leave within <%= brand.dispatch_window %>. Shipping is <%= price(brand.standard_shipping) %> below <%= price(brand.free_shipping_above) %>, complimentary above.</p>
       </article>
     </div>
   </div>

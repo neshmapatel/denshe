@@ -21,6 +21,10 @@
             <span><%= price(item.line_total) %></span>
           </li>
         <% end %>
+        <li>
+          <span>Shipping</span>
+          <span><%= @order.shipping_amount.to_d.positive? ? price(@order.shipping_amount) : "Complimentary" %></span>
+        </li>
       </ul>
 
       <div class="bag__due">
@@ -43,7 +47,7 @@
         </div>
       </div>
 
-      <% if RazorpayGateway.configured? %>
+      <% if payments_open? %>
         <% latest = @order.payments.order(created_at: :desc).first %>
         <div data-controller="payment"
              data-payment-key-value="<%= RazorpayGateway.key_id %>"
@@ -64,7 +68,13 @@
         </div>
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
       <% else %>
-        <p class="checkout__note">Online payment is not configured yet, so this order stays unpaid.</p>
+        <div class="checkout__note">
+          <p>Your order with DeNshe Jewellery is saved — thank you for choosing us.</p>
+          <p>Online payment is finishing its last checks and will open here very soon. We will write to you the moment you can complete this order online, so nothing is lost.</p>
+          <% if @order.guest_email.present? || @order.guest_phone.present? %>
+            <p>We have your <%= [ @order.guest_email.presence && "email", @order.guest_phone.presence && "phone" ].compact.to_sentence %> ready for that note.</p>
+          <% end %>
+        </div>
       <% end %>
 
       <%= link_to shop_path, class: "btn" do %>

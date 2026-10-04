@@ -49,17 +49,11 @@
         </div>
         <div>
           <p>Shipping</p>
-          <p>
-            <% if current_cart.subtotal >= brand.free_shipping_above %>
-              Complimentary
-            <% else %>
-              Confirmed at payment
-            <% end %>
-          </p>
+          <p><%= shipping_label_for(current_cart.subtotal) %></p>
         </div>
         <div class="bag__due">
           <p>To pay</p>
-          <p><%= price(current_cart.subtotal) %></p>
+          <p><%= price(due_for(current_cart.subtotal)) %></p>
         </div>
         <%= link_to checkout_path, class: "btn btn--solid btn--block" do %>
           <span>Checkout</span>

@@ -1,0 +1,46 @@
+<p>A new order was placed on denshe.shop.</p>
+
+<p>
+  <strong>Order</strong> <%= @order.number %><br>
+  <strong>Type</strong> <%= @order.mystery_box? ? "Mystery box" : "Catalogue" %><br>
+  <strong>Total</strong> ₹<%= @order.total %><br>
+  <strong>Payment</strong> <%= @order.payment_status.humanize %>
+</p>
+
+<p>
+  <strong>Customer</strong><br>
+  <%= @order.guest_name %><br>
+  <% if @order.guest_phone.present? %><%= @order.guest_phone %><br><% end %>
+  <% if @order.guest_email.present? %><%= @order.guest_email %><br><% end %>
+</p>
+
+<% if @order.shipping_address.present? %>
+  <p>
+    <strong>Shipping</strong><br>
+    <%= @order.shipping_address %>
+  </p>
+<% end %>
+
+<p><strong>Items</strong></p>
+<ul>
+  <% @order.order_items.each do |item| %>
+    <li><%= item.quantity %> × <%= item.name %> — ₹<%= item.line_total %></li>
+  <% end %>
+  <li>Shipping — <%= @order.shipping_amount.to_d.positive? ? "₹#{@order.shipping_amount}" : "Complimentary" %></li>
+</ul>
+
+<% if @order.mystery_box? && @order.mystery_box_preference.present? %>
+  <% preference = @order.mystery_box_preference %>
+  <p><strong>Mystery box answers</strong></p>
+  <ul>
+    <% preference.summary_lines.each do |label, value| %>
+      <li><%= label %>: <%= value %></li>
+    <% end %>
+  </ul>
+<% end %>
+
+<% if @order.customer_notes.present? %>
+  <p><strong>Note</strong><br><%= @order.customer_notes %></p>
+<% end %>
+
+<p>Open the order in admin when you are ready to pack it.</p>

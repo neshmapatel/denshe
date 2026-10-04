@@ -42,6 +42,14 @@ class Checkout
     new(params.to_h.slice(*attribute_names))
   end
 
+  def self.shipping_amount_for(subtotal)
+    brand = Rails.application.config.x.brand
+    amount = subtotal.to_d
+    return 0 if amount >= brand.free_shipping_above.to_d
+
+    brand.standard_shipping.to_d
+  end
+
   def place!(cart)
     lines = cart.items
     if lines.empty?
@@ -51,6 +59,7 @@ class Checkout
     return if invalid?
 
     subtotal = lines.sum(&:line_total)
+    shipping_amount = self.class.shipping_amount_for(subtotal)
 
     Order.transaction do
       shipping = Address.create!(shipping_attributes)
@@ -62,9 +71,9 @@ class Checkout
         shipping_address: shipping,
         billing_address: billing,
         subtotal: subtotal,
-        shipping_amount: 0,
+        shipping_amount: shipping_amount,
         discount: 0,
-        total: subtotal,
+        total: subtotal + shipping_amount,
         status: :pending,
         payment_status: :unpaid
       )
@@ -81,11 +90,14 @@ class Checkout
       end
 
       order
-    end
+    end.tap { |order| OrderMailer.notify_created(order) if order }
   end
 
   def place_mystery_box!(box, answers)
     return if invalid?
+
+    subtotal = box[:price].to_d
+    shipping_amount = self.class.shipping_amount_for(subtotal)
 
     Order.transaction do
       shipping = Address.create!(shipping_attributes)
@@ -97,10 +109,10 @@ class Checkout
         guest_email: email.presence,
         shipping_address: shipping,
         billing_address: billing,
-        subtotal: box[:price],
-        shipping_amount: 0,
+        subtotal: subtotal,
+        shipping_amount: shipping_amount,
         discount: 0,
-        total: box[:price],
+        total: subtotal + shipping_amount,
         status: :pending,
         payment_status: :unpaid,
         customer_notes: answers["note"].presence
@@ -123,7 +135,7 @@ class Checkout
         piece_count_max: box[:max]
       )
       order
-    end
+    end.tap { |order| OrderMailer.notify_created(order) if order }
   end
 
   private

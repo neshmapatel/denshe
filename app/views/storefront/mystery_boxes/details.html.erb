@@ -76,10 +76,14 @@
             <span><%= @box[:pieces].sub("pieces", "products").capitalize %></span>
             <span><%= price(@box[:price]) %></span>
           </li>
+          <li>
+            <span>Shipping</span>
+            <span><%= shipping_label_for(@box[:price]) %></span>
+          </li>
         </ul>
         <div class="bag__due">
           <p>To pay</p>
-          <p><%= price(@box[:price]) %></p>
+          <p><%= price(due_for(@box[:price])) %></p>
         </div>
       </aside>
     </div>

@@ -48,7 +48,7 @@ export default class extends Controller {
       amount: order.amount,
       currency: order.currency,
       order_id: order.order_id,
-      name: "DeNshe",
+      name: "DeNshe Jewellery",
       handler: (payload) => {
         this.finished = true
         this.stopPolling()

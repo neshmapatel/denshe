@@ -80,6 +80,23 @@ module StorefrontHelper
     Rails.application.config.x.brand
   end
 
+  def payments_open?
+    Rails.application.config.x.payments_open && RazorpayGateway.configured?
+  end
+
+  def shipping_amount_for(subtotal)
+    Checkout.shipping_amount_for(subtotal)
+  end
+
+  def shipping_label_for(subtotal)
+    amount = shipping_amount_for(subtotal)
+    amount.positive? ? price(amount) : "Complimentary"
+  end
+
+  def due_for(subtotal)
+    subtotal.to_d + shipping_amount_for(subtotal)
+  end
+
   def whatsapp_url(message = nil)
     return if brand.whatsapp.blank?
 

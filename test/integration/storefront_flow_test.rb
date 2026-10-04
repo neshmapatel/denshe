@@ -101,6 +101,22 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", /write to us/i
 
+    get privacy_path
+    assert_response :success
+    assert_select "h1", /privacy/i
+    assert_match "DeNshe Jewellery", response.body
+
+    get terms_path
+    assert_response :success
+    assert_select "h1", /terms/i
+    assert_match "DeNshe Jewellery", response.body
+
+    get shipping_returns_path
+    assert_response :success
+    assert_select "h1", /shipping/i
+    assert_match "₹80", response.body
+    assert_match "DeNshe Jewellery", response.body
+
     get mystery_box_path
     assert_response :success
     assert_select "h1", /box/i
@@ -151,7 +167,8 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     end
     assert_redirected_to checkout_payment_path
     order = Order.mystery_box.order(:id).last
-    assert_equal 899, order.total
+    assert_equal 80, order.shipping_amount
+    assert_equal 979, order.total
     preference = order.mystery_box_preference
     assert_equal 6, preference.piece_count_min
     assert_equal 7, preference.piece_count_max
