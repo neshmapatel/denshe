@@ -46,6 +46,46 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
     assert product.inventory_movements.purchase.exists?
   end
 
+  test "admin can restock a product from the product page" do
+    post admin_user_session_path, params: {
+      admin_user: { email: @admin.email, password: "denshe-admin-123" }
+    }
+    follow_redirect!
+
+    product = Product.create!(
+      category: @category,
+      name: "Aurelia Hoops",
+      sku: "DN-EAR-RESTOCK",
+      selling_price: 699,
+      purchase_price: 180,
+      stock_quantity: 0,
+      quantity_purchased: 1,
+      status: :active
+    )
+
+    get admin_product_path(product)
+    assert_response :success
+    assert_select "a[href=?]", restock_admin_product_path(product)
+
+    get restock_admin_product_path(product)
+    assert_response :success
+    assert_match "Current stock", response.body
+    assert_select "input[name='restock[quantity]']"
+
+    assert_difference -> { product.reload.stock_quantity }, 3 do
+      assert_difference -> { product.reload.quantity_purchased }, 3 do
+        post apply_restock_admin_product_path(product), params: {
+          restock: { quantity: 3, reason: "Mahavir lot" }
+        }
+      end
+    end
+
+    follow_redirect!
+    assert_response :success
+    assert_match "Stock is now 3", response.body
+    assert product.inventory_movements.purchase.where(reason: "Mahavir lot", quantity: 3).exists?
+  end
+
   test "admin can search products by name, sku, or slug including earrings" do
     post admin_user_session_path, params: {
       admin_user: { email: @admin.email, password: "denshe-admin-123" }

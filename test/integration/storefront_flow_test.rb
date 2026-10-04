@@ -97,12 +97,18 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", /care guide/i
 
+    attach_product_image(@product, "catalogue.png")
+    @product.ensure_primary_image!
+
     get catalogue_path
     assert_response :success
     assert_select "h1", /every piece, with its price/i
     assert_select "article.catalogue-card", 1
     assert_select ".catalogue-card__facts dd", text: "₹699"
     assert_select ".catalogue-card__facts dd", text: "1"
+    assert_select "button[data-fullscreen-src]", 1
+    assert_select "dialog.lightbox"
+    assert_select "button.lightbox__cancel", text: "Cancel"
     assert_match "Catalogue", response.body
 
     get contact_path
