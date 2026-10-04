@@ -369,7 +369,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_select "h1", /Hey/
     assert_match "Your order has been placed", response.body
     assert_match "495894589459", response.body
-    assert_match "neshmapatel1399@gmail.com", response.body
+    assert_match "denshe1713@gmail.com", response.body
 
     get checkout_success_path
     assert_response :success

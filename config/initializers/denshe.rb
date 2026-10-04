@@ -4,8 +4,8 @@
 Rails.application.config.x.brand = ActiveSupport::OrderedOptions.new.merge(
   name: "DeNshe Jewellery",
   tagline: "Jewellery, chosen with you in mind",
-  email: ENV.fetch("DENSHE_CONTACT_EMAIL", "hello@denshe.in"),
-  order_notify_email: ENV.fetch("ORDER_NOTIFY_EMAIL", "denshe1713@gmail.com"),
+  email: ENV.fetch("DENSHE_CONTACT_EMAIL", "denshe1713@gmail.com"),
+  order_notify_email: ENV.fetch("ORDER_NOTIFY_EMAIL", ENV.fetch("DENSHE_CONTACT_EMAIL", "denshe1713@gmail.com")),
   # Digits only, including the country code, e.g. 919876543210.
   whatsapp: ENV["DENSHE_WHATSAPP_NUMBER"].presence,
   instagram: ENV.fetch("DENSHE_INSTAGRAM_HANDLE", "denshe__"),
