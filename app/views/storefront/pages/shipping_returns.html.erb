@@ -1,0 +1,36 @@
+<% page_title "Shipping & returns" %>
+<% meta description: "Shipping charges, dispatch times, and returns for DeNshe Jewellery." %>
+
+<header class="page-intro">
+  <div class="page page--narrow">
+    <p class="eyebrow">DeNshe Jewellery</p>
+    <h1>Shipping & returns.</h1>
+    <p class="lede">How your order leaves Mumbai, what delivery costs, and what to do if something is not right. Last updated <%= Date.current.strftime("%-d %B %Y") %>.</p>
+  </div>
+</header>
+
+<section class="section section--tight">
+  <div class="page page--narrow prose">
+    <h2>Where we ship</h2>
+    <p>DeNshe Jewellery ships across India from Mumbai. We currently do not ship outside India.</p>
+
+    <h2>Charges</h2>
+    <p>Standard shipping is <%= price(brand.standard_shipping) %> on orders below <%= price(brand.free_shipping_above) %>. Shipping is complimentary on orders of <%= price(brand.free_shipping_above) %> and above.</p>
+
+    <h2>Dispatch</h2>
+    <p>Orders are usually packed and handed to the courier within <%= brand.dispatch_window %> after payment is confirmed. Delivery time after that depends on your PIN code and the courier. You will receive tracking details by email or message when they are available.</p>
+
+    <h2>Mystery boxes</h2>
+    <p>Mystery boxes follow the same shipping rates and dispatch window. The pieces inside are chosen for you after you order; they are not returnable for a different selection once the box has been opened, unless something arrived damaged or incorrect.</p>
+
+    <h2>Returns & exchanges</h2>
+    <p>If a piece arrives damaged, or we sent the wrong item, write to <%= mail_to brand.email %> within 48 hours of delivery with your order number and a clear photo. We will arrange a replacement or refund for DeNshe Jewellery’s error.</p>
+    <p>Because many pieces are one of a kind or packed to order, we do not accept returns for change of mind, fit preference, or colour difference on screen once a parcel has been opened. Unopened orders may be discussed case by case — please write to us before sending anything back.</p>
+
+    <h2>Refunds</h2>
+    <p>Approved refunds are returned to the original payment method within 5 to 10 working days after we confirm the return. Shipping is not refunded unless the return is because of our mistake.</p>
+
+    <h2>Contact</h2>
+    <p>For shipping or return questions: <%= mail_to brand.email %>. We are DeNshe Jewellery, <%= brand.city %>.</p>
+  </div>
+</section>

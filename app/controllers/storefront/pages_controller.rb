@@ -12,6 +12,15 @@ module Storefront
     def contact
     end
 
+    def privacy
+    end
+
+    def terms
+    end
+
+    def shipping_returns
+    end
+
     def jewellery_box
     end
   end

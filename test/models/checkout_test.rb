@@ -26,8 +26,17 @@ class CheckoutTest < ActiveSupport::TestCase
     assert_equal "400001", order.shipping_address.pin_code
     assert_equal order.shipping_address, order.billing_address
     assert_equal 1, order.order_items.count
-    assert_equal 699, order.total
+    assert_equal 80, order.shipping_amount
+    assert_equal 779, order.total
     assert_equal 1, @product.reload.stock_quantity
+  end
+
+  test "waives shipping at the free shipping threshold" do
+    @product.update!(selling_price: 999)
+    order = checkout.place!(@cart)
+
+    assert_equal 0, order.shipping_amount
+    assert_equal 999, order.total
   end
 
   test "keeps a separate billing address when it differs" do

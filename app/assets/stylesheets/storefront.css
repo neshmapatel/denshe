@@ -2196,6 +2196,13 @@
   display: grid;
   gap: 0.5rem;
   width: min(30rem, calc(100% - 2rem));
+  transition: opacity 300ms var(--ease), translate 300ms var(--ease);
+}
+
+.flash-stack--out {
+  opacity: 0;
+  translate: -50% -0.5rem;
+  pointer-events: none;
 }
 
 .flash {

@@ -36,6 +36,9 @@ Rails.application.routes.draw do
     get "our-story", to: "pages#story", as: :story
     get "care-guide", to: "pages#care", as: :care
     get "contact", to: "pages#contact", as: :contact
+    get "privacy", to: "pages#privacy", as: :privacy
+    get "terms", to: "pages#terms", as: :terms
+    get "shipping-and-returns", to: "pages#shipping_returns", as: :shipping_returns
   end
 
   get "search", to: redirect { |_params, request| "/shop?#{request.query_string}" }

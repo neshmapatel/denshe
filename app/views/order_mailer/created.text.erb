@@ -1,0 +1,36 @@
+A new order was placed on denshe.shop.
+
+Order: <%= @order.number %>
+Type: <%= @order.mystery_box? ? "Mystery box" : "Catalogue" %>
+Total: ₹<%= @order.total %>
+Payment: <%= @order.payment_status.humanize %>
+
+Customer:
+<%= @order.guest_name %>
+<%= @order.guest_phone %>
+<%= @order.guest_email %>
+
+<% if @order.shipping_address.present? %>
+Shipping:
+<%= @order.shipping_address %>
+<% end %>
+
+Items:
+<% @order.order_items.each do |item| %>
+- <%= item.quantity %> × <%= item.name %> — ₹<%= item.line_total %>
+<% end %>
+- Shipping — <%= @order.shipping_amount.to_d.positive? ? "₹#{@order.shipping_amount}" : "Complimentary" %>
+
+<% if @order.mystery_box? && @order.mystery_box_preference.present? %>
+Mystery box answers:
+<% @order.mystery_box_preference.summary_lines.each do |label, value| %>
+- <%= label %>: <%= value %>
+<% end %>
+<% end %>
+
+<% if @order.customer_notes.present? %>
+Note:
+<%= @order.customer_notes %>
+<% end %>
+
+Open the order in admin when you are ready to pack it.

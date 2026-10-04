@@ -1,0 +1,41 @@
+<% page_title "Terms of use" %>
+<% meta description: "Terms for shopping with DeNshe Jewellery on denshe.shop." %>
+
+<header class="page-intro">
+  <div class="page page--narrow">
+    <p class="eyebrow">DeNshe Jewellery</p>
+    <h1>Terms of use.</h1>
+    <p class="lede">The simple rules for browsing and buying from DeNshe Jewellery. Last updated <%= Date.current.strftime("%-d %B %Y") %>.</p>
+  </div>
+</header>
+
+<section class="section section--tight">
+  <div class="page page--narrow prose">
+    <h2>The shop</h2>
+    <p>denshe.shop is operated by DeNshe Jewellery, Mumbai, India. By using this site you agree to these terms and to our <%= link_to "privacy policy", privacy_path %> and <%= link_to "shipping & returns", shipping_returns_path %> pages.</p>
+
+    <h2>Products</h2>
+    <p>Each piece is described as carefully as we can. Colours and finishes can look a little different on different screens. Stock is limited; a piece may sell while you are browsing. Prices are in Indian rupees and include applicable taxes unless we say otherwise.</p>
+
+    <h2>Orders</h2>
+    <p>An order is an offer to buy. DeNshe Jewellery accepts it when payment is confirmed and we begin packing. We may cancel an order if a piece is unavailable, a detail looks incorrect, or we cannot complete payment or delivery — and we will let you know.</p>
+
+    <h2>Payment</h2>
+    <p>Online payment, when available, is processed securely through our payment partner. Until online payment is open on denshe.shop, we will guide you gently on how to complete your order.</p>
+
+    <h2>Your account of the visit</h2>
+    <p>You are responsible for the accuracy of the details you give us. Please keep your devices and email safe; we are not responsible for access that comes from your side.</p>
+
+    <h2>Intellectual property</h2>
+    <p>The DeNshe Jewellery name, mark, photographs, and site content belong to us or our licensors. Please do not copy or reuse them without written permission.</p>
+
+    <h2>Liability</h2>
+    <p>We take care with every order. To the extent allowed by Indian law, DeNshe Jewellery is not liable for indirect or consequential loss arising from use of the site or a purchase, beyond the value of the order concerned.</p>
+
+    <h2>Law</h2>
+    <p>These terms are governed by the laws of India. Courts in Mumbai have exclusive jurisdiction, subject to any rights you have as a consumer under Indian law.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about these terms: <%= mail_to brand.email %>.</p>
+  </div>
+</section>

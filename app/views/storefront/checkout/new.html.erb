@@ -79,16 +79,20 @@
               <span><%= price(line.line_total) %></span>
             </li>
           <% end %>
+          <li>
+            <span>Shipping</span>
+            <span><%= shipping_label_for(current_cart.subtotal) %></span>
+          </li>
         </ul>
         <div class="bag__due">
           <p>To pay</p>
-          <p><%= price(current_cart.subtotal) %></p>
+          <p><%= price(due_for(current_cart.subtotal)) %></p>
         </div>
         <p class="checkout__note">
-          <% if current_cart.subtotal >= brand.free_shipping_above %>
-            Shipping is complimentary.
+          <% if shipping_amount_for(current_cart.subtotal).zero? %>
+            Shipping is complimentary on this order.
           <% else %>
-            Shipping is confirmed when payment opens. Complimentary above <%= price(brand.free_shipping_above) %>.
+            Standard shipping <%= price(brand.standard_shipping) %>. Complimentary from <%= price(brand.free_shipping_above) %>.
           <% end %>
         </p>
       </aside>
