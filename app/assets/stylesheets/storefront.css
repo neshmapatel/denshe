@@ -3045,6 +3045,12 @@ html.js [data-reveal][data-revealed="true"] {
   overflow: hidden;
 }
 
+.catalogue-card__frame .catalogue-card__open,
+.catalogue-card__frame .lightbox-trigger {
+  width: 100%;
+  height: 100%;
+}
+
 .catalogue-card__frame img {
   width: 100%;
   height: 100%;

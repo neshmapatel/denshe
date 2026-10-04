@@ -1,0 +1,41 @@
+<div class="panel">
+  <h3>Restock <%= resource.name %></h3>
+
+  <p>
+    Current stock:
+    <strong><%= resource.stock_quantity %></strong>
+    <% if resource.sku.present? %>
+      · SKU <%= resource.sku %>
+    <% end %>
+  </p>
+  <p>
+    Enter how many pieces arrived. This adds to available stock and to the purchased total, and keeps a note in the stock history.
+  </p>
+
+  <%= form_with url: apply_restock_admin_product_path(resource), method: :post, local: true, data: { turbo: false } do |f| %>
+    <fieldset class="inputs">
+      <ol>
+        <li class="string input required">
+          <%= label_tag "restock_quantity", "Quantity arrived" %>
+          <%= number_field_tag "restock[quantity]", 1, min: 1, step: 1, required: true, id: "restock_quantity" %>
+        </li>
+        <li class="string input optional">
+          <%= label_tag "restock_reason", "Reason" %>
+          <%= text_field_tag "restock[reason]", "Restock", id: "restock_reason" %>
+          <p class="inline-hints">Optional. Example: Mahavir lot, Celestia receipt 10082.</p>
+        </li>
+      </ol>
+    </fieldset>
+
+    <fieldset class="actions">
+      <ol>
+        <li class="action input_action">
+          <%= f.submit "Add to stock" %>
+        </li>
+        <li class="cancel">
+          <%= link_to "Cancel", admin_product_path(resource) %>
+        </li>
+      </ol>
+    </fieldset>
+  <% end %>
+</div>

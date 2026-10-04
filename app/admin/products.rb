@@ -40,7 +40,13 @@ ActiveAdmin.register Product do
     column("Stock", &:stock_quantity)
     column("Purchased", &:quantity_purchased)
     column("Sold", &:sold_quantity)
-    actions
+    actions defaults: true do |product|
+      item "Restock", restock_admin_product_path(product)
+    end
+  end
+
+  action_item :restock, only: :show do
+    link_to "Restock", restock_admin_product_path(resource)
   end
 
   filter :supplier
@@ -88,7 +94,7 @@ ActiveAdmin.register Product do
       end
 
       para do
-        span link_to "Add stock", new_admin_inventory_movement_path(inventory_movement: { product_id: resource.id, movement_type: "purchase" })
+        span link_to "Restock", restock_admin_product_path(resource), class: "button"
         text_node " · "
         span link_to "Adjust stock", new_admin_inventory_movement_path(inventory_movement: { product_id: resource.id, movement_type: "adjustment" })
         text_node " · "
@@ -367,5 +373,32 @@ ActiveAdmin.register Product do
   member_action :set_primary_image, method: :patch do
     resource.set_primary_image!(params[:image_id])
     redirect_to admin_product_path(resource), notice: "Primary design updated. This image will show first on the storefront."
+  end
+
+  member_action :restock, method: :get do
+    @page_title = "Restock #{resource.name}"
+  end
+
+  member_action :apply_restock, method: :post do
+    quantity = params.dig(:restock, :quantity).to_i
+    reason = params.dig(:restock, :reason).to_s.strip
+    reason = "Restock" if reason.blank?
+
+    if quantity <= 0
+      redirect_to restock_admin_product_path(resource), alert: "Enter how many pieces arrived."
+      return
+    end
+
+    resource.adjust_stock!(
+      quantity: quantity,
+      movement_type: :purchase,
+      reason: reason,
+      admin_user: current_admin_user
+    )
+
+    redirect_to admin_product_path(resource),
+                notice: "Added #{quantity} #{'piece'.pluralize(quantity)}. Stock is now #{resource.reload.stock_quantity}."
+  rescue ArgumentError, ActiveRecord::RecordInvalid => error
+    redirect_to restock_admin_product_path(resource), alert: error.message
   end
 end
