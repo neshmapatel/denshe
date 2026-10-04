@@ -27,3 +27,6 @@ Rails.application.config.x.storefront_preview_token = ENV.fetch("STOREFRONT_PREV
 Rails.application.config.x.payments_open = ActiveModel::Type::Boolean.new.cast(
   ENV.fetch("PAYMENTS_OPEN", (!Rails.env.production?).to_s)
 )
+
+# Google Analytics 4 measurement ID, e.g. G-XXXXXXXXXX. Blank means no tag is rendered.
+Rails.application.config.x.google_analytics_id = ENV["GOOGLE_ANALYTICS_ID"].to_s.strip.presence

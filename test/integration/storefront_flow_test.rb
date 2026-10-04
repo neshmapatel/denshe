@@ -129,6 +129,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: "Okay, but who are we?"
     assert_select "p.story__moment", text: /Let's actually do it/
     assert_select "h2", text: "Worn your way."
+    assert_no_match "googletagmanager.com/gtag/js", response.body
 
     get care_path
     assert_response :success
@@ -156,6 +157,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", /privacy/i
     assert_match "DeNshe Jewellery", response.body
+    assert_match "Google Analytics", response.body
 
     get terms_path
     assert_response :success
@@ -181,6 +183,18 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     get jewellery_box_path
     assert_response :success
     assert_select "h1", /jewellery box/i
+  end
+
+  test "google analytics tag appears when a measurement id is set" do
+    previous = Rails.application.config.x.google_analytics_id
+    Rails.application.config.x.google_analytics_id = "G-TESTONLY123"
+
+    get root_path
+    assert_response :success
+    assert_match "googletagmanager.com/gtag/js?id=G-TESTONLY123", response.body
+    assert_match 'gtag("config", "G-TESTONLY123"', response.body
+  ensure
+    Rails.application.config.x.google_analytics_id = previous
   end
 
   test "a mystery box continues to name, shipping, and payment" do
