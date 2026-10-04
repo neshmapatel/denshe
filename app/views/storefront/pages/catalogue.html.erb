@@ -1,0 +1,109 @@
+<% page_title "Catalogue" %>
+<% meta description: "Every DeNshe piece with its photograph, price, and how many we have. For when you would rather message us or ask in person." %>
+
+<header class="page-intro catalogue-intro">
+  <div class="page page--narrow">
+    <p class="eyebrow">For a quiet order</p>
+    <h1>Every piece, with its price.</h1>
+    <p class="lede">
+      Photograph, price, and how many we have. Message us the name or the code, and we will set the piece aside.
+    </p>
+    <div class="catalogue-intro__actions">
+      <% if whatsapp_url("Hello DeNshe, I would like to order from the catalogue.") %>
+        <%= link_to whatsapp_url("Hello DeNshe, I would like to order from the catalogue."),
+              class: "btn btn--solid", target: "_blank", rel: "noopener" do %>
+          <span>Message on WhatsApp</span>
+        <% end %>
+      <% end %>
+      <%= link_to "mailto:#{brand.email}?subject=#{CGI.escape("Order from the DeNshe catalogue")}",
+            class: "btn" do %>
+        <span>Email us</span>
+      <% end %>
+      <button type="button" class="btn catalogue-print" onclick="window.print()">
+        <span>Print this list</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<% if @categories.any? %>
+  <nav class="catalogue-jump" aria-label="Jump to a collection">
+    <div class="page">
+      <p class="eyebrow"><%= pluralize(@piece_count, "piece") %></p>
+      <div class="catalogue-jump__links">
+        <% @categories.each do |category| %>
+          <%= link_to category.name, "##{category.slug}" %>
+        <% end %>
+      </div>
+    </div>
+  </nav>
+
+  <% @categories.each do |category| %>
+    <% pieces = @products_by_category_id[category.id] || [] %>
+    <section class="section section--tight catalogue-section" id="<%= category.slug %>">
+      <div class="page">
+        <header class="section-head">
+          <div class="section-head__text">
+            <p class="eyebrow">Collection</p>
+            <h2><%= category.name %></h2>
+            <p class="lede"><%= pluralize(pieces.size, "piece") %></p>
+          </div>
+        </header>
+
+        <div class="catalogue-grid">
+          <% pieces.each do |product| %>
+            <% image = product.display_image || product.gallery_images.first %>
+            <% sold_out = product.stock_quantity.to_i <= 0 %>
+            <article class="catalogue-card<%= " catalogue-card--sold" if sold_out %>">
+              <div class="catalogue-card__frame">
+                <% if image %>
+                  <%= piece_image image, size: :card, alt: product.name %>
+                <% else %>
+                  <div class="catalogue-card__placeholder" aria-hidden="true">
+                    <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
+                  </div>
+                <% end %>
+              </div>
+
+              <div class="catalogue-card__body">
+                <% if product.sku.present? %>
+                  <p class="catalogue-card__code"><%= product.sku %></p>
+                <% end %>
+                <h3 class="catalogue-card__name"><%= product.name %></h3>
+                <dl class="catalogue-card__facts">
+                  <div>
+                    <dt>Price</dt>
+                    <dd><%= price(product.selling_price) %></dd>
+                  </div>
+                  <div>
+                    <dt>Qty</dt>
+                    <dd>
+                      <% if sold_out %>
+                        Sold
+                      <% else %>
+                        <%= product.stock_quantity %>
+                      <% end %>
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </article>
+          <% end %>
+        </div>
+      </div>
+    </section>
+  <% end %>
+<% else %>
+  <section class="section">
+    <div class="page">
+      <div class="empty">
+        <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
+        <h2>Pieces are being photographed.</h2>
+        <p>Write to us and we will share what is ready.</p>
+        <%= link_to contact_path, class: "btn btn--solid" do %>
+          <span>Contact us</span>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>

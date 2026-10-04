@@ -36,9 +36,10 @@ class Product < ApplicationRecord
   scope :out_of_stock, -> { where("stock_quantity <= 0") }
   scope :earrings, -> { joins(:category).where(categories: { slug: "earrings" }) }
 
-  # Everything the storefront is allowed to list. Draft and archived pieces, and
-  # anything already sold, stay out of the customer catalogue.
+  # In-stock pieces a shopper can still select.
   scope :available, -> { active.in_stock }
+  # Active catalogue for the shop grid — includes sold-out pieces so they stay visible.
+  scope :catalogue, -> { active }
   scope :bestsellers, -> { available.where(bestseller: true) }
   scope :with_storefront_includes, -> { includes(:category, images_attachments: :blob) }
 

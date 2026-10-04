@@ -15,7 +15,7 @@ module Storefront
     end
 
     def category_counts
-      @category_counts ||= Product.available.group(:category_id).count
+      @category_counts ||= Product.catalogue.group(:category_id).count
     end
 
     def catalogue_live?

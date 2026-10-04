@@ -29,6 +29,7 @@ Rails.application.routes.draw do
     post "checkout/payment-failed", to: "checkout#record_payment_failure", as: :checkout_payment_failure
 
     get "jewellery-box", to: "pages#jewellery_box", as: :jewellery_box
+    get "catalogue", to: "pages#catalogue", as: :catalogue
     get "mystery-box", to: "mystery_boxes#show", as: :mystery_box
     post "mystery-box", to: "mystery_boxes#create"
     get "mystery-box/details", to: "mystery_boxes#details", as: :mystery_box_details

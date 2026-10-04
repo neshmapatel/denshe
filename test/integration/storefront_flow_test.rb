@@ -97,6 +97,14 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", /care guide/i
 
+    get catalogue_path
+    assert_response :success
+    assert_select "h1", /every piece, with its price/i
+    assert_select "article.catalogue-card", 1
+    assert_select ".catalogue-card__facts dd", text: "₹699"
+    assert_select ".catalogue-card__facts dd", text: "1"
+    assert_match "Catalogue", response.body
+
     get contact_path
     assert_response :success
     assert_select "h1", /write to us/i
@@ -229,7 +237,8 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
 
     get shop_path
     assert_response :success
-    assert_no_match "Aurelia Hoops", response.body
+    assert_match "Aurelia Hoops", response.body
+    assert_select "article.piece--sold .badge--sold", text: /sold out/i
   end
 
   test "another shopper sees a piece that is already in a cart" do
@@ -481,15 +490,23 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_equal "BAD_REQUEST_ERROR", order.payments.sole.error_code
   end
 
-  test "sold pieces stay reachable and say so" do
+  test "sold pieces stay in the shop with a sold out tag" do
     @product.update!(stock_quantity: 0)
 
     get piece_path(@product.slug)
     assert_response :success
+    assert_select ".badge--sold", text: /sold out/i
     assert_select ".stock-note", /found its person/i
 
     get shop_path
-    assert_select "article.piece", 0
+    assert_response :success
+    assert_select "article.piece", 1
+    assert_select "article.piece--sold .badge--sold", text: /sold out/i
+    assert_select "article.piece button", text: /Select/, count: 0
+
+    get collection_path(@product.category.slug)
+    assert_response :success
+    assert_select "article.piece--sold .badge--sold", text: /sold out/i
   end
 
   private

@@ -96,6 +96,9 @@
         <div>
           <p class="eyebrow"><%= link_to @product.category.name, collection_path(@product.category.slug) %></p>
           <h1 class="detail__title"><%= @product.name %></h1>
+          <% unless @product.available_for_sale? %>
+            <p class="detail__sold"><span class="badge badge--sold">Sold out</span></p>
+          <% end %>
         </div>
 
         <div>

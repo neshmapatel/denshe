@@ -23,7 +23,7 @@ class ProductFilter
 
   attr_reader :query, :material, :colour, :price, :sort
 
-  def initialize(params, scope: Product.available)
+  def initialize(params, scope: Product.catalogue)
     @base = scope
     @query = params[:q].to_s.strip.presence
     @material = params[:material].presence
@@ -112,6 +112,9 @@ class ProductFilter
   end
 
   def order(relation)
+    # Keep sold-out pieces in the grid, after what is still available.
+    relation = relation.order(Arel.sql("CASE WHEN products.stock_quantity > 0 THEN 0 ELSE 1 END"))
+
     case sort
     when "newest" then relation.order(created_at: :desc, id: :desc)
     when "price-asc" then relation.order(selling_price: :asc, name: :asc)
