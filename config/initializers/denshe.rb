@@ -9,8 +9,8 @@ Rails.application.config.x.brand = ActiveSupport::OrderedOptions.new.merge(
   # Digits only, including the country code, e.g. 919876543210.
   whatsapp: ENV["DENSHE_WHATSAPP_NUMBER"].presence,
   instagram: ENV.fetch("DENSHE_INSTAGRAM_HANDLE", "denshe__"),
-  city: "Mumbai, India",
-  ships_from: "Dispatched from Mumbai",
+  city: "Anand, Gujarat",
+  ships_from: "Dispatched from Anand, Gujarat",
   standard_shipping: 80,
   free_shipping_above: 999,
   dispatch_window: "2 to 4 working days"
