@@ -16,7 +16,9 @@ class OrderMailer < ApplicationMailer
   end
 
   def self.notify_email
-    ENV.fetch("ORDER_NOTIFY_EMAIL", "denshe1713@gmail.com").presence
+    ENV["ORDER_NOTIFY_EMAIL"].presence ||
+      Rails.application.config.x.brand.order_notify_email.presence ||
+      Rails.application.config.x.brand.email.presence
   end
 
   def self.delivery_ready?
