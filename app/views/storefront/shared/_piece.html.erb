@@ -1,5 +1,6 @@
 <% image = product.display_image %>
-<article class="piece<%= " piece--text" unless image %>">
+<% sold_out = !product.available_for_sale? %>
+<article class="piece<%= " piece--text" unless image %><%= " piece--sold" if sold_out %>">
   <% if image %>
     <div class="piece__frame">
       <%= piece_image image, size: :card, alt: "" %>
@@ -7,17 +8,18 @@
   <% end %>
 
   <div class="badges">
-    <% if product.on_sale? %>
-      <span class="badge badge--gold"><%= product.discount_percentage %>% off</span>
-    <% end %>
-    <% if product.new_arrival? %>
-      <span class="badge">New</span>
-    <% end %>
-    <% if product.bestseller? %>
-      <span class="badge badge--paper">Bestseller</span>
-    <% end %>
-    <% unless product.available_for_sale? %>
-      <span class="badge badge--sold">Sold</span>
+    <% if sold_out %>
+      <span class="badge badge--sold">Sold out</span>
+    <% else %>
+      <% if product.on_sale? %>
+        <span class="badge badge--gold"><%= product.discount_percentage %>% off</span>
+      <% end %>
+      <% if product.new_arrival? %>
+        <span class="badge">New</span>
+      <% end %>
+      <% if product.bestseller? %>
+        <span class="badge badge--paper">Bestseller</span>
+      <% end %>
     <% end %>
   </div>
 

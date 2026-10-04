@@ -1292,7 +1292,23 @@
 }
 
 .badge--sold {
-  background: rgba(11, 13, 31, 0.7);
+  background: var(--ink);
+  color: var(--ivory);
+  letter-spacing: 0.22em;
+}
+
+.piece--sold .piece__frame img {
+  filter: grayscale(0.35);
+  opacity: 0.78;
+}
+
+.piece--sold .piece__name,
+.piece--sold .piece__price {
+  opacity: 0.72;
+}
+
+.detail__sold {
+  margin: 0.55rem 0 0;
 }
 
 /* ----------------------------------------------------------------- shop */
@@ -2951,5 +2967,203 @@ html.js [data-reveal][data-revealed="true"] {
 
   .promises li:last-child {
     border-bottom: 0;
+  }
+}
+
+/* -------------------------------------------------------------- catalogue */
+
+.catalogue-intro .lede {
+  max-width: 36rem;
+}
+
+.catalogue-intro__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.catalogue-jump {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  padding-block: 0.85rem;
+  background: rgba(247, 243, 236, 0.94);
+  border-block: 1px solid var(--line-soft);
+  backdrop-filter: blur(10px);
+}
+
+.catalogue-jump .page {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.catalogue-jump__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1rem;
+}
+
+.catalogue-jump__links a {
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.catalogue-jump__links a:hover,
+.catalogue-jump__links a:focus-visible {
+  border-bottom-color: var(--gold);
+}
+
+.catalogue-section {
+  scroll-margin-top: 5.5rem;
+}
+
+.catalogue-section:nth-child(even) {
+  background: var(--sand);
+}
+
+.catalogue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(11.5rem, 100%), 1fr));
+  gap: clamp(1.25rem, 0.85rem + 1.5vw, 2rem);
+}
+
+.catalogue-card {
+  display: grid;
+  gap: 0.75rem;
+  break-inside: avoid;
+}
+
+.catalogue-card__frame {
+  aspect-ratio: 3 / 4;
+  background: var(--paper, #fff);
+  overflow: hidden;
+}
+
+.catalogue-card__frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.catalogue-card__placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: var(--sand);
+}
+
+.catalogue-card__placeholder img {
+  width: 2.25rem;
+  height: auto;
+  opacity: 0.35;
+  object-fit: contain;
+}
+
+.catalogue-card__body {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.catalogue-card__code {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.catalogue-card__name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.15rem;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.catalogue-card__facts {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  margin: 0.15rem 0 0;
+}
+
+.catalogue-card__facts div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.catalogue-card__facts dt {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.catalogue-card__facts dd {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.catalogue-card__facts div:last-child {
+  text-align: right;
+}
+
+.catalogue-card--sold {
+  opacity: 0.62;
+}
+
+.catalogue-card--sold .catalogue-card__frame img {
+  filter: grayscale(0.35);
+}
+
+@media print {
+  .masthead,
+  .announcement,
+  .footer,
+  .scrim,
+  .search-panel,
+  .panel,
+  .jewellery-box-drawer,
+  .catalogue-intro__actions,
+  .catalogue-jump {
+    display: none !important;
+  }
+
+  .catalogue-intro {
+    padding-top: 1rem;
+    text-align: left;
+  }
+
+  .catalogue-section,
+  .catalogue-section:nth-child(even) {
+    background: none;
+    padding-block: 1rem;
+  }
+
+  .catalogue-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .catalogue-card__frame {
+    aspect-ratio: 1;
+  }
+
+  .catalogue-card,
+  .catalogue-card--sold {
+    opacity: 1;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }
