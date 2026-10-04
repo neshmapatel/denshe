@@ -42,38 +42,3 @@
     </div>
   </div>
 </section>
-
-<section class="section section--sand">
-  <div class="page page--narrow">
-    <div class="section-head section-head--centred">
-      <div class="section-head__text">
-        <p class="eyebrow">A note</p>
-        <h2>This opens a letter in your email app.</h2>
-        <p class="lede">It is addressed to <%= brand.email %>. Nothing is stored on the site.</p>
-      </div>
-    </div>
-
-    <%= form_with url: contact_path, method: :get, html: { class: "form-stack", data: { turbo: false, controller: "note", note_email_value: brand.email, action: "submit->note#send" } } do %>
-      <label class="field">
-        <span>Your name</span>
-        <input type="text" name="name" autocomplete="name">
-      </label>
-      <label class="field">
-        <span>About</span>
-        <select name="subject">
-          <option>A piece in the cabinet</option>
-          <option>A mystery box</option>
-          <option>An order</option>
-          <option>Something else</option>
-        </select>
-      </label>
-      <label class="field">
-        <span>Your note</span>
-        <textarea name="message" required placeholder="The piece name, or who the box is for."></textarea>
-      </label>
-      <button type="submit" class="btn btn--solid">
-        <span>Write the letter</span>
-      </button>
-    <% end %>
-  </div>
-</section>
