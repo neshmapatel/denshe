@@ -9,6 +9,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <% if ENV["GOOGLE_SITE_VERIFICATION"].present? %>
+      <meta name="google-site-verification" content="<%= ENV["GOOGLE_SITE_VERIFICATION"] %>">
+    <% end %>
 
     <%= yield :meta %>
     <%= yield :head %>
