@@ -18,6 +18,15 @@
                     "aria-current": ("page" if request.path.start_with?("/collections")) %>
         <% if catalogue_live? %>
           <div class="nav-panel">
+            <% nav_collection_lines.each do |line| %>
+              <%= link_to collection_path(line.slug) do %>
+                <%= line.name %>
+                <span><%= collection_line_counts[line.slug].to_i %></span>
+              <% end %>
+            <% end %>
+            <% if nav_collection_lines.any? && nav_categories.any? %>
+              <hr class="nav-panel__rule" aria-hidden="true">
+            <% end %>
             <% nav_categories.each do |category| %>
               <%= link_to collection_path(category.slug) do %>
                 <%= category.name %>
@@ -116,6 +125,12 @@
       <div class="panel-nav__group">
         <p class="eyebrow">Collections</p>
         <nav class="panel-nav" aria-label="Collections">
+          <% nav_collection_lines.each do |line| %>
+            <%= link_to collection_path(line.slug) do %>
+              <%= line.name %>
+              <span><%= collection_line_counts[line.slug].to_i %></span>
+            <% end %>
+          <% end %>
           <% nav_categories.each do |category| %>
             <%= link_to collection_path(category.slug) do %>
               <%= category.name %>

@@ -1,8 +1,25 @@
+<% if nav_collection_lines.any? %>
+  <div class="facet">
+    <h2 class="facet__title">Line</h2>
+    <ul class="facet__list">
+      <% nav_collection_lines.each do |line| %>
+        <li>
+          <%= link_to collection_path(line.slug),
+                aria: (@collection_line == line ? { current: "true" } : {}) do %>
+            <%= line.short_name %>
+            <span><%= collection_line_counts[line.slug].to_i %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
 <div class="facet">
   <h2 class="facet__title">Collection</h2>
   <ul class="facet__list">
     <li>
-      <%= link_to "Everything", shop_path, aria: (@category ? {} : { current: "true" }) %>
+      <%= link_to "Everything", shop_path, aria: (@category || @collection_line ? {} : { current: "true" }) %>
     </li>
     <% nav_categories.each do |category| %>
       <li>

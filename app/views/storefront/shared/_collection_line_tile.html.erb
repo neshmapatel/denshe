@@ -1,0 +1,21 @@
+<% count = collection_line_counts[line.slug].to_i %>
+<% cover = Product.catalogue_for(current_market).public_send(line.key)
+             .where.not(primary_image_id: nil)
+             .order(Arel.sql("CASE WHEN products.stock_quantity > 0 THEN 0 ELSE 1 END"),
+                    featured: :desc, bestseller: :desc, created_at: :desc)
+             .first
+             &.gallery_images&.first %>
+<%= link_to collection_path(line.slug), class: "collection-tile collection-tile--line#{' collection-tile--label' unless cover}" do %>
+  <% if cover %>
+    <%= piece_image cover, size: :card, alt: "" %>
+    <span class="collection-tile__veil" aria-hidden="true"></span>
+  <% else %>
+    <span class="collection-tile__mark"><%= image_tag "denshe-mark-navy.png", alt: "" %></span>
+  <% end %>
+  <span class="collection-tile__body">
+    <span class="collection-tile__eyebrow"><%= line.western? ? "Everyday" : "Festive" %></span>
+    <span class="collection-tile__name"><%= line.name %></span>
+    <span class="collection-tile__count"><%= pluralize(count, "piece") %></span>
+    <span class="collection-tile__cue">Open</span>
+  </span>
+<% end %>

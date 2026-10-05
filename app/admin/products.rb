@@ -9,12 +9,14 @@ ActiveAdmin.register Product do
                 :selling_price_aud, :compare_at_price_aud, :packaging_allocation,
                 :shipping_allocation, :gst_rate, :quantity_purchased, :stock_quantity,
                 :low_stock_threshold, :material, :colour, :dimensions, :weight,
-                :care_instructions, :whats_included, :status, :featured, :new_arrival,
+                :care_instructions, :whats_included, :status, :collection_line, :featured, :new_arrival,
                 :bestseller, :meta_title, :meta_description, :primary_image_id,
                 images: [], remove_image_ids: [], clips: [], remove_clip_ids: []
 
   scope :all, default: true
   scope :earrings
+  scope :western
+  scope :indian
   scope :active
   scope :draft
   scope :archived
@@ -37,6 +39,7 @@ ActiveAdmin.register Product do
     column :slug
     column :supplier
     column :category
+    column("Line") { |product| product.collection_line_label }
     column :status
     column("Purchase") { |product| "₹#{product.purchase_price}" }
     column("Selling") { |product| "₹#{product.selling_price}" }
@@ -58,6 +61,7 @@ ActiveAdmin.register Product do
   filter :supplier
   filter :purchase
   filter :category
+  filter :collection_line, as: :select, collection: Product.collection_lines.keys.map { |key| [ key.titleize, key ] }
   filter :status
   filter :featured
   filter :new_arrival
@@ -72,6 +76,7 @@ ActiveAdmin.register Product do
       row :supplier
       row :purchase
       row :category
+      row("Collection line") { |product| product.collection_line_record.name }
       row :status
       row :featured
       row :new_arrival
@@ -188,6 +193,12 @@ ActiveAdmin.register Product do
     f.semantic_errors
     f.inputs "Basic" do
       f.input :category
+      f.input :collection_line, as: :select,
+              collection: Product.collection_lines.keys.map { |key|
+                [ CollectionLine.find(key).name, key ]
+              },
+              include_blank: false,
+              hint: "Western is everyday wear. Indian is the festive cabinet for celebrations."
       f.input :supplier
       f.input :purchase
       f.input :name

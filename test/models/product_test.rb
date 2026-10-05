@@ -161,6 +161,27 @@ class ProductTest < ActiveSupport::TestCase
     assert_includes Product.catalogue_for(Market.australia), product
   end
 
+  test "defaults to the western collection line and can move to indian" do
+    product = Product.create!(
+      category: @category,
+      name: "Everyday Studs",
+      selling_price: 499,
+      stock_quantity: 1,
+      status: :active
+    )
+
+    assert product.western?
+    assert_equal "Western", product.collection_line_label
+    assert_includes Product.western, product
+    assert_not_includes Product.indian, product
+
+    product.update!(collection_line: :indian)
+
+    assert product.indian?
+    assert_equal "Indian Collection", product.collection_line_record.name
+    assert_includes Product.indian, product
+  end
+
   test "keeps short video clips and refuses everything else" do
     product = Product.create!(category: @category, name: "Aurelia Hoops", selling_price: 699, stock_quantity: 1)
     clip = uploaded_clip("turn.mp4", "video/mp4")

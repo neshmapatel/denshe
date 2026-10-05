@@ -1,23 +1,49 @@
 <% page_title "Collections" %>
-<% meta description: "Browse DeNshe by collection: earrings, necklaces, rings, kadas, and the rest of the cabinet." %>
+<% meta description: "Browse DeNshe by collection: Western and Indian lines, then earrings, necklaces, rings, and the rest of the cabinet." %>
 
 <header class="page-intro">
   <div class="page page--narrow">
     <p class="eyebrow">The cabinet</p>
     <h1>Collections</h1>
-    <p class="lede">A small set of shelves. Open one, and take your time.</p>
+    <p class="lede">Two lines share the shelves — everyday Western pieces, and an Indian edit for festivals and celebrations.</p>
   </div>
 </header>
+
+<%= render "storefront/shared/festive_banner" %>
+
+<% if @collection_lines.any? %>
+  <section class="section section--tight">
+    <div class="page">
+      <header class="section-head">
+        <div class="section-head__text">
+          <p class="eyebrow">The lines</p>
+          <h2>Western &amp; Indian</h2>
+        </div>
+      </header>
+      <div class="collection-grid collection-grid--lines" data-reveal>
+        <% @collection_lines.each do |line| %>
+          <%= render "storefront/shared/collection_line_tile", line: line %>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>
 
 <section class="section section--tight">
   <div class="page">
     <% if @categories.any? %>
+      <header class="section-head">
+        <div class="section-head__text">
+          <p class="eyebrow">By type</p>
+          <h2>The shelves</h2>
+        </div>
+      </header>
       <div class="collection-grid" data-reveal>
         <% @categories.each do |category| %>
           <%= render "storefront/shared/collection_tile", category: category %>
         <% end %>
       </div>
-    <% else %>
+    <% elsif @collection_lines.empty? %>
       <div class="empty">
         <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
         <h2>The shelves are being named.</h2>

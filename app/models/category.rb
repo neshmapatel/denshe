@@ -7,6 +7,7 @@ class Category < ApplicationRecord
 
   validates :name, presence: true, uniqueness: true
   validates :position, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validate :slug_not_reserved_for_collection_line
 
   scope :ordered, -> { order(:position, :name) }
   scope :stocked, -> { where(id: Product.catalogue.select(:category_id)) }
@@ -35,5 +36,13 @@ class Category < ApplicationRecord
 
   def to_s
     name
+  end
+
+  private
+
+  def slug_not_reserved_for_collection_line
+    return unless CollectionLine.reserved_slug?(slug)
+
+    errors.add(:slug, "is reserved for the #{slug} collection line")
   end
 end

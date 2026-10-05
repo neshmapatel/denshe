@@ -5,7 +5,8 @@ module Storefront
     before_action :hold_for_launch
     before_action :resolve_market
 
-    helper_method :nav_categories, :category_counts, :catalogue_live?, :brand, :current_cart,
+    helper_method :nav_categories, :category_counts, :nav_collection_lines, :collection_line_counts,
+                  :catalogue_live?, :brand, :current_cart,
                   :current_market, :australia?, :market_switch_path
 
     private
@@ -20,6 +21,19 @@ module Storefront
 
     def category_counts
       @category_counts ||= Product.catalogue_for(current_market).group(:category_id).count
+    end
+
+    def nav_collection_lines
+      @nav_collection_lines ||= CollectionLine.all.select do |line|
+        collection_line_counts[line.key].to_i.positive?
+      end
+    end
+
+    def collection_line_counts
+      @collection_line_counts ||= begin
+        catalogue = Product.catalogue_for(current_market)
+        CollectionLine::SLUGS.index_with { |slug| catalogue.public_send(slug).count }
+      end
     end
 
     def catalogue_live?

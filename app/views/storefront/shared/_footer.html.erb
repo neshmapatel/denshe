@@ -43,7 +43,10 @@
         <h3>Collections</h3>
         <ul>
           <% if catalogue_live? %>
-            <% nav_categories.first(6).each do |category| %>
+            <% nav_collection_lines.each do |line| %>
+              <li><%= link_to line.name, collection_path(line.slug) %></li>
+            <% end %>
+            <% nav_categories.first(4).each do |category| %>
               <li><%= link_to category.name, collection_path(category.slug) %></li>
             <% end %>
           <% else %>

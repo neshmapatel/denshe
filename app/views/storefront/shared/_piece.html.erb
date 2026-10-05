@@ -30,7 +30,8 @@
   <div class="piece__body">
     <%= link_to piece_path(product.slug), class: "piece__link" do %>
       <p class="piece__meta">
-        <%= product.category.name %>
+        <%= product.collection_line_label %>
+        · <%= product.category.name %>
         <% if product.colour.present? %>
           · <%= product.colour.titleize %>
         <% end %>

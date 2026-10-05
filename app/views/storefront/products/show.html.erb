@@ -18,6 +18,7 @@
   <div class="page">
     <%= render "storefront/shared/breadcrumbs", crumbs: [
           { name: "Shop", url: shop_path },
+          { name: @product.collection_line_record.name, url: collection_path(@product.collection_line) },
           { name: @product.category.name, url: collection_path(@product.category.slug) },
           { name: @product.name }
         ] %>
@@ -95,7 +96,11 @@
 
       <div class="detail__info">
         <div>
-          <p class="eyebrow"><%= link_to @product.category.name, collection_path(@product.category.slug) %></p>
+          <p class="eyebrow">
+            <%= link_to @product.collection_line_record.name, collection_path(@product.collection_line) %>
+            ·
+            <%= link_to @product.category.name, collection_path(@product.category.slug) %>
+          </p>
           <h1 class="detail__title"><%= @product.name %></h1>
           <% unless @product.available_for_sale? %>
             <p class="detail__sold"><span class="badge badge--sold">Sold out</span></p>
@@ -233,7 +238,8 @@
       "@type" => "BreadcrumbList",
       "itemListElement" => [
         { "@type" => "ListItem", "position" => 1, "name" => "Shop", "item" => shop_url },
-        { "@type" => "ListItem", "position" => 2, "name" => @product.category.name, "item" => collection_url(@product.category.slug) },
-        { "@type" => "ListItem", "position" => 3, "name" => @product.name, "item" => piece_url(@product.slug) }
+        { "@type" => "ListItem", "position" => 2, "name" => @product.collection_line_record.name, "item" => collection_url(@product.collection_line) },
+        { "@type" => "ListItem", "position" => 3, "name" => @product.category.name, "item" => collection_url(@product.category.slug) },
+        { "@type" => "ListItem", "position" => 4, "name" => @product.name, "item" => piece_url(@product.slug) }
       ]
     ) %>

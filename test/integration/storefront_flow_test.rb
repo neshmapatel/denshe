@@ -59,6 +59,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", /chosen to feel like you/i
+    assert_select "h2", text: /A little more sparkle/
     assert_match "See something you love?", response.body
     assert_select "img[alt='DeNshe Jewellery']"
     assert_no_match "Pieces we’re loving right now", response.body
@@ -90,12 +91,36 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
       selling_price: 499,
       purchase_price: 120,
       stock_quantity: 1,
-      status: :active
+      status: :active,
+      collection_line: :western
+    )
+    Product.create!(
+      category: @category,
+      name: "Festive Jhumkas",
+      selling_price: 1299,
+      purchase_price: 400,
+      stock_quantity: 2,
+      status: :active,
+      collection_line: :indian
     )
     get collections_path
     assert_response :success
+    assert_select "h2", text: /A little more sparkle/
+    assert_select "a.collection-tile[href='#{collection_path('western')}']", text: /Western Collection/
+    assert_select "a.collection-tile[href='#{collection_path('indian')}']", text: /Indian Collection/
+    assert_select "a.festive-banner__link[href='#{collection_path('indian')}']"
     assert_select "a.collection-tile[href='#{collection_path(bracelets.slug)}'] img[src*='collection-bracelets']"
     assert_select "a.collection-tile[href='#{collection_path(@category.slug)}'] img[src*='collection-earrings']"
+
+    get collection_path("indian")
+    assert_response :success
+    assert_select "h1", "Indian Collection"
+    assert_select "article.piece", 1
+    assert_select ".piece__meta", /Indian/
+
+    get collection_path("western")
+    assert_response :success
+    assert_select "h1", "Western Collection"
 
     pendants = Category.create!(name: "Chain Pendants", position: 3)
     Product.create!(
