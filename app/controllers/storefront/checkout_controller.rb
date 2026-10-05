@@ -9,22 +9,25 @@ module Storefront
 
     def create
       @checkout = Checkout.from_params(checkout_params)
+      @checkout.market = current_market
       order = @checkout.place!(current_cart)
 
       if order
-        current_cart.clear
+        order.order_items.each { |item| current_cart.remove(item.product) if item.product }
         session[:order_id] = order.id
-        redirect_to checkout_payment_path
+        redirect_to(order.australia? ? checkout_success_path : checkout_payment_path)
       else
         render :new, status: :unprocessable_entity
       end
     end
 
     def payment
-      redirect_to checkout_success_path if @order.payment_paid?
+      redirect_to checkout_success_path if @order.payment_paid? || @order.australia?
     end
 
     def success
+      return if @order.australia?
+
       redirect_to checkout_payment_path unless @order.payment_paid?
     end
 
@@ -111,7 +114,13 @@ module Storefront
     private
 
     def require_pieces
-      redirect_to cart_path, alert: "Select a piece before checkout." if current_cart.empty?
+      return if current_cart.checkout_items.any?
+
+      if current_cart.items.any?
+        redirect_to cart_path, alert: "These pieces are part of the India shop. Remove them, or switch to India, to continue."
+      else
+        redirect_to cart_path, alert: "Select a piece before checkout."
+      end
     end
 
     def load_order

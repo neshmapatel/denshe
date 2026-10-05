@@ -2,9 +2,11 @@ class OrderMailer < ApplicationMailer
   def created(order)
     @order = order
     @brand = Rails.application.config.x.brand
+    subject = "New DeNshe order #{order.number}"
+    subject = "#{subject} — Australia" if order.australia?
     mail(
       to: self.class.notify_email,
-      subject: "New DeNshe order #{order.number}"
+      subject: subject
     )
   end
 

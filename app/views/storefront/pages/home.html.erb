@@ -39,8 +39,10 @@
       <%= link_to shop_path, class: "btn btn--ivory btn--solid" do %>
         <span>Explore the collection</span>
       <% end %>
-      <%= link_to mystery_box_path, class: "btn btn--ivory" do %>
-        <span>Discover the mystery box</span>
+      <% unless australia? %>
+        <%= link_to mystery_box_path, class: "btn btn--ivory" do %>
+          <span>Discover the mystery box</span>
+        <% end %>
       <% end %>
     </div>
   </div>
@@ -93,15 +95,17 @@
   </div>
 </section>
 
-<section class="section section--ink" data-reveal>
-  <div class="page centre">
-    <p class="eyebrow">Mystery box</p>
-    <h2>Tell us a little about you.<br>We’ll take care of the rest.</h2>
-    <%= link_to mystery_box_path, class: "btn btn--ivory" do %>
-      <span>Build your mystery box</span>
-    <% end %>
-  </div>
-</section>
+<% unless australia? %>
+  <section class="section section--ink" data-reveal>
+    <div class="page centre">
+      <p class="eyebrow">Mystery box</p>
+      <h2>Tell us a little about you.<br>We’ll take care of the rest.</h2>
+      <%= link_to mystery_box_path, class: "btn btn--ivory" do %>
+        <span>Build your mystery box</span>
+      <% end %>
+    </div>
+  </section>
+<% end %>
 
 <% if instagram_url %>
   <section class="section" data-reveal>

@@ -22,7 +22,7 @@
         <fieldset class="form-stack">
           <legend class="eyebrow">Your name</legend>
           <%= render "storefront/checkout/field", form: form, attribute: :name, label: "Full name", autocomplete: "name" %>
-          <%= render "storefront/checkout/field", form: form, attribute: :phone, label: "Mobile number", autocomplete: "tel", inputmode: "numeric" %>
+          <%= render "storefront/checkout/field", form: form, attribute: :phone, label: "Mobile number", autocomplete: "tel", inputmode: (australia? ? "tel" : "numeric") %>
           <%= render "storefront/checkout/field", form: form, attribute: :email, label: "Email", autocomplete: "email", required: false %>
         </fieldset>
 
@@ -32,11 +32,11 @@
           <%= render "storefront/checkout/field", form: form, attribute: :line2, label: "Address line 2", autocomplete: "address-line2", required: false %>
           <div class="checkout__pair">
             <%= render "storefront/checkout/field", form: form, attribute: :city, label: "City", autocomplete: "address-level2" %>
-            <%= render "storefront/checkout/field", form: form, attribute: :pin_code, label: "PIN code", autocomplete: "postal-code", inputmode: "numeric" %>
+            <%= render "storefront/checkout/field", form: form, attribute: :pin_code, label: (australia? ? "Postcode" : "PIN code"), autocomplete: "postal-code", inputmode: "numeric" %>
           </div>
           <label class="field">
             <span>State</span>
-            <%= form.select :state, Checkout::STATES, { include_blank: "Select a state" }, autocomplete: "address-level1", aria: { invalid: @checkout.errors[:state].any? } %>
+            <%= form.select :state, (australia? ? Checkout::AUSTRALIAN_STATES : Checkout::STATES), { include_blank: "Select a state" }, autocomplete: "address-level1", aria: { invalid: @checkout.errors[:state].any? } %>
             <% if @checkout.errors[:state].any? %>
               <small class="field__error"><%= @checkout.errors[:state].to_sentence %></small>
             <% end %>
@@ -54,11 +54,11 @@
           <%= render "storefront/checkout/field", form: form, attribute: :billing_line2, label: "Address line 2", autocomplete: "billing address-line2", required: false %>
           <div class="checkout__pair">
             <%= render "storefront/checkout/field", form: form, attribute: :billing_city, label: "City", autocomplete: "billing address-level2", required: false %>
-            <%= render "storefront/checkout/field", form: form, attribute: :billing_pin_code, label: "PIN code", autocomplete: "billing postal-code", inputmode: "numeric", required: false %>
+            <%= render "storefront/checkout/field", form: form, attribute: :billing_pin_code, label: (australia? ? "Postcode" : "PIN code"), autocomplete: "billing postal-code", inputmode: "numeric", required: false %>
           </div>
           <label class="field">
             <span>State</span>
-            <%= form.select :billing_state, Checkout::STATES, { include_blank: "Select a state" }, autocomplete: "billing address-level1", aria: { invalid: @checkout.errors[:billing_state].any? } %>
+            <%= form.select :billing_state, (australia? ? Checkout::AUSTRALIAN_STATES : Checkout::STATES), { include_blank: "Select a state" }, autocomplete: "billing address-level1", aria: { invalid: @checkout.errors[:billing_state].any? } %>
             <% if @checkout.errors[:billing_state].any? %>
               <small class="field__error"><%= @checkout.errors[:billing_state].to_sentence %></small>
             <% end %>
@@ -66,14 +66,14 @@
         </fieldset>
 
         <%= form.button class: "btn btn--solid" do %>
-          <span>Continue to payment</span>
+          <span><%= australia? ? "Place order" : "Continue to payment" %></span>
         <% end %>
       <% end %>
 
       <aside class="bag__total checkout__summary">
         <p class="eyebrow">Selected</p>
         <ul class="checkout__lines">
-          <% current_cart.items.each do |line| %>
+          <% current_cart.checkout_items.each do |line| %>
             <li>
               <span><%= line.product.name %></span>
               <span><%= price(line.line_total) %></span>
@@ -85,11 +85,13 @@
           </li>
         </ul>
         <div class="bag__due">
-          <p>To pay</p>
+          <p><%= australia? ? "Total" : "To pay" %></p>
           <p><%= price(due_for(current_cart.subtotal)) %></p>
         </div>
         <p class="checkout__note">
-          <% if shipping_amount_for(current_cart.subtotal).zero? %>
+          <% if australia? %>
+            We'll write to you to confirm delivery and payment. Placing the order reserves the piece.
+          <% elsif shipping_amount_for(current_cart.subtotal).zero? %>
             Shipping is complimentary on this order.
           <% else %>
             Standard shipping <%= price(brand.standard_shipping) %>. Complimentary from <%= price(brand.free_shipping_above) %>.

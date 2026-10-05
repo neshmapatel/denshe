@@ -66,14 +66,37 @@ module StorefrontHelper
     @holds_by_others ||= CartHold.quantities_held_by_others(current_cart.session_key)
   end
 
-  def price(amount)
+  def price(amount, currency: nil)
+    currency ||= current_market.currency
     amount = amount.to_d
-    number_to_currency(
-      amount,
-      unit: "₹",
-      precision: amount == amount.to_i ? 0 : 2,
-      delimiter_pattern: /(\d+?)(?=(\d\d)+(\d)(?!\d))/
-    )
+    whole = amount == amount.to_i
+
+    if currency == "AUD"
+      number_to_currency(amount, unit: "A$", precision: whole ? 0 : 2, format: "%u%n")
+    else
+      number_to_currency(
+        amount,
+        unit: "₹",
+        precision: whole ? 0 : 2,
+        delimiter_pattern: /(\d+?)(?=(\d\d)+(\d)(?!\d))/
+      )
+    end
+  end
+
+  def listed_price(product)
+    product.price_for(current_market)
+  end
+
+  def listed_compare_price(product)
+    product.compare_at_for(current_market)
+  end
+
+  def listed_on_sale?(product)
+    product.on_sale_for?(current_market)
+  end
+
+  def listed_discount(product)
+    product.discount_percentage_for(current_market)
   end
 
   def brand
@@ -85,10 +108,14 @@ module StorefrontHelper
   end
 
   def shipping_amount_for(subtotal)
+    return 0.to_d if australia?
+
     Checkout.shipping_amount_for(subtotal)
   end
 
   def shipping_label_for(subtotal)
+    return "Confirmed with you" if australia?
+
     amount = shipping_amount_for(subtotal)
     amount.positive? ? price(amount) : "Complimentary"
   end
@@ -125,7 +152,7 @@ module StorefrontHelper
         tag.meta(name: "robots", content: index ? "index, follow" : "noindex, follow"),
         tag.meta(property: "og:site_name", content: brand.name),
         tag.meta(property: "og:type", content: type),
-        tag.meta(property: "og:locale", content: "en_IN"),
+        tag.meta(property: "og:locale", content: (australia? ? "en_AU" : "en_IN")),
         tag.meta(property: "og:title", content: title),
         tag.meta(property: "og:description", content: description),
         tag.meta(property: "og:image", content: picture),
@@ -168,11 +195,12 @@ module StorefrontHelper
     image = product.display_image || product.gallery_images.first
     data["image"] = absolute_asset(url_for(image)) if image
 
-    if product.selling_price.to_d.positive?
+    selling = product.price_for(current_market)
+    if product.offered_in?(current_market) && selling.to_d.positive?
       data["offers"] = {
         "@type" => "Offer",
-        "priceCurrency" => "INR",
-        "price" => format("%.2f", product.selling_price),
+        "priceCurrency" => current_market.currency,
+        "price" => format("%.2f", selling),
         "availability" => (product.available_for_sale? ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"),
         "itemCondition" => "https://schema.org/NewCondition",
         "url" => piece_url(product.slug)
@@ -213,7 +241,7 @@ module StorefrontHelper
     {
       jewellery_box_slug_param: product.slug,
       jewellery_box_name_param: product.name,
-      jewellery_box_price_param: price(product.selling_price),
+      jewellery_box_price_param: (price(product.price_for(current_market)) if product.offered_in?(current_market)),
       jewellery_box_url_param: piece_url(product.slug),
       jewellery_box_image_param: image ? url_for(piece_image_source(image, :thumb)) : nil
     }.compact

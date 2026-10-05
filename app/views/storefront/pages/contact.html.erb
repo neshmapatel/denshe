@@ -37,7 +37,11 @@
       <article class="contact-card">
         <p class="eyebrow">Dispatch</p>
         <h3><%= brand.ships_from %></h3>
-        <p>Orders leave within <%= brand.dispatch_window %>. Shipping is <%= price(brand.standard_shipping) %> below <%= price(brand.free_shipping_above) %>, complimentary above.</p>
+        <% if australia? %>
+          <p>Prices are in Australian dollars. After you place an order we write to confirm delivery and payment, then dispatch from <%= brand.city %>.</p>
+        <% else %>
+          <p>Orders leave within <%= brand.dispatch_window %>. Shipping is <%= price(brand.standard_shipping) %> below <%= price(brand.free_shipping_above) %>, complimentary above.</p>
+        <% end %>
       </article>
     </div>
   </div>

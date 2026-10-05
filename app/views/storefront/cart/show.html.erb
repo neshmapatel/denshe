@@ -35,7 +35,7 @@
             <div class="bag__copy">
               <p class="piece__meta"><%= line.product.category.name %></p>
               <h2><%= link_to line.product.name, piece_path(line.product.slug) %></h2>
-              <p class="piece__price"><%= price(line.line_total) %></p>
+              <p class="piece__price"><%= line.offered? ? price(line.line_total) : "Available in India" %></p>
             </div>
             <%= button_to "Remove", cart_item_path(line.product.slug), method: :delete, class: "link-quiet bag__remove" %>
           </li>
@@ -52,11 +52,21 @@
           <p><%= shipping_label_for(current_cart.subtotal) %></p>
         </div>
         <div class="bag__due">
-          <p>To pay</p>
+          <p><%= australia? ? "Total" : "To pay" %></p>
           <p><%= price(due_for(current_cart.subtotal)) %></p>
         </div>
-        <%= link_to checkout_path, class: "btn btn--solid btn--block" do %>
-          <span>Checkout</span>
+        <% if current_cart.items.any? { |line| !line.offered? } %>
+          <p class="checkout__note">Some pieces are part of the India shop. Remove them to check out here, or switch to India.</p>
+          <%= link_to market_switch_path("in"), class: "btn btn--block" do %>
+            <span>Shop in India</span>
+          <% end %>
+        <% else %>
+          <% if australia? %>
+            <p class="checkout__note">We'll write to you to confirm delivery and payment. Placing the order reserves the piece.</p>
+          <% end %>
+          <%= link_to checkout_path, class: "btn btn--solid btn--block" do %>
+            <span>Checkout</span>
+          <% end %>
         <% end %>
       </div>
     <% end %>

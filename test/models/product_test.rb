@@ -140,6 +140,27 @@ class ProductTest < ActiveSupport::TestCase
     assert_equal front.filename.to_s, "front.png"
   end
 
+  test "requires an australian price when the piece is visible there" do
+    product = Product.new(category: @category, name: "Hoops", selling_price: 10, visible_in_australia: true)
+
+    assert_not product.valid?
+    assert_includes product.errors[:selling_price_aud], "must be set when the piece is visible in Australia"
+  end
+
+  test "offers a piece in australia only when it is flagged and priced" do
+    product = Product.create!(category: @category, name: "Hoops", selling_price: 699, stock_quantity: 1, status: :active)
+
+    assert product.offered_in?(Market.india)
+    assert_not product.offered_in?(Market.australia)
+
+    product.update!(visible_in_australia: true, selling_price_aud: 49, compare_at_price_aud: 59)
+
+    assert product.offered_in?(Market.australia)
+    assert_equal 49, product.price_for(Market.australia)
+    assert product.on_sale_for?(Market.australia)
+    assert_includes Product.catalogue_for(Market.australia), product
+  end
+
   test "keeps short video clips and refuses everything else" do
     product = Product.create!(category: @category, name: "Aurelia Hoops", selling_price: 699, stock_quantity: 1)
     clip = uploaded_clip("turn.mp4", "video/mp4")

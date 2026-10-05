@@ -11,8 +11,8 @@
     <% if sold_out %>
       <span class="badge badge--sold">Sold out</span>
     <% else %>
-      <% if product.on_sale? %>
-        <span class="badge badge--gold"><%= product.discount_percentage %>% off</span>
+      <% if listed_on_sale?(product) %>
+        <span class="badge badge--gold"><%= listed_discount(product) %>% off</span>
       <% end %>
       <% if product.new_arrival? %>
         <span class="badge">New</span>
@@ -38,11 +38,11 @@
       <h3 class="piece__name"><%= product.name %></h3>
     <% end %>
     <p class="piece__price">
-      <% if product.on_sale? %>
-        <del><%= price(product.compare_at_price) %></del>
-        <ins><%= price(product.selling_price) %></ins>
+      <% if listed_on_sale?(product) %>
+        <del><%= price(listed_compare_price(product)) %></del>
+        <ins><%= price(listed_price(product)) %></ins>
       <% else %>
-        <%= price(product.selling_price) %>
+        <%= price(listed_price(product)) %>
       <% end %>
     </p>
     <%= render "storefront/shared/availability", product: product %>

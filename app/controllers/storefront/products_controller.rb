@@ -17,7 +17,7 @@ module Storefront
     private
 
     def related_pieces
-      Product.catalogue
+      Product.catalogue_for(current_market)
         .with_storefront_includes
         .where(category_id: @product.category_id)
         .where.not(id: @product.id)

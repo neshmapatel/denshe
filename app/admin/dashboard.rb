@@ -71,7 +71,7 @@ ActiveAdmin.register_page "Dashboard" do
           column(:number) { |order| link_to order.to_s, admin_order_path(order) }
           column(:customer, &:customer_display_name)
           column(:status) { |order| status_tag order.status }
-          column(:total) { |order| "₹#{order.total}" }
+          column(:total) { |order| order.money(order.total) }
         end
       else
         para "No orders yet. Checkout lands in Phase 3."

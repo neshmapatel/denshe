@@ -12,16 +12,32 @@
 <section class="section section--tight">
   <div class="page page--narrow prose">
     <h2>Where we ship</h2>
-    <p>DeNshe Jewellery ships across India from Anand, Gujarat. We currently do not ship outside India.</p>
+    <% if australia? %>
+      <p>Orders for Australia leave from Anand, Gujarat. After you place an order we write to confirm delivery and payment, then pack the piece.</p>
+    <% else %>
+      <p>DeNshe Jewellery ships across India from Anand, Gujarat. We currently do not ship outside India.</p>
+    <% end %>
 
     <h2>Charges</h2>
-    <p>Standard shipping is <%= price(brand.standard_shipping) %> on orders below <%= price(brand.free_shipping_above) %>. Shipping is complimentary on orders of <%= price(brand.free_shipping_above) %> and above.</p>
+    <% if australia? %>
+      <p>Prices on this shop are in Australian dollars. Delivery is confirmed with you before the parcel leaves. If Australian customs charges import GST or duty, that is paid by you on delivery.</p>
+    <% else %>
+      <p>Standard shipping is <%= price(brand.standard_shipping) %> on orders below <%= price(brand.free_shipping_above) %>. Shipping is complimentary on orders of <%= price(brand.free_shipping_above) %> and above.</p>
+    <% end %>
 
     <h2>Dispatch</h2>
-    <p>Orders are usually packed and handed to the courier within <%= brand.dispatch_window %> after payment is confirmed. Delivery time after that depends on your PIN code and the courier. You will receive tracking details by email or message when they are available.</p>
+    <% if australia? %>
+      <p>Once we have confirmed payment and delivery with you, the order is packed and handed to the courier. International delivery takes longer than a parcel within India. We send tracking when it is available.</p>
+    <% else %>
+      <p>Orders are usually packed and handed to the courier within <%= brand.dispatch_window %> after payment is confirmed. Delivery time after that depends on your PIN code and the courier. You will receive tracking details by email or message when they are available.</p>
+    <% end %>
 
     <h2>Mystery boxes</h2>
-    <p>Mystery boxes follow the same shipping rates and dispatch window. The pieces inside are chosen for you after you order; they are not returnable for a different selection once the box has been opened, unless something arrived damaged or incorrect.</p>
+    <% if australia? %>
+      <p>Mystery boxes are part of the India shop. Switch to India in the header if you would like one.</p>
+    <% else %>
+      <p>Mystery boxes follow the same shipping rates and dispatch window. The pieces inside are chosen for you after you order; they are not returnable for a different selection once the box has been opened, unless something arrived damaged or incorrect.</p>
+    <% end %>
 
     <h2>Returns & exchanges</h2>
     <p>If a piece arrives damaged, or we sent the wrong item, write to <%= mail_to brand.email %> within 48 hours of delivery with your order number and a clear photo. We will arrange a replacement or refund for DeNshe Jewellery’s error.</p>

@@ -28,8 +28,10 @@
         <% end %>
       </div>
 
-      <%= link_to "Mystery box", mystery_box_path, class: "nav-link",
-                  "aria-current": ("page" if current_page?(mystery_box_path)) %>
+      <% unless australia? %>
+        <%= link_to "Mystery box", mystery_box_path, class: "nav-link",
+                    "aria-current": ("page" if current_page?(mystery_box_path)) %>
+      <% end %>
     </nav>
 
     <%= link_to root_path, class: "masthead__brand", "aria-label": "DeNshe Jewellery, home" do %>
@@ -37,6 +39,8 @@
     <% end %>
 
     <nav class="masthead__nav masthead__nav--end" aria-label="Secondary">
+      <%= render "storefront/shared/market_switch" %>
+
       <%= link_to "Our story", story_path, class: "nav-link",
                   "aria-current": ("page" if current_page?(story_path)) %>
 
@@ -100,7 +104,9 @@
     <nav class="panel-nav" aria-label="Mobile">
       <%= link_to "Shop all", shop_path %>
       <%= link_to "Catalogue", catalogue_path %>
-      <%= link_to "Mystery box", mystery_box_path %>
+      <% unless australia? %>
+        <%= link_to "Mystery box", mystery_box_path %>
+      <% end %>
       <%= link_to "Our story", story_path %>
       <%= link_to "Care guide", care_path %>
       <%= link_to "Contact", contact_path %>

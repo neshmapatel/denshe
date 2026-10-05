@@ -566,6 +566,72 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_select "article.piece--sold .badge--sold", text: /sold out/i
   end
 
+  test "australia shows only priced pieces and records an order without payment" do
+    hidden = Product.create!(
+      category: @category,
+      name: "India Only Studs",
+      selling_price: 499,
+      stock_quantity: 1,
+      status: :active
+    )
+    @product.update!(visible_in_australia: true, selling_price_aud: 49, compare_at_price_aud: 59)
+
+    get shop_path, headers: { "CF-IPCountry" => "AU" }
+    assert_response :success
+    assert_select "article.piece", 1
+    assert_match "A$49", response.body
+    assert_no_match "India Only Studs", response.body
+    assert_no_match "Mystery box", response.body
+
+    get piece_path(hidden.slug)
+    assert_response :success
+    assert_match "Available in India", response.body
+    assert_select ".detail__actions button", text: /Select/, count: 0
+    assert_select ".detail__actions a", text: /View in the India shop/
+
+    get shop_path(market: "in")
+    assert_redirected_to shop_path
+    follow_redirect!
+    assert_select "article.piece", 2
+    assert_match "₹699", response.body
+
+    get shop_path(market: "au")
+    follow_redirect!
+    post cart_items_path, params: { slug: @product.slug }
+    assert_redirected_to shop_path
+
+    get checkout_path
+    assert_response :success
+    assert_select "button", text: /Place order/
+    assert_match "Postcode", response.body
+    assert_match "A$49", response.body
+
+    assert_enqueued_emails 1 do
+      post checkout_path, params: {
+        checkout: {
+          name: "Mia Chen",
+          phone: "0412345678",
+          email: "mia@example.com",
+          line1: "18 Crown Street",
+          city: "Sydney",
+          state: "New South Wales",
+          pin_code: "2000",
+          billing_same: "1"
+        }
+      }
+    end
+    assert_redirected_to checkout_success_path
+    follow_redirect!
+    assert_match "arrange payment and delivery", response.body
+    assert_match "A$49", response.body
+
+    order = Order.order(:id).last
+    assert_equal "AUD", order.currency
+    assert_equal "unpaid", order.payment_status
+    assert_equal 0, @product.reload.stock_quantity
+    assert_equal "Australia", order.shipping_address.country
+  end
+
   private
 
   def with_razorpay_orders(client)

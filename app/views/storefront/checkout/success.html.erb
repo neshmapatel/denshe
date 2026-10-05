@@ -7,7 +7,11 @@
       <div class="section-head__text">
         <p class="eyebrow">Order <%= @order.number %></p>
         <h1>Hey<% if @order.guest_name.present? %>, <%= @order.guest_name.split.first %><% end %>.</h1>
-        <p class="lede">Your order has been placed. Our team will reach out to you in case of any queries.</p>
+        <% if @order.australia? %>
+          <p class="lede">Your order is reserved. The total is <%= price(@order.total, currency: @order.currency) %>. We'll contact you to arrange payment and delivery to Australia.</p>
+        <% else %>
+          <p class="lede">Your order has been placed. Our team will reach out to you in case of any queries.</p>
+        <% end %>
       </div>
     </header>
 

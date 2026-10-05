@@ -10,8 +10,9 @@ module Storefront
 
     private
 
-    def load_products(scope: Product.catalogue)
-      @filter = ProductFilter.new(params, scope: scope)
+    def load_products(scope: nil)
+      scope ||= Product.catalogue_for(current_market)
+      @filter = ProductFilter.new(params, scope: scope, market: current_market)
       @pagination = Paginator.new(@filter.results.with_storefront_includes, page: params[:page])
       @products = @pagination.records
     end

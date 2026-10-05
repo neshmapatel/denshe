@@ -20,8 +20,9 @@ class Category < ApplicationRecord
   end
 
   # Collection tiles borrow the strongest piece in the collection as their cover.
-  def cover_product
-    @cover_product ||= catalogue_products
+  def cover_product(market = Market.india)
+    @cover_products ||= {}
+    @cover_products[market.code] ||= products.merge(Product.catalogue_for(market))
       .where.not(primary_image_id: nil)
       .order(Arel.sql("CASE WHEN products.stock_quantity > 0 THEN 0 ELSE 1 END"),
              featured: :desc, bestseller: :desc, created_at: :desc)
