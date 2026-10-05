@@ -2,8 +2,13 @@ A new order was placed on denshe.shop.
 
 Order: <%= @order.number %>
 Type: <%= @order.mystery_box? ? "Mystery box" : "Catalogue" %>
-Total: ₹<%= @order.total %>
+Market: <%= @order.australia? ? "Australia" : "India" %>
+Total: <%= @order.money(@order.total) %>
 Payment: <%= @order.payment_status.humanize %>
+<% if @order.australia? %>
+
+This order is from Australia. Contact the customer to arrange payment and delivery. The piece is already reserved.
+<% end %>
 
 Customer:
 <%= @order.guest_name %>
@@ -17,9 +22,9 @@ Shipping:
 
 Items:
 <% @order.order_items.each do |item| %>
-- <%= item.quantity %> × <%= item.name %> — ₹<%= item.line_total %>
+- <%= item.quantity %> × <%= item.name %> — <%= @order.money(item.line_total) %>
 <% end %>
-- Shipping — <%= @order.shipping_amount.to_d.positive? ? "₹#{@order.shipping_amount}" : "Complimentary" %>
+- Shipping — <%= @order.australia? && !@order.shipping_amount.to_d.positive? ? "to confirm with the customer" : (@order.shipping_amount.to_d.positive? ? @order.money(@order.shipping_amount) : "Complimentary") %>
 
 <% if @order.mystery_box? && @order.mystery_box_preference.present? %>
 Mystery box answers:

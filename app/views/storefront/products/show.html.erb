@@ -103,22 +103,31 @@
         </div>
 
         <div>
-          <p class="detail__price">
-            <% if @product.on_sale? %>
-              <del><%= price(@product.compare_at_price) %></del>
-          <ins><%= price(@product.selling_price) %></ins>
-              <span class="badge badge--gold"><%= @product.discount_percentage %>% off</span>
-            <% else %>
-              <%= price(@product.selling_price) %>
+          <% if @product.offered_in?(current_market) %>
+            <p class="detail__price">
+              <% if listed_on_sale?(@product) %>
+                <del><%= price(listed_compare_price(@product)) %></del>
+                <ins><%= price(listed_price(@product)) %></ins>
+                <span class="badge badge--gold"><%= listed_discount(@product) %>% off</span>
+              <% else %>
+                <%= price(listed_price(@product)) %>
+              <% end %>
+            </p>
+            <% unless held_by_someone_else?(@product) %>
+              <%= render "storefront/shared/availability", product: @product %>
             <% end %>
-          </p>
-          <% unless held_by_someone_else?(@product) %>
-            <%= render "storefront/shared/availability", product: @product %>
+            <p class="detail__tax">
+              <% if australia? %>
+                <%= brand.ships_from %>. We'll confirm delivery to Australia when we write to you.
+              <% else %>
+                <%= brand.ships_from %>. Dispatch in <%= brand.dispatch_window %>.
+                Shipping <%= price(brand.standard_shipping) %> below <%= price(brand.free_shipping_above) %>; complimentary above.
+              <% end %>
+            </p>
+          <% else %>
+            <p class="detail__price">Available in India</p>
+            <p class="detail__tax">This piece is offered in the India shop, with its price in rupees.</p>
           <% end %>
-          <p class="detail__tax">
-            <%= brand.ships_from %>. Dispatch in <%= brand.dispatch_window %>.
-            Shipping <%= price(brand.standard_shipping) %> below <%= price(brand.free_shipping_above) %>; complimentary above.
-          </p>
         </div>
 
         <% if customer_copy(@product.short_description) %>
@@ -136,7 +145,11 @@
         <% end %>
 
         <div class="detail__actions">
-          <% if @product.available_for_sale? && !held_by_someone_else?(@product) %>
+          <% if !@product.offered_in?(current_market) %>
+            <%= link_to market_switch_path("in"), class: "btn btn--solid btn--block" do %>
+              <span>View in the India shop</span>
+            <% end %>
+          <% elsif @product.available_for_sale? && !held_by_someone_else?(@product) %>
             <% if current_cart.include?(@product) %>
               <%= link_to cart_path, class: "btn btn--solid btn--block" do %>
                 <span>Selected · Continue</span>

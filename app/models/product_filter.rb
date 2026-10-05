@@ -19,16 +19,26 @@ class ProductFilter
     { id: "999-plus", label: "₹999 and above", min: 999, max: nil }
   ].freeze
 
+  AUD_PRICE_BANDS = [
+    { id: "under-15", label: "Under A$15", min: nil, max: 15 },
+    { id: "15-30", label: "A$15 to A$30", min: 15, max: 30 },
+    { id: "30-60", label: "A$30 to A$60", min: 30, max: 60 },
+    { id: "60-plus", label: "A$60 and above", min: 60, max: nil }
+  ].freeze
+
   FACETS = %i[material colour price].freeze
 
   attr_reader :query, :material, :colour, :price, :sort
 
-  def initialize(params, scope: Product.catalogue)
+  def initialize(params, scope: Product.catalogue, market: Market.india)
     @base = scope
+    @market = market || Market.india
+    @price_column = @market.australia? ? :selling_price_aud : :selling_price
+    @bands = @market.australia? ? AUD_PRICE_BANDS : PRICE_BANDS
     @query = params[:q].to_s.strip.presence
     @material = params[:material].presence
     @colour = params[:colour].presence
-    @price = params[:price].presence_in(PRICE_BANDS.map { |band| band[:id] })
+    @price = params[:price].presence_in(@bands.map { |band| band[:id] })
     @sort = params[:sort].presence_in(SORTS.keys) || DEFAULT_SORT
   end
 
@@ -53,7 +63,7 @@ class ProductFilter
   def price_options
     @price_options ||= begin
       counts = apply_all(@base, except: :price)
-      PRICE_BANDS.filter_map do |band|
+      @bands.filter_map do |band|
         count = within_band(counts, band).count
         { value: band[:id], label: band[:label], count: count } if count.positive?
       end
@@ -66,7 +76,7 @@ class ProductFilter
     chips << { label: "“#{query}”", param: :q } if query
     chips << { label: material, param: :material } if material
     chips << { label: colour.to_s.titleize, param: :colour } if colour
-    if price && (band = PRICE_BANDS.find { |candidate| candidate[:id] == price })
+    if price && (band = @bands.find { |candidate| candidate[:id] == price })
       chips << { label: band[:label], param: :price }
     end
     chips
@@ -88,7 +98,7 @@ class ProductFilter
     relation = relation.where(material: material) if material && except != :material
     relation = relation.where(colour: colour) if colour && except != :colour
 
-    if price && except != :price && (band = PRICE_BANDS.find { |candidate| candidate[:id] == price })
+    if price && except != :price && (band = @bands.find { |candidate| candidate[:id] == price })
       relation = within_band(relation, band)
     end
 
@@ -96,8 +106,8 @@ class ProductFilter
   end
 
   def within_band(relation, band)
-    relation = relation.where(selling_price: band[:min]..) if band[:min]
-    relation = relation.where(selling_price: ...band[:max]) if band[:max]
+    relation = relation.where(@price_column => band[:min]..) if band[:min]
+    relation = relation.where(@price_column => ...band[:max]) if band[:max]
     relation
   end
 
@@ -117,8 +127,8 @@ class ProductFilter
 
     case sort
     when "newest" then relation.order(created_at: :desc, id: :desc)
-    when "price-asc" then relation.order(selling_price: :asc, name: :asc)
-    when "price-desc" then relation.order(selling_price: :desc, name: :asc)
+    when "price-asc" then relation.order(@price_column => :asc, name: :asc)
+    when "price-desc" then relation.order(@price_column => :desc, name: :asc)
     when "name" then relation.order(name: :asc)
     else
       relation.order(

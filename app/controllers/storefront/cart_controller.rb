@@ -5,6 +5,10 @@ module Storefront
 
     def create
       product = Product.available.find_by!(slug: params[:slug])
+      unless product.offered_in?(current_market)
+        redirect_back fallback_location: piece_path(product.slug), alert: "#{product.name} is part of the India shop."
+        return
+      end
 
       case current_cart.add(product)
       when :added

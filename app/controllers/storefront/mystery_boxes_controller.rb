@@ -1,5 +1,6 @@
 module Storefront
   class MysteryBoxesController < BaseController
+    before_action :keep_in_india
     before_action :load_answers, only: [ :details, :place ]
 
     def show
@@ -33,6 +34,12 @@ module Storefront
     end
 
     private
+
+    def keep_in_india
+      return unless australia?
+
+      redirect_to shop_path, notice: "Mystery boxes are part of the India shop. Switch to India in the header to build one."
+    end
 
     def load_answers
       @answers = session[:mystery_box]

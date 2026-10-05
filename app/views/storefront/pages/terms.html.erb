@@ -15,7 +15,11 @@
     <p>denshe.shop is operated by DeNshe Jewellery, Anand, Gujarat, India. By using this site you agree to these terms and to our <%= link_to "privacy policy", privacy_path %> and <%= link_to "shipping & returns", shipping_returns_path %> pages.</p>
 
     <h2>Products</h2>
-    <p>Each piece is described as carefully as we can. Colours and finishes can look a little different on different screens. Stock is limited; a piece may sell while you are browsing. Prices are in Indian rupees and include applicable taxes unless we say otherwise.</p>
+    <% if australia? %>
+      <p>Each piece is described as carefully as we can. Colours and finishes can look a little different on different screens. Stock is limited; a piece may sell while you are browsing. Prices are in Australian dollars. Delivery, and any Australian import charges, are confirmed with you after you place an order.</p>
+    <% else %>
+      <p>Each piece is described as carefully as we can. Colours and finishes can look a little different on different screens. Stock is limited; a piece may sell while you are browsing. Prices are in Indian rupees and include applicable taxes unless we say otherwise.</p>
+    <% end %>
 
     <h2>Orders</h2>
     <p>An order is an offer to buy. DeNshe Jewellery accepts it when payment is confirmed and we begin packing. We may cancel an order if a piece is unavailable, a detail looks incorrect, or we cannot complete payment or delivery — and we will let you know.</p>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_28_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_05_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -195,6 +195,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_28_120000) do
     t.text "admin_notes"
     t.bigint "billing_address_id"
     t.datetime "created_at", null: false
+    t.string "currency", default: "INR", null: false
     t.bigint "customer_id"
     t.text "customer_notes"
     t.decimal "discount", precision: 10, scale: 2, default: "0.0", null: false
@@ -259,6 +260,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_28_120000) do
     t.bigint "category_id", null: false
     t.string "colour"
     t.decimal "compare_at_price", precision: 10, scale: 2
+    t.decimal "compare_at_price_aud", precision: 10, scale: 2
     t.datetime "created_at", null: false
     t.text "description"
     t.string "dimensions"
@@ -276,6 +278,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_28_120000) do
     t.decimal "purchase_price", precision: 10, scale: 2, default: "0.0", null: false
     t.integer "quantity_purchased", default: 0, null: false
     t.decimal "selling_price", precision: 10, scale: 2, null: false
+    t.decimal "selling_price_aud", precision: 10, scale: 2
     t.decimal "shipping_allocation", precision: 10, scale: 2, default: "0.0", null: false
     t.text "short_description"
     t.string "sku"
@@ -284,6 +287,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_28_120000) do
     t.integer "stock_quantity", default: 0, null: false
     t.bigint "supplier_id"
     t.datetime "updated_at", null: false
+    t.boolean "visible_in_australia", default: false, null: false
     t.string "weight"
     t.text "whats_included"
     t.index ["category_id"], name: "index_products_on_category_id"
@@ -294,6 +298,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_28_120000) do
     t.index ["slug"], name: "index_products_on_slug", unique: true
     t.index ["status"], name: "index_products_on_status"
     t.index ["supplier_id"], name: "index_products_on_supplier_id"
+    t.index ["visible_in_australia"], name: "index_products_on_visible_in_australia"
   end
 
   create_table "purchases", force: :cascade do |t|

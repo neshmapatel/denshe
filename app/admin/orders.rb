@@ -17,6 +17,7 @@ ActiveAdmin.register Order do
   scope :delivered
   scope :cancelled
   scope("Mystery boxes") { |orders| orders.mystery_box }
+  scope("Australia") { |orders| orders.where(currency: "AUD") }
 
   controller do
     def scoped_collection
@@ -33,7 +34,7 @@ ActiveAdmin.register Order do
     column :order_type
     column :status
     column :payment_status
-    column("Total") { |order| "₹#{order.total}" }
+    column("Total") { |order| order.money(order.total) }
     column :created_at
     actions
   end
@@ -41,6 +42,7 @@ ActiveAdmin.register Order do
   filter :status
   filter :payment_status
   filter :order_type
+  filter :currency
   filter :created_at
 
   show do
@@ -57,10 +59,11 @@ ActiveAdmin.register Order do
       row :payment_method
       row :payment_reference
       row :shipping_status
-      row(:subtotal) { |order| "₹#{order.subtotal}" }
-      row(:shipping_amount) { |order| "₹#{order.shipping_amount}" }
-      row(:discount) { |order| "₹#{order.discount}" }
-      row(:total) { |order| "₹#{order.total}" }
+      row :currency
+      row(:subtotal) { |order| order.money(order.subtotal) }
+      row(:shipping_amount) { |order| order.money(order.shipping_amount) }
+      row(:discount) { |order| order.money(order.discount) }
+      row(:total) { |order| order.money(order.total) }
       row :customer_notes
       row :admin_notes
       row :created_at
@@ -95,8 +98,8 @@ ActiveAdmin.register Order do
         column :item_type
         column :sku
         column :quantity
-        column("Unit price") { |item| "₹#{item.unit_price}" }
-        column("Line total") { |item| "₹#{item.line_total}" }
+        column("Unit price") { |item| resource.money(item.unit_price) }
+        column("Line total") { |item| resource.money(item.line_total) }
       end
     end
 

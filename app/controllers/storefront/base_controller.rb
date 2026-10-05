@@ -3,19 +3,23 @@ module Storefront
     layout "storefront"
 
     before_action :hold_for_launch
+    before_action :resolve_market
 
-    helper_method :nav_categories, :category_counts, :catalogue_live?, :brand, :current_cart
+    helper_method :nav_categories, :category_counts, :catalogue_live?, :brand, :current_cart,
+                  :current_market, :australia?, :market_switch_path
 
     private
 
     # Only collections that have something to sell reach the navigation, so a
     # shopper never lands on an empty shelf.
     def nav_categories
-      @nav_categories ||= Category.ordered.stocked.to_a
+      @nav_categories ||= Category.ordered
+        .where(id: Product.catalogue_for(current_market).select(:category_id))
+        .to_a
     end
 
     def category_counts
-      @category_counts ||= Product.catalogue.group(:category_id).count
+      @category_counts ||= Product.catalogue_for(current_market).group(:category_id).count
     end
 
     def catalogue_live?
@@ -27,7 +31,37 @@ module Storefront
     end
 
     def current_cart
-      @current_cart ||= Cart.new(session)
+      @current_cart ||= Cart.new(session, market: current_market)
+    end
+
+    def current_market
+      @current_market ||= Market.india
+    end
+
+    def australia?
+      current_market.australia?
+    end
+
+    def market_switch_path(code)
+      url_for(request.path_parameters.merge(request.query_parameters.symbolize_keys.except(:market)).merge(market: code))
+    end
+
+    # A cookie wins. Otherwise the edge country header opens Australia for
+    # visitors there, and everyone else sees the India shop. ?market= switches.
+    def resolve_market
+      requested = params[:market].to_s
+      if request.get? && Market::CODES.include?(requested)
+        cookies.permanent[:market] = { value: requested, httponly: true, same_site: :lax }
+        redirect_to url_for(request.path_parameters.merge(request.query_parameters.symbolize_keys.except(:market)))
+        return
+      end
+
+      unless Market::CODES.include?(cookies[:market])
+        country = request.headers["CF-IPCountry"].to_s.upcase
+        cookies.permanent[:market] = { value: (country == "AU" ? "au" : "in"), httponly: true, same_site: :lax }
+      end
+
+      @current_market = Market.resolve(cookies[:market])
     end
 
     def hold_for_launch

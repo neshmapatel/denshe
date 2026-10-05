@@ -3,6 +3,7 @@
 class Checkout
   include ActiveModel::Model
   include ActiveModel::Attributes
+  include ActiveModel::Validations::Callbacks
 
   STATES = [
     "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -12,6 +13,17 @@ class Checkout
     "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
     "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu",
     "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
+  ].freeze
+
+  AUSTRALIAN_STATES = [
+    "Australian Capital Territory",
+    "New South Wales",
+    "Northern Territory",
+    "Queensland",
+    "South Australia",
+    "Tasmania",
+    "Victoria",
+    "Western Australia"
   ].freeze
 
   attribute :name, :string
@@ -29,17 +41,40 @@ class Checkout
   attribute :billing_state, :string
   attribute :billing_pin_code, :string
 
+  before_validation :normalize_australian_contact, if: :australia?
+
   validates :name, :phone, :line1, :city, :state, :pin_code, presence: true
-  validates :phone, format: { with: /\A[6-9]\d{9}\z/, message: "must be a 10-digit mobile number" }, allow_blank: true
+  validates :phone, format: { with: /\A[6-9]\d{9}\z/, message: "must be a 10-digit mobile number" }, allow_blank: true, unless: :australia?
+  validates :phone, format: { with: /\A(?:\+?61|0)4\d{8}\z/, message: "must be an Australian mobile number" }, allow_blank: true, if: :australia?
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
-  validates :pin_code, format: { with: /\A\d{6}\z/, message: "must be a 6-digit PIN code" }, allow_blank: true
-  validates :state, inclusion: { in: STATES }, allow_blank: true
+  validates :pin_code, format: { with: /\A\d{6}\z/, message: "must be a 6-digit PIN code" }, allow_blank: true, unless: :australia?
+  validates :pin_code, format: { with: /\A\d{4}\z/, message: "must be a 4-digit postcode" }, allow_blank: true, if: :australia?
+  validates :state, inclusion: { in: ->(checkout) { checkout.states } }, allow_blank: true
   validates :billing_line1, :billing_city, :billing_state, :billing_pin_code, presence: true, unless: :billing_same
-  validates :billing_pin_code, format: { with: /\A\d{6}\z/, message: "must be a 6-digit PIN code" }, allow_blank: true, unless: :billing_same
-  validates :billing_state, inclusion: { in: STATES }, allow_blank: true, unless: :billing_same
+  validates :billing_pin_code, format: { with: /\A\d{6}\z/, message: "must be a 6-digit PIN code" }, allow_blank: true, unless: ->(checkout) { checkout.billing_same || checkout.australia? }
+  validates :billing_pin_code, format: { with: /\A\d{4}\z/, message: "must be a 4-digit postcode" }, allow_blank: true, if: ->(checkout) { checkout.australia? && !checkout.billing_same }
+  validates :billing_state, inclusion: { in: ->(checkout) { checkout.states } }, allow_blank: true, unless: :billing_same
+
+  attr_accessor :market
 
   def self.from_params(params)
     new(params.to_h.slice(*attribute_names))
+  end
+
+  def market
+    @market ||= Market.india
+  end
+
+  def australia?
+    market.australia?
+  end
+
+  def states
+    australia? ? AUSTRALIAN_STATES : STATES
+  end
+
+  def country_name
+    australia? ? "Australia" : "India"
   end
 
   def self.shipping_amount_for(subtotal)
@@ -51,15 +86,21 @@ class Checkout
   end
 
   def place!(cart)
-    lines = cart.items
+    lines = cart.checkout_items
     if lines.empty?
       errors.add(:base, "Select a piece before checkout.")
+      return
+    end
+    parked = cart.items.reject(&:offered?)
+    if parked.any?
+      names = parked.map { |line| line.product.name }
+      errors.add(:base, "#{names.to_sentence} #{names.one? ? "is" : "are"} part of the India shop. Remove #{names.one? ? "it" : "them"} to place this order.")
       return
     end
     return if invalid?
 
     subtotal = lines.sum(&:line_total)
-    shipping_amount = self.class.shipping_amount_for(subtotal)
+    shipping_amount = australia? ? 0.to_d : self.class.shipping_amount_for(subtotal)
 
     Order.transaction do
       shipping = Address.create!(shipping_attributes)
@@ -74,6 +115,7 @@ class Checkout
         shipping_amount: shipping_amount,
         discount: 0,
         total: subtotal + shipping_amount,
+        currency: market.currency,
         status: :pending,
         payment_status: :unpaid
       )
@@ -84,7 +126,7 @@ class Checkout
           name: line.product.name,
           sku: line.product.sku,
           quantity: line.quantity,
-          unit_price: line.product.selling_price,
+          unit_price: line.product.price_for(market),
           item_type: :catalogue
         )
       end
@@ -144,6 +186,12 @@ class Checkout
 
   private
 
+  def normalize_australian_contact
+    self.phone = phone.to_s.gsub(/[\s()-]/, "")
+    self.pin_code = pin_code.to_s.gsub(/\s/, "")
+    self.billing_pin_code = billing_pin_code.to_s.gsub(/\s/, "")
+  end
+
   def shipping_attributes
     {
       kind: :shipping,
@@ -154,7 +202,7 @@ class Checkout
       city: city.to_s.strip,
       state: state,
       pin_code: pin_code,
-      country: "India"
+      country: country_name
     }
   end
 
@@ -168,7 +216,7 @@ class Checkout
       city: billing_city.to_s.strip,
       state: billing_state,
       pin_code: billing_pin_code,
-      country: "India"
+      country: country_name
     }
   end
 end

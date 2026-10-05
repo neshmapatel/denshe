@@ -48,6 +48,16 @@ class Order < ApplicationRecord
     customer&.name.presence || guest_name.presence || "Guest"
   end
 
+  def australia?
+    currency == "AUD"
+  end
+
+  def money(amount)
+    value = amount.to_d
+    formatted = value == value.to_i ? value.to_i.to_s : format("%.2f", value)
+    "#{australia? ? "A$" : "₹"}#{formatted}"
+  end
+
   # Takes catalogue pieces off the shop as soon as the order is placed.
   # Safe to call again — each product is only reduced once per order.
   def reserve_catalogue_stock!

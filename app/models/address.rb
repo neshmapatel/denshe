@@ -9,7 +9,8 @@ class Address < ApplicationRecord
   enum :kind, { shipping: 0, billing: 1 }
 
   validates :line1, :city, :state, :pin_code, :country, presence: true
-  validates :pin_code, format: { with: /\A\d{6}\z/, message: "must be a 6-digit PIN code" }
+  validates :pin_code, format: { with: /\A\d{6}\z/, message: "must be a 6-digit PIN code" }, unless: :australia?
+  validates :pin_code, format: { with: /\A\d{4}\z/, message: "must be a 4-digit postcode" }, if: :australia?
 
   def self.search_columns
     %w[name phone line1 line2 city state pin_code customers.name customers.email]
@@ -21,5 +22,9 @@ class Address < ApplicationRecord
 
   def to_s
     [ line1, city, state, pin_code ].compact_blank.join(", ")
+  end
+
+  def australia?
+    country.to_s == "Australia"
   end
 end

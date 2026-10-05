@@ -16,10 +16,11 @@
     <% end %>
   </li>
   <li>
+    <% label = australia? ? "Confirmation" : "Payment" %>
     <% if current == :payment %>
-      <span aria-current="step">Payment</span>
+      <span aria-current="step"><%= label %></span>
     <% else %>
-      <span>Payment</span>
+      <span><%= label %></span>
     <% end %>
   </li>
 </ol>

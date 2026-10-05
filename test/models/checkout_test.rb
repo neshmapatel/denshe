@@ -48,6 +48,38 @@ class CheckoutTest < ActiveSupport::TestCase
     assert_equal "Mumbai", order.shipping_address.city
   end
 
+  test "an australian order reserves the piece and records the australian price" do
+    @product.update!(visible_in_australia: true, selling_price_aud: 49)
+    @cart.remove(@product)
+    cart = Cart.new({}, market: Market.australia)
+    assert_equal :added, cart.add(@product)
+
+    order = checkout(
+      phone: "0412 345 678",
+      city: "Sydney",
+      state: "New South Wales",
+      pin_code: "2000"
+    ).tap { |form| form.market = Market.australia }.place!(cart)
+
+    assert_predicate order, :persisted?
+    assert_equal "AUD", order.currency
+    assert_equal "unpaid", order.payment_status
+    assert_equal 49, order.total
+    assert_equal 0, order.shipping_amount
+    assert_equal 49, order.order_items.sole.unit_price
+    assert_equal "Australia", order.shipping_address.country
+    assert_equal "2000", order.shipping_address.pin_code
+    assert_equal "0412345678", order.guest_phone
+    assert_equal 0, @product.reload.stock_quantity
+  end
+
+  test "australia does not accept a piece that is not offered there" do
+    cart = Cart.new({}, market: Market.australia)
+
+    assert_equal :not_offered, cart.add(@product)
+    assert_nil checkout.tap { |form| form.market = Market.australia }.place!(cart)
+  end
+
   test "rejects a checkout without a name or a valid PIN" do
     form = checkout(name: "", pin_code: "12")
 

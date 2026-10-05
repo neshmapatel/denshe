@@ -2,14 +2,19 @@
 # selection, and a CartHold records it so other shoppers can see what is left.
 # Stock is never reduced here.
 class Cart
-  Line = Struct.new(:product, :quantity) do
+  Line = Struct.new(:product, :quantity, :market) do
     def line_total
-      product.selling_price.to_d * quantity
+      product.price_for(market).to_d * quantity
+    end
+
+    def offered?
+      product.offered_in?(market)
     end
   end
 
-  def initialize(session)
+  def initialize(session, market: Market.india)
     @session = session
+    @market = market || Market.india
     @session[:cart] ||= {}
     refresh_holds
   end
@@ -21,6 +26,7 @@ class Cart
   # :added, :held (another cart already has the remaining pieces), or :unavailable.
   def add(product)
     return :unavailable unless product&.available_for_sale?
+    return :not_offered unless product.offered_in?(@market)
 
     Product.transaction do
       locked = Product.lock.find(product.id)
@@ -80,7 +86,7 @@ class Cart
         changed = true
         quantity.positive? ? data[id] = quantity : data.delete(id)
       end
-      quantity.positive? ? Line.new(product, quantity) : nil
+      quantity.positive? ? Line.new(product, quantity, @market) : nil
     end
 
     sync_holds! if changed
@@ -88,7 +94,12 @@ class Cart
   end
 
   def subtotal
-    items.sum(&:line_total)
+    checkout_items.sum(&:line_total)
+  end
+
+  # Lines that can be bought in the shop the visitor is browsing.
+  def checkout_items
+    items.select(&:offered?)
   end
 
   def clear

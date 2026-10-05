@@ -27,7 +27,7 @@ ActiveAdmin.register Investment do
     f.inputs "Investment" do
       f.input :investor
       f.input :kind
-      f.input :amount
+      f.input :amount, as: :number, input_html: { min: 0.01, step: 0.01 }
       f.input :purchase
       f.input :invested_on, as: :date_picker
       f.input :notes

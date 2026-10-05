@@ -3,9 +3,14 @@
 <p>
   <strong>Order</strong> <%= @order.number %><br>
   <strong>Type</strong> <%= @order.mystery_box? ? "Mystery box" : "Catalogue" %><br>
-  <strong>Total</strong> ₹<%= @order.total %><br>
+  <strong>Market</strong> <%= @order.australia? ? "Australia" : "India" %><br>
+  <strong>Total</strong> <%= @order.money(@order.total) %><br>
   <strong>Payment</strong> <%= @order.payment_status.humanize %>
 </p>
+
+<% if @order.australia? %>
+  <p>This order is from Australia. Contact the customer to arrange payment and delivery. The piece is already reserved.</p>
+<% end %>
 
 <p>
   <strong>Customer</strong><br>
@@ -24,9 +29,9 @@
 <p><strong>Items</strong></p>
 <ul>
   <% @order.order_items.each do |item| %>
-    <li><%= item.quantity %> × <%= item.name %> — ₹<%= item.line_total %></li>
+    <li><%= item.quantity %> × <%= item.name %> — <%= @order.money(item.line_total) %></li>
   <% end %>
-  <li>Shipping — <%= @order.shipping_amount.to_d.positive? ? "₹#{@order.shipping_amount}" : "Complimentary" %></li>
+  <li>Shipping — <%= @order.australia? && !@order.shipping_amount.to_d.positive? ? "to confirm with the customer" : (@order.shipping_amount.to_d.positive? ? @order.money(@order.shipping_amount) : "Complimentary") %></li>
 </ul>
 
 <% if @order.mystery_box? && @order.mystery_box_preference.present? %>

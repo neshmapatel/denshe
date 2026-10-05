@@ -24,6 +24,8 @@ class Product < ApplicationRecord
   validates :sku, uniqueness: { allow_blank: true }
   validates :selling_price, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :purchase_price, numericality: { greater_than_or_equal_to: 0 }
+  validates :compare_at_price_aud, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
+  validate :australian_price_when_visible
   validates :packaging_allocation, :shipping_allocation, numericality: { greater_than_or_equal_to: 0 }
   validates :stock_quantity, :quantity_purchased, :low_stock_threshold,
             numericality: { only_integer: true, greater_than_or_equal_to: 0 }
@@ -40,11 +42,21 @@ class Product < ApplicationRecord
   scope :available, -> { active.in_stock }
   # Active catalogue for the shop grid — includes sold-out pieces so they stay visible.
   scope :catalogue, -> { active }
+  scope :visible_in_australia, -> { where(visible_in_australia: true) }
+  scope :offered_in_australia, -> { visible_in_australia.where("selling_price_aud > 0") }
   scope :bestsellers, -> { available.where(bestseller: true) }
   scope :with_storefront_includes, -> { includes(:category, images_attachments: :blob) }
 
   def self.search_columns
     %w[name sku slug]
+  end
+
+  def self.catalogue_for(market)
+    market&.australia? ? catalogue.offered_in_australia : catalogue
+  end
+
+  def self.available_for(market)
+    market&.australia? ? available.offered_in_australia : available
   end
 
   before_validation :copy_supplier_from_purchase
@@ -80,13 +92,39 @@ class Product < ApplicationRecord
   end
 
   def on_sale?
-    compare_at_price.present? && compare_at_price > selling_price
+    on_sale_for?(Market.india)
   end
 
   def discount_percentage
-    return unless on_sale?
+    discount_percentage_for(Market.india)
+  end
 
-    (((compare_at_price - selling_price) / compare_at_price) * 100).round
+  # Australia only lists a piece the admin has explicitly offered, at the
+  # Australian price they typed. A blank price keeps it in the India shop.
+  def offered_in?(market)
+    return true unless market&.australia?
+
+    visible_in_australia? && selling_price_aud.to_d.positive?
+  end
+
+  def price_for(market)
+    market&.australia? ? selling_price_aud : selling_price
+  end
+
+  def compare_at_for(market)
+    market&.australia? ? compare_at_price_aud : compare_at_price
+  end
+
+  def on_sale_for?(market)
+    compare = compare_at_for(market)
+    selling = price_for(market)
+    compare.present? && selling.present? && compare.to_d > selling.to_d
+  end
+
+  def discount_percentage_for(market)
+    return unless on_sale_for?(market)
+
+    (((compare_at_for(market) - price_for(market)) / compare_at_for(market)) * 100).round
   end
 
   # Primary image first, then the rest, so galleries and cards agree on order.
@@ -265,6 +303,13 @@ class Product < ApplicationRecord
   # a SKU raises a database error instead of saving.
   def nilify_blank_sku
     self.sku = nil if sku.blank?
+  end
+
+  def australian_price_when_visible
+    return unless visible_in_australia?
+    return if selling_price_aud.to_d.positive?
+
+    errors.add(:selling_price_aud, "must be set when the piece is visible in Australia")
   end
 
   def log_opening_stock_movement

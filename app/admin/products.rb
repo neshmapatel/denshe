@@ -5,7 +5,8 @@ ActiveAdmin.register Product do
   searchable placeholder: "Search name, SKU, or slug"
 
   permit_params :category_id, :supplier_id, :purchase_id, :name, :slug, :sku, :description, :short_description,
-                :purchase_price, :selling_price, :compare_at_price, :packaging_allocation,
+                :purchase_price, :selling_price, :compare_at_price, :visible_in_australia,
+                :selling_price_aud, :compare_at_price_aud, :packaging_allocation,
                 :shipping_allocation, :gst_rate, :quantity_purchased, :stock_quantity,
                 :low_stock_threshold, :material, :colour, :dimensions, :weight,
                 :care_instructions, :whats_included, :status, :featured, :new_arrival,
@@ -19,6 +20,8 @@ ActiveAdmin.register Product do
   scope :archived
   scope :low_stock
   scope :out_of_stock
+  scope :visible_in_australia
+  scope("India only") { |products| products.where(visible_in_australia: false) }
 
   index title: -> { params[:search].present? ? "Products matching “#{params[:search]}”" : "Products" } do
     selectable_column
@@ -37,6 +40,9 @@ ActiveAdmin.register Product do
     column :status
     column("Purchase") { |product| "₹#{product.purchase_price}" }
     column("Selling") { |product| "₹#{product.selling_price}" }
+    column("Australia") do |product|
+      product.offered_in?(Market.australia) ? "A$#{product.selling_price_aud}" : "—"
+    end
     column("Stock", &:stock_quantity)
     column("Purchased", &:quantity_purchased)
     column("Sold", &:sold_quantity)
@@ -56,6 +62,7 @@ ActiveAdmin.register Product do
   filter :featured
   filter :new_arrival
   filter :bestseller
+  filter :visible_in_australia
 
   show do
     attributes_table do
@@ -82,6 +89,9 @@ ActiveAdmin.register Product do
         row(:compare_at_price) { |product| product.compare_at_price ? "₹#{product.compare_at_price}" : nil }
         row(:gst_rate) { |product| product.gst_rate.present? ? "#{product.gst_rate}%" : "Not set" }
         row(:contribution_margin) { |product| "₹#{product.contribution_margin}" }
+        row(:visible_in_australia) { |product| product.visible_in_australia? ? "Yes" : "No" }
+        row(:selling_price_aud) { |product| product.selling_price_aud.present? ? "A$#{product.selling_price_aud}" : "—" }
+        row(:compare_at_price_aud) { |product| product.compare_at_price_aud.present? ? "A$#{product.compare_at_price_aud}" : "—" }
       end
     end
 
@@ -198,6 +208,15 @@ ActiveAdmin.register Product do
       f.input :selling_price
       f.input :compare_at_price, label: "Compare-at / MRP"
       f.input :gst_rate, hint: "Optional percent, e.g. 3 or 18. Leave blank for now."
+    end
+
+    f.inputs "Australia" do
+      f.input :visible_in_australia, label: "Visible in Australia",
+              hint: "Turn this on to list the piece for shoppers in Australia. Leave it off to keep the piece in the India shop only."
+      f.input :selling_price_aud, label: "Selling price (AUD)",
+              hint: "Required when the piece is visible in Australia. This is the price Australian shoppers see and the amount recorded on their order."
+      f.input :compare_at_price_aud, label: "Compare-at (AUD)",
+              hint: "Optional. When this is higher than the Australian selling price, the shop shows it struck through."
     end
 
     f.inputs "Inventory" do

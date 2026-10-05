@@ -1,4 +1,4 @@
-<% cover = category.cover_product&.gallery_images&.first %>
+<% cover = category.cover_product(current_market)&.gallery_images&.first %>
 <% art = collection_cover(category) %>
 <% count = category_counts[category.id].to_i %>
 <% if art || cover %>
