@@ -37,7 +37,12 @@
         data-jewellery-box-mark-value="<%= image_path("denshe-mark-navy.png") %>">
     <a class="skip-link" href="#main">Skip to content</a>
 
-    <%= render "storefront/shared/announcement" unless controller_name == "mystery_boxes" && action_name == "show" %>
+    <% unless controller_name == "mystery_boxes" && action_name == "show" %>
+      <%= render "storefront/shared/announcement" %>
+      <%= render "storefront/shared/announcement",
+            message: "A touch of sparkle, for the season ahead. ✦ A new edition is on its way.",
+            modifier: "announcement--festive" %>
+    <% end %>
     <%= render "storefront/shared/masthead" %>
 
     <% if flash.any? %>

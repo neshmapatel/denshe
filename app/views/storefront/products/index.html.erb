@@ -1,16 +1,30 @@
-<% page_title(@category ? @category.name : "Shop") %>
-<% meta description: @category ? "Shop #{@category.name.downcase} from DeNshe." : "Shop the DeNshe collection. Jewellery for everyday moments and everything in between." %>
+<% page_title(@collection_line ? @collection_line.name : (@category ? @category.name : "Shop")) %>
+<% meta description: if @collection_line
+     "#{@collection_line.tagline} Shop #{@collection_line.name.downcase} from DeNshe."
+   elsif @category
+     "Shop #{@category.name.downcase} from DeNshe."
+   else
+     "Shop the DeNshe collection. Jewellery for everyday moments and everything in between."
+   end %>
 
 <section class="section section--tight">
   <div class="page">
-    <% crumbs = @category ? [ { name: "Shop", url: shop_path }, { name: @category.name } ] : [ { name: "Shop" } ] %>
+    <% crumbs = if @collection_line
+                  [ { name: "Collections", url: collections_path }, { name: @collection_line.name } ]
+                elsif @category
+                  [ { name: "Shop", url: shop_path }, { name: @category.name } ]
+                else
+                  [ { name: "Shop" } ]
+                end %>
     <%= render "storefront/shared/breadcrumbs", crumbs: crumbs %>
 
     <header class="section-head">
       <div class="section-head__text">
-        <p class="eyebrow"><%= @category ? "Collection" : "The collection" %></p>
+        <p class="eyebrow"><%= @collection_line || @category ? "Collection" : "The collection" %></p>
         <h1><%= @heading %></h1>
-        <% if @category.nil? && !@filter.filtering? && catalogue_live? %>
+        <% if @collection_line %>
+          <p class="lede"><%= @collection_line.tagline %></p>
+        <% elsif @category.nil? && !@filter.filtering? && catalogue_live? %>
           <p class="lede">A considered collection of jewellery for everyday moments and everything in between.</p>
         <% end %>
       </div>

@@ -19,6 +19,7 @@ class Product < ApplicationRecord
   MAX_CLIP_BYTES = 25.megabytes
 
   enum :status, { draft: 0, active: 1, archived: 2 }
+  enum :collection_line, { western: 0, indian: 1 }, default: :western
 
   validates :name, presence: true
   validates :sku, uniqueness: { allow_blank: true }
@@ -29,6 +30,7 @@ class Product < ApplicationRecord
   validates :packaging_allocation, :shipping_allocation, numericality: { greater_than_or_equal_to: 0 }
   validates :stock_quantity, :quantity_purchased, :low_stock_threshold,
             numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :collection_line, presence: true
 
   scope :published, -> { active }
   scope :featured_on_home, -> { active.where(featured: true).order(updated_at: :desc) }
@@ -37,6 +39,7 @@ class Product < ApplicationRecord
   scope :in_stock, -> { where("stock_quantity > 0") }
   scope :out_of_stock, -> { where("stock_quantity <= 0") }
   scope :earrings, -> { joins(:category).where(categories: { slug: "earrings" }) }
+  scope :in_collection_line, ->(line) { where(collection_line: line) }
 
   # In-stock pieces a shopper can still select.
   scope :available, -> { active.in_stock }
@@ -67,6 +70,14 @@ class Product < ApplicationRecord
 
   def to_s
     name
+  end
+
+  def collection_line_record
+    CollectionLine.find(collection_line)
+  end
+
+  def collection_line_label
+    collection_line_record&.short_name
   end
 
   def available_for_sale?

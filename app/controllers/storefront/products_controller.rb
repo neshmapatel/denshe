@@ -19,7 +19,7 @@ module Storefront
     def related_pieces
       Product.catalogue_for(current_market)
         .with_storefront_includes
-        .where(category_id: @product.category_id)
+        .where(category_id: @product.category_id, collection_line: @product.collection_line)
         .where.not(id: @product.id)
         .order(Arel.sql("CASE WHEN products.stock_quantity > 0 THEN 0 ELSE 1 END, products.featured DESC, RANDOM()"))
         .limit(4)

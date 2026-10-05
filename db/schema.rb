@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_05_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_05_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -258,6 +258,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_120000) do
     t.boolean "bestseller", default: false, null: false
     t.text "care_instructions"
     t.bigint "category_id", null: false
+    t.integer "collection_line", default: 0, null: false
     t.string "colour"
     t.decimal "compare_at_price", precision: 10, scale: 2
     t.decimal "compare_at_price_aud", precision: 10, scale: 2
@@ -291,6 +292,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_120000) do
     t.string "weight"
     t.text "whats_included"
     t.index ["category_id"], name: "index_products_on_category_id"
+    t.index ["collection_line"], name: "index_products_on_collection_line"
     t.index ["featured"], name: "index_products_on_featured"
     t.index ["primary_image_id"], name: "index_products_on_primary_image_id"
     t.index ["purchase_id"], name: "index_products_on_purchase_id"

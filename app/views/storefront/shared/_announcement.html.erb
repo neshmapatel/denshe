@@ -1,5 +1,5 @@
-<% message = "See something you love? Don't overthink it. We have just one of each design. Some love stories are simply not meant to be shared." %>
-<div class="announcement" role="region" aria-label="<%= message %>">
+<% message = local_assigns[:message] || "See something you love? Don't overthink it. We have just one of each design. Some love stories are simply not meant to be shared." %>
+<div class="announcement <%= local_assigns[:modifier] %>" role="region" aria-label="<%= message %>">
   <div class="announcement__track" aria-hidden="true">
     <% 2.times do |copy| %>
       <div class="announcement__group" <%= "aria-hidden=true" if copy.positive? %>>
