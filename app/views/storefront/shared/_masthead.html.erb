@@ -21,7 +21,7 @@
             <% nav_collection_lines.each do |line| %>
               <%= link_to collection_path(line.slug) do %>
                 <%= line.name %>
-                <span><%= collection_line_counts[line.slug].to_i %></span>
+                <span><%= line.coming_soon? ? "Soon" : collection_line_counts[line.slug].to_i %></span>
               <% end %>
             <% end %>
             <% if nav_collection_lines.any? && nav_categories.any? %>
@@ -128,7 +128,7 @@
           <% nav_collection_lines.each do |line| %>
             <%= link_to collection_path(line.slug) do %>
               <%= line.name %>
-              <span><%= collection_line_counts[line.slug].to_i %></span>
+              <span><%= line.coming_soon? ? "Soon" : collection_line_counts[line.slug].to_i %></span>
             <% end %>
           <% end %>
           <% nav_categories.each do |category| %>

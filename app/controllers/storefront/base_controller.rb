@@ -23,9 +23,11 @@ module Storefront
       @category_counts ||= Product.catalogue_for(current_market).group(:category_id).count
     end
 
+    # Western appears once it has pieces. Indian stays listed so the festive
+    # page can say it is still being finished.
     def nav_collection_lines
       @nav_collection_lines ||= CollectionLine.all.select do |line|
-        collection_line_counts[line.key].to_i.positive?
+        line.indian? || collection_line_counts[line.slug].to_i.positive?
       end
     end
 

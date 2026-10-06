@@ -174,14 +174,14 @@ class ProductTest < ActiveSupport::TestCase
     )
 
     assert product.western?
-    assert_equal "Western", product.collection_line_label
+    assert_equal "The Modern Edit", product.collection_line_label
     assert_includes Product.western, product
     assert_not_includes Product.indian, product
 
     product.update!(collection_line: :indian)
 
     assert product.indian?
-    assert_equal "Indian Collection", product.collection_line_record.name
+    assert_equal "The Festive Edit", product.collection_line_record.name
     assert_includes Product.indian, product
   end
 

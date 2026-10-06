@@ -4,17 +4,19 @@ module Storefront
 
     def index
       catalogue = Product.catalogue_for(current_market)
-      @collection_lines = CollectionLine.all.select do |line|
-        catalogue.public_send(line.key).exists?
-      end
+      @collection_lines = CollectionLine.all
       @categories = Category.ordered.where(id: catalogue.select(:category_id))
     end
 
     def show
       if (@collection_line = CollectionLine.find(params[:slug]))
         @heading = @collection_line.name
-        load_products(scope: Product.catalogue_for(current_market).public_send(@collection_line.key))
-        render "storefront/products/index"
+        if @collection_line.coming_soon?
+          render "storefront/collections/waiting"
+        else
+          load_products(scope: Product.catalogue_for(current_market).public_send(@collection_line.key))
+          render "storefront/products/index"
+        end
       else
         @category = Category.find_by!(slug: params[:slug])
         @heading = @category.name

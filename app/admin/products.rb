@@ -198,7 +198,7 @@ ActiveAdmin.register Product do
                 [ CollectionLine.find(key).name, key ]
               },
               include_blank: false,
-              hint: "Western is everyday wear. Indian is the festive cabinet for celebrations."
+              hint: "The Modern Edit is everyday wear. The Festive Edit is the festive cabinet, and it stays a waiting page until one of its pieces is active."
       f.input :supplier
       f.input :purchase
       f.input :name

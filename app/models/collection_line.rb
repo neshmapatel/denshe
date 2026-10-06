@@ -36,11 +36,11 @@ class CollectionLine
   end
 
   def name
-    western? ? "Western Collection" : "Indian Collection"
+    western? ? "The Modern Edit" : "The Festive Edit"
   end
 
   def short_name
-    western? ? "Western" : "Indian"
+    name
   end
 
   def tagline
@@ -49,6 +49,11 @@ class CollectionLine
     else
       "Festive jewellery for celebrations and seasons."
     end
+  end
+
+  # The festive line stays a waiting page until any Indian piece is marked active.
+  def coming_soon?
+    indian? && !Product.active.indian.exists?
   end
 
   def ==(other)

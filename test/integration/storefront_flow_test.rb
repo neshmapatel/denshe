@@ -108,6 +108,43 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_no_match "%20", response.body
   end
 
+  test "indian festive collection waits until a piece is active" do
+    get collection_path("indian")
+
+    assert_response :success
+    assert_match "Hang tight, something festive is brewing", response.body
+    assert_match "The Festive Edit is almost ready to meet you", response.body
+    assert_match "We’re putting the finishing touches on it", response.body
+    assert_match "See you soon", response.body
+    assert_select "article.piece", 0
+
+    get collections_path
+    assert_select "a.collection-tile[href='#{collection_path('indian')}']", text: /Coming soon/
+    assert_select "a.collection-tile[href='#{collection_path('western')}']", text: /The Modern Edit/
+
+    held = Product.create!(
+      category: @category,
+      name: "Draft Jhumka",
+      selling_price: 999,
+      stock_quantity: 1,
+      status: :draft,
+      collection_line: :indian
+    )
+    get collection_path("indian")
+    assert_match "Hang tight, something festive is brewing", response.body
+
+    held.update!(status: :active)
+    get collection_path("indian")
+    assert_select "h1", "The Festive Edit"
+    assert_select "article.piece", 1
+    assert_no_match "Hang tight", response.body
+
+    get collection_path("western")
+    assert_select "h1", "The Modern Edit"
+    assert_select "article.piece", text: /Aurelia Hoops/
+    assert_select "article.piece", text: /Draft Jhumka/, count: 0
+  end
+
   test "home introduces the cabinet" do
     get root_url
 
@@ -160,20 +197,20 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     )
     get collections_path
     assert_response :success
-    assert_select "a.collection-tile[href='#{collection_path('western')}']", text: /Western Collection/
-    assert_select "a.collection-tile[href='#{collection_path('indian')}']", text: /Indian Collection/
+    assert_select "a.collection-tile[href='#{collection_path('western')}']", text: /The Modern Edit/
+    assert_select "a.collection-tile[href='#{collection_path('indian')}']", text: /The Festive Edit/
     assert_select "a.collection-tile[href='#{collection_path(bracelets.slug)}'] img[src*='collection-bracelets']"
     assert_select "a.collection-tile[href='#{collection_path(@category.slug)}'] img[src*='collection-earrings']"
 
     get collection_path("indian")
     assert_response :success
-    assert_select "h1", "Indian Collection"
+    assert_select "h1", "The Festive Edit"
     assert_select "article.piece", 1
-    assert_select ".piece__meta", /Indian/
+    assert_select ".piece__meta", /The Festive Edit/
 
     get collection_path("western")
     assert_response :success
-    assert_select "h1", "Western Collection"
+    assert_select "h1", "The Modern Edit"
 
     pendants = Category.create!(name: "Chain Pendants", position: 3)
     Product.create!(

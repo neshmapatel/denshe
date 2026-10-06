@@ -2205,6 +2205,28 @@
   max-width: 34rem;
 }
 
+.festive-wait {
+  padding-bottom: clamp(4.5rem, 3rem + 6vw, 8rem);
+}
+
+.festive-wait__spark {
+  font-style: normal;
+}
+
+.festive-wait__note {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--muted);
+}
+
+.festive-wait__signoff {
+  margin: 0.4rem 0 0.6rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 1.3rem + 1.2vw, 2.4rem);
+  line-height: 1.15;
+  color: var(--ink);
+}
+
 /* ---------------------------------------------------------------- footer */
 
 .footer {
