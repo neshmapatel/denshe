@@ -7,7 +7,7 @@
           <%= link_to collection_path(line.slug),
                 aria: (@collection_line == line ? { current: "true" } : {}) do %>
             <%= line.short_name %>
-            <span><%= collection_line_counts[line.slug].to_i %></span>
+            <span><%= line.coming_soon? ? "Soon" : collection_line_counts[line.slug].to_i %></span>
           <% end %>
         </li>
       <% end %>

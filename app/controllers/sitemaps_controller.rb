@@ -25,7 +25,7 @@ class SitemapsController < ApplicationController
 
   def collection_line_pages
     CollectionLine.all.filter_map do |line|
-      next unless Product.catalogue.public_send(line.key).exists?
+      next if line.western? && !Product.catalogue.western.exists?
 
       entry(collection_url(line.slug), changefreq: "weekly", priority: "0.8")
     end

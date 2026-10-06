@@ -7,15 +7,20 @@
              &.gallery_images&.first %>
 <%= link_to collection_path(line.slug), class: "collection-tile collection-tile--line#{' collection-tile--label' unless cover}" do %>
   <% if cover %>
-    <%= piece_image cover, size: :card, alt: (line.western? ? "Everyday Western jewellery" : "Festive Indian jewellery") %>
+    <%= piece_image cover, size: :card, alt: (line.western? ? "Everyday jewellery from The Modern Edit" : "Festive jewellery from The Festive Edit") %>
     <span class="collection-tile__veil" aria-hidden="true"></span>
   <% else %>
     <span class="collection-tile__mark"><%= image_tag "denshe-mark-navy.png", alt: "" %></span>
   <% end %>
   <span class="collection-tile__body">
-    <span class="collection-tile__eyebrow"><%= line.western? ? "Everyday" : "Festive" %></span>
+    <span class="collection-tile__eyebrow"><%= line.western? ? "Everyday" : "Celebrations" %></span>
     <span class="collection-tile__name"><%= line.name %></span>
-    <span class="collection-tile__count"><%= pluralize(count, "piece") %></span>
-    <span class="collection-tile__cue">Open</span>
+    <% if line.coming_soon? %>
+      <span class="collection-tile__count">Coming soon</span>
+      <span class="collection-tile__cue">Soon</span>
+    <% else %>
+      <span class="collection-tile__count"><%= pluralize(count, "piece") %></span>
+      <span class="collection-tile__cue">Open</span>
+    <% end %>
   </span>
 <% end %>
