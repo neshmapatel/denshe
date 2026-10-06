@@ -47,6 +47,41 @@ module StorefrontHelper
     attachment.variant(resize_to_limit: IMAGE_SIZES.fetch(size), saver: { quality: 82 })
   end
 
+  # What the photograph shows. Product names that already say "earrings" are
+  # left alone so the alt text does not repeat the category.
+  def piece_alt(product)
+    name = product.name.to_s.strip
+    category = product.category&.name.to_s.downcase
+    return name if category.blank? || name.downcase.include?(category)
+
+    "#{name}, #{category}"
+  end
+
+  def collection_image_alt(category)
+    {
+      "earrings" => "Gold-tone earring designs",
+      "rings" => "Gold-tone fashion rings",
+      "bracelets" => "Gold-tone bracelets",
+      "kadas" => "Gold-tone kadas",
+      "sets" => "Necklace sets",
+      "handchains" => "Gold-tone hand chains",
+      "chain-pendants" => "Gold-tone chains and pendants"
+    }.fetch(category.slug, "#{category.name} from DeNshe")
+  end
+
+  def category_intro(category)
+    {
+      "earrings" => "Gold-tone and anti-tarnish earring designs. Hoops, studs, and drops, with the price beside each piece.",
+      "rings" => "Adjustable fashion rings in gold-tone and anti-tarnish finishes. The price sits with each design.",
+      "bracelets" => "Bracelets for the wrist, in gold-tone and stone-set designs. Prices are on each piece.",
+      "kadas" => "Gold-tone kadas, from slim everyday cuffs to wider statement pieces. The price is on each one.",
+      "sets" => "Necklace sets meant to be worn together. Each set is priced on its page.",
+      "handchains" => "Hand chains from wrist to finger, in gold-tone designs. The price is on each piece.",
+      "chain-pendants" => "Chains and pendants in gold-tone and silver-tone. The price sits with the design.",
+      "combo" => "Pieces meant to be worn together. Each set is priced on its page."
+    }.fetch(category.slug, "Shop #{category.name.downcase} from DeNshe. The price is on every piece.")
+  end
+
   # Indian digit grouping: ₹1,299 and ₹1,20,000.
   # Units still free to select: stock, minus other carts, minus this shopper's own selection.
   def quantity_left(product)
@@ -141,7 +176,7 @@ module StorefrontHelper
 
   # index: false for pages that should not appear in Google (cart, checkout).
   def meta(description: nil, image: nil, type: "website", index: true)
-    canonical = "#{request.base_url}#{request.path}"
+    canonical = canonical_url
     picture = absolute_asset(image)
     title = content_for(:title).presence || brand.name
 
@@ -163,6 +198,23 @@ module StorefrontHelper
         tag.meta(name: "twitter:image", content: picture)
       ].compact, "\n")
     end
+  end
+
+  # Page 2 of a listing is its own URL. Filtered views still point at the
+  # clean collection so colour and price links do not create extra titles.
+  def canonical_url
+    url = "#{request.base_url}#{request.path}"
+    page = params[:page].to_i
+    return url unless page > 1 && bare_listing_page?
+
+    "#{url}?page=#{page}"
+  end
+
+  def bare_listing_page?
+    return false unless %w[products categories].include?(controller_name)
+    return false if params[:q].present? || params[:material].present? || params[:colour].present? || params[:price].present? || params[:sort].present?
+
+    true
   end
 
   def absolute_asset(image)

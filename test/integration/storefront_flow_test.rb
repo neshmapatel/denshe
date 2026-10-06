@@ -20,7 +20,10 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
   test "public pages tell search engines what they are" do
     get root_url
     assert_select "link[rel=canonical][href=?]", "http://www.example.com/"
+    assert_select "title", "Gold-tone earrings and everyday jewellery · DeNshe Jewellery"
     assert_select "meta[name=description]"
+    assert_match "Anand", response.body
+    assert_no_match "from Mumbai", response.body
     assert_match "Organization", response.body
     assert_select "meta[name=robots][content=?]", "index, follow"
 
@@ -35,6 +38,8 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     get sitemap_path
     assert_response :success
     assert_match piece_url(@product.slug), response.body
+    assert_match catalogue_url, response.body
+    assert_match collection_url("western"), response.body
     assert_no_match %r{/cart}, response.body
     assert_no_match %r{/admin}, response.body
 
@@ -52,6 +57,55 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Sitemap: https://denshe.shop/sitemap.xml", response.body
     assert_match "Disallow: /admin", response.body
+  end
+
+  test "photographs describe the piece, and later pages keep their own title" do
+    attach_product_image(@product, "hoops.png")
+    @product.ensure_primary_image!
+
+    get shop_path
+    assert_select "article.piece img[alt=?]", "Aurelia Hoops, earrings"
+
+    get collections_path
+    assert_select "a.collection-tile[href='#{collection_path(@category.slug)}'] img[alt=?]", "Gold-tone earring designs"
+
+    get piece_path(@product.slug)
+    assert_select ".gallery img[alt=?]", "Aurelia Hoops, earrings"
+
+    get catalogue_path
+    assert_select ".catalogue-card img[alt=?]", "Aurelia Hoops, earrings"
+
+    24.times do |index|
+      Product.create!(
+        category: @category,
+        name: "Hoop #{index}",
+        selling_price: 500,
+        stock_quantity: 1,
+        status: :active
+      )
+    end
+
+    get shop_path(page: 2)
+    assert_response :success
+    assert_select "title", "Shop, page 2 · DeNshe Jewellery"
+    assert_select "link[rel=canonical][href=?]", "http://www.example.com/shop?page=2"
+  end
+
+  test "a product link with a stray space opens the clean address" do
+    @product.update_column(:slug, "aurelia-hoops ")
+
+    get "/pieces/aurelia-hoops%20"
+    assert_redirected_to piece_path("aurelia-hoops")
+    follow_redirect!
+    assert_response :success
+    assert_select "h1", "Aurelia Hoops"
+
+    get "/pieces/aurelia-hoops"
+    assert_response :success
+
+    get sitemap_path
+    assert_match piece_url("aurelia-hoops"), response.body
+    assert_no_match "%20", response.body
   end
 
   test "home introduces the cabinet" do
@@ -83,6 +137,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     get collection_path(@category.slug)
     assert_response :success
     assert_select "h1", "Earrings"
+    assert_match "Gold-tone and anti-tarnish earring designs", response.body
 
     bracelets = Category.create!(name: "Bracelets", position: 2)
     Product.create!(

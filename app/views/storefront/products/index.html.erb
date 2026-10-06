@@ -1,11 +1,14 @@
-<% page_title(@collection_line ? @collection_line.name : (@category ? @category.name : "Shop")) %>
-<% meta description: if @collection_line
-     "#{@collection_line.tagline} Shop #{@collection_line.name.downcase} from DeNshe."
+<% base_title = @collection_line ? @collection_line.name : (@category ? @category.name : "Shop") %>
+<% page_title(@pagination.page > 1 ? "#{base_title}, page #{@pagination.page}" : base_title) %>
+<% description = if @collection_line
+     "#{@collection_line.tagline} #{@collection_line.name} from DeNshe, with the price on every piece."
    elsif @category
-     "Shop #{@category.name.downcase} from DeNshe."
+     category_intro(@category)
    else
-     "Shop the DeNshe collection. Jewellery for everyday moments and everything in between."
+     "Shop gold-tone and anti-tarnish jewellery from DeNshe. Earrings, kadas, rings, and chains, with the price on every piece."
    end %>
+<% description = "#{description} Page #{@pagination.page}." if @pagination.page > 1 %>
+<% meta description: description %>
 
 <section class="section section--tight">
   <div class="page">
@@ -24,8 +27,10 @@
         <h1><%= @heading %></h1>
         <% if @collection_line %>
           <p class="lede"><%= @collection_line.tagline %></p>
+        <% elsif @category && !@filter.filtering? %>
+          <p class="lede"><%= category_intro(@category) %></p>
         <% elsif @category.nil? && !@filter.filtering? && catalogue_live? %>
-          <p class="lede">A considered collection of jewellery for everyday moments and everything in between.</p>
+          <p class="lede">Gold-tone and anti-tarnish jewellery for everyday moments. Earrings, kadas, rings, and chains, with the price on every piece.</p>
         <% end %>
       </div>
     </header>

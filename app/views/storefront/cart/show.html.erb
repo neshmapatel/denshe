@@ -29,7 +29,7 @@
           <li class="bag__row<%= " bag__row--plain" unless image %>">
             <% if image %>
               <%= link_to piece_path(line.product.slug), class: "bag__photo" do %>
-                <%= piece_image image, size: :thumb, alt: "" %>
+                <%= piece_image image, size: :thumb, alt: piece_alt(line.product) %>
               <% end %>
             <% end %>
             <div class="bag__copy">

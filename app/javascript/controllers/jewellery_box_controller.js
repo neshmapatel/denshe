@@ -133,7 +133,7 @@ export default class extends Controller {
       image.src = this.markValue
       image.classList.add("is-mark")
     }
-    image.alt = ""
+    image.alt = item.name || "Saved piece"
     remove.dataset.jewelleryBoxSlugParam = item.slug
     return fragment
   }

@@ -15,6 +15,9 @@ class ProductTest < ActiveSupport::TestCase
     )
 
     assert_equal "aurelia-hoops", product.slug
+
+    product.update!(slug: "aurelia-hoops ")
+    assert_equal "aurelia-hoops", product.reload.slug
     assert_equal 12, product.quantity_purchased
     assert_equal 12, product.stock_quantity
     assert_equal 1, product.inventory_movements.purchase.count
