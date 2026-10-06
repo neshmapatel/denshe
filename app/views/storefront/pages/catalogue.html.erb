@@ -58,7 +58,7 @@
               <div class="catalogue-card__frame">
                 <% if image %>
                   <%= fullscreen_button image,
-                        alt: product.name,
+                        alt: piece_alt(product),
                         preview: piece_image_source(image, :card),
                         class: "catalogue-card__open",
                         loading: "lazy",

@@ -58,6 +58,15 @@ class Product < ApplicationRecord
     market&.australia? ? catalogue.offered_in_australia : catalogue
   end
 
+  # Finds a piece by the address in the link. Also accepts an older address
+  # that still has a stray space, so those links can be sent to the clean one.
+  def self.find_by_slug!(raw, scope: all)
+    cleaned = tidy_slug(raw)
+    scope.find_by(slug: cleaned) ||
+      scope.where("btrim(slug) = ?", cleaned).first ||
+      scope.find_by!(slug: raw.to_s)
+  end
+
   def self.available_for(market)
     market&.australia? ? available.offered_in_australia : available
   end

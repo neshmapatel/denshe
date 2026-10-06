@@ -43,7 +43,7 @@
                 <% clone = looping && (index.zero? || index == slides.size - 1) %>
                 <div class="gallery__slide" data-gallery-target="slide" <%= "aria-hidden=true" if clone %>>
                   <%= fullscreen_button image,
-                        alt: @product.name,
+                        alt: piece_alt(@product),
                         preview: piece_image_source(image, :stage),
                         class: "gallery__open",
                         loading: (index == (looping ? 1 : 0) ? "eager" : "lazy"),
@@ -74,7 +74,7 @@
                       data-index="<%= index %>"
                       <%= "aria-current=true" if index.zero? %>
                       aria-label="Photograph <%= index + 1 %> of <%= images.size %>">
-                <%= piece_image image, size: :thumb, alt: "" %>
+                <%= piece_image image, size: :thumb, alt: "#{piece_alt(@product)}, photograph #{index + 1}" %>
               </button>
             <% end %>
           </div>

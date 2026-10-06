@@ -7,7 +7,7 @@
              &.gallery_images&.first %>
 <%= link_to collection_path(line.slug), class: "collection-tile collection-tile--line#{' collection-tile--label' unless cover}" do %>
   <% if cover %>
-    <%= piece_image cover, size: :card, alt: "" %>
+    <%= piece_image cover, size: :card, alt: (line.western? ? "Everyday Western jewellery" : "Festive Indian jewellery") %>
     <span class="collection-tile__veil" aria-hidden="true"></span>
   <% else %>
     <span class="collection-tile__mark"><%= image_tag "denshe-mark-navy.png", alt: "" %></span>

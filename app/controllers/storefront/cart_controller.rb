@@ -4,7 +4,7 @@ module Storefront
     end
 
     def create
-      product = Product.available.find_by!(slug: params[:slug])
+      product = Product.find_by_slug!(params[:slug], scope: Product.available)
       unless product.offered_in?(current_market)
         redirect_back fallback_location: piece_path(product.slug), alert: "#{product.name} is part of the India shop."
         return
@@ -21,7 +21,7 @@ module Storefront
     end
 
     def destroy
-      product = Product.find_by!(slug: params[:slug])
+      product = Product.find_by_slug!(params[:slug])
       current_cart.remove(product)
       redirect_to cart_path, notice: "#{product.name} was removed."
     end

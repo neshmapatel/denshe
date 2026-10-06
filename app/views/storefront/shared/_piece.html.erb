@@ -3,7 +3,7 @@
 <article class="piece<%= " piece--text" unless image %><%= " piece--sold" if sold_out %>">
   <% if image %>
     <div class="piece__frame">
-      <%= piece_image image, size: :card, alt: "" %>
+      <%= piece_image image, size: :card, alt: piece_alt(product) %>
     </div>
   <% end %>
 

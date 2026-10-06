@@ -1,4 +1,8 @@
-<% meta description: "DeNshe is a contemporary jewellery label from Mumbai. Earrings, kadas, and everyday pieces, plus mystery boxes chosen around you." %>
+<% page_title "Gold-tone earrings and everyday jewellery" %>
+<% content_for :head do %>
+  <link rel="preload" as="image" href="<%= image_path("denshe-wordmark-ivory.png") %>" fetchpriority="high">
+<% end %>
+<% meta description: "Jewellery from Anand, Gujarat. Gold-tone and anti-tarnish earrings, kadas, rings, and chains, with the price on every piece." %>
 <%= structured_data(
       "@context" => "https://schema.org",
       "@graph" => [
@@ -8,11 +12,17 @@
           "url" => root_url,
           "logo" => absolute_asset(image_url("denshe-logo.jpg")),
           "email" => brand.email,
+          "address" => {
+            "@type" => "PostalAddress",
+            "addressLocality" => "Anand",
+            "addressRegion" => "Gujarat",
+            "addressCountry" => "IN"
+          },
           "sameAs" => [ instagram_url ].compact
         },
         {
           "@type" => "WebSite",
-          "name" => "#{brand.name} Jewellery",
+          "name" => brand.name,
           "url" => root_url,
           "potentialAction" => {
             "@type" => "SearchAction",
@@ -26,7 +36,7 @@
 <section class="hero">
   <div class="hero__panel">
     <div class="hero__logo-wrap">
-      <%= image_tag "denshe-wordmark-ivory.png", alt: "DeNshe Jewellery", class: "hero__logo", width: 688, height: 293 %>
+      <%= image_tag "denshe-wordmark-ivory.png", alt: "DeNshe Jewellery", class: "hero__logo", width: 688, height: 293, fetchpriority: "high" %>
     </div>
     <div class="hero__intro">
       <p class="eyebrow hero__kicker">Jewellery, between us</p>
@@ -53,9 +63,17 @@
     <div class="horizon__copy">
       <p class="horizon__title">Jewellery for the moments<br>that feel like yours.</p>
       <p class="horizon__note">From everyday little joys to moments worth remembering.</p>
+      <p class="horizon__price">Gold-tone and anti-tarnish. The price is on every piece.</p>
+      <% if nav_categories.any? %>
+        <nav class="horizon__shelves" aria-label="Shop by type">
+          <% nav_categories.each do |category| %>
+            <%= link_to category.name, collection_path(category.slug), class: "link-quiet" %>
+          <% end %>
+        </nav>
+      <% end %>
     </div>
     <figure class="horizon__figure">
-      <%= image_tag "denshe-moments.jpg", alt: "Pearl and gold jewellery arranged beneath the DeNshe mark", width: 1024, height: 682, loading: "eager" %>
+      <%= image_tag "denshe-moments.jpg", alt: "Pearl and gold jewellery arranged beneath the DeNshe mark", width: 1024, height: 682, loading: "lazy" %>
     </figure>
   </div>
 </section>

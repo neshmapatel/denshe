@@ -4,9 +4,9 @@
 <% if art || cover %>
   <%= link_to collection_path(category.slug), class: "collection-tile" do %>
     <% if art %>
-      <%= image_tag art, alt: "" %>
+      <%= image_tag art, alt: collection_image_alt(category) %>
     <% else %>
-      <%= piece_image cover, size: :card, alt: "" %>
+      <%= piece_image cover, size: :card, alt: collection_image_alt(category) %>
     <% end %>
     <span class="collection-tile__veil" aria-hidden="true"></span>
     <span class="collection-tile__body">

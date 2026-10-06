@@ -6,7 +6,7 @@ module ApplicationHelper
       data: { fullscreen_src: url_for(attachment), fullscreen_alt: alt },
       aria: { label: "View #{alt.presence || "photograph"} full screen" }
     ) do
-      image_tag preview || url_for(attachment), alt: "", **options
+      image_tag preview || url_for(attachment), alt: alt, **options
     end
   end
 end

@@ -938,12 +938,24 @@
   color: var(--navy);
 }
 
-.horizon__note {
+.horizon__note,
+.horizon__price {
   margin: 0;
   max-width: 28ch;
   font-size: 1.05rem;
   line-height: 1.65;
   color: var(--muted);
+}
+
+.horizon__price {
+  max-width: 34ch;
+  font-size: 0.95rem;
+}
+
+.horizon__shelves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.35rem;
 }
 
 .horizon__figure {
