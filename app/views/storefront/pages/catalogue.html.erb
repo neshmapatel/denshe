@@ -6,7 +6,7 @@
     <p class="eyebrow">For a quiet order</p>
     <h1>Every piece, with its price.</h1>
     <p class="lede">
-      Photograph, price, and how many we have. Message us the name or the code, and we will set the piece aside.
+      Photograph, price, how many we have, and the batch it came from. Message us the name or the code, and we will set the piece aside.
     </p>
     <div class="catalogue-intro__actions">
       <% if whatsapp_url("Hello DeNshe, I would like to order from the catalogue.") %>
@@ -30,6 +30,13 @@
   <nav class="catalogue-jump" aria-label="Jump to a collection">
     <div class="page">
       <p class="eyebrow"><%= pluralize(@piece_count, "piece") %></p>
+      <% if @batches.any? %>
+        <p class="catalogue-jump__batches">
+          <% @batches.each do |batch| %>
+            <span><%= batch.reference %></span>
+          <% end %>
+        </p>
+      <% end %>
       <div class="catalogue-jump__links">
         <% @categories.each do |category| %>
           <%= link_to category.name, "##{category.slug}" %>
@@ -75,10 +82,13 @@
                   <p class="catalogue-card__code"><%= product.sku %></p>
                 <% end %>
                 <h3 class="catalogue-card__name"><%= product.name %></h3>
+                <% if product.purchase %>
+                  <p class="catalogue-card__batch">Batch <%= product.purchase.reference %></p>
+                <% end %>
                 <dl class="catalogue-card__facts">
                   <div>
                     <dt>Price</dt>
-                    <dd><%= price(listed_price(product)) %></dd>
+                    <dd><%= price(product.selling_price, currency: "INR") %></dd>
                   </div>
                   <div>
                     <dt>Qty</dt>

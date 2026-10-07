@@ -252,13 +252,32 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
 
     attach_product_image(@product, "catalogue.png")
     @product.ensure_primary_image!
+    supplier = Supplier.create!(name: "Catalogue Supplier")
+    purchase = Purchase.create!(
+      supplier: supplier,
+      reference: "MV-LOT-001",
+      article_count: 1,
+      merchandise_total: 180,
+      courier_charge: 0,
+      total_amount: 180
+    )
+    @product.update!(purchase: purchase)
+    Product.create!(
+      category: @category,
+      name: "Hidden Draft",
+      selling_price: 100,
+      stock_quantity: 1,
+      status: :draft
+    )
 
     get catalogue_path
     assert_response :success
     assert_select "h1", /every piece, with its price/i
     assert_select "article.catalogue-card", 1
+    assert_select ".catalogue-card__batch", text: "Batch MV-LOT-001"
     assert_select ".catalogue-card__facts dd", text: "₹699"
     assert_select ".catalogue-card__facts dd", text: "1"
+    assert_no_match "Hidden Draft", response.body
     assert_select "button[data-fullscreen-src]", 1
     assert_select "dialog.lightbox"
     assert_select "button.lightbox__cancel", text: "Cancel"

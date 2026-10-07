@@ -3181,12 +3181,29 @@ html.js [data-reveal][data-revealed="true"] {
   gap: 0.35rem;
 }
 
-.catalogue-card__code {
+.catalogue-card__code,
+.catalogue-card__batch {
   margin: 0;
   font-size: 0.68rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+.catalogue-jump__batches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.85rem;
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.catalogue-jump__batches span {
+  padding-bottom: 0.15rem;
+  border-bottom: 1px solid var(--line);
 }
 
 .catalogue-card__name {
