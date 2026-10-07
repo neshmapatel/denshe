@@ -3,7 +3,14 @@ class Product < ApplicationRecord
   include Searchable
   include Sluggable
 
-  attr_accessor :skip_stock_history, :opening_stock_reason
+  attr_accessor :skip_stock_history, :opening_stock_reason, :pricing_driver, :pricing_driver_aud
+
+  # Marked price, discount percent, and the price the customer pays.
+  # The last field edited in admin decides which way the numbers move.
+  DISCOUNT_GROUPS = [
+    { marked: :compare_at_price, percent: :discount_percent, selling: :selling_price, driver: :pricing_driver }.freeze,
+    { marked: :compare_at_price_aud, percent: :discount_percent_aud, selling: :selling_price_aud, driver: :pricing_driver_aud }.freeze
+  ].freeze
 
   belongs_to :category
   belongs_to :supplier, optional: true
@@ -25,7 +32,9 @@ class Product < ApplicationRecord
   validates :sku, uniqueness: { allow_blank: true }
   validates :selling_price, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :purchase_price, numericality: { greater_than_or_equal_to: 0 }
-  validates :compare_at_price_aud, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
+  validates :compare_at_price, :compare_at_price_aud, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
+  validates :discount_percent, :discount_percent_aud,
+            numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }
   validate :australian_price_when_visible
   validates :packaging_allocation, :shipping_allocation, numericality: { greater_than_or_equal_to: 0 }
   validates :stock_quantity, :quantity_purchased, :low_stock_threshold,
@@ -71,6 +80,7 @@ class Product < ApplicationRecord
     market&.australia? ? available.offered_in_australia : available
   end
 
+  before_validation :sync_discounted_prices
   before_validation :copy_supplier_from_purchase
   before_validation :nilify_blank_sku
   before_create :sync_opening_purchase_quantity
@@ -145,6 +155,39 @@ class Product < ApplicationRecord
     return unless on_sale_for?(market)
 
     (((compare_at_for(market) - price_for(market)) / compare_at_for(market)) * 100).round
+  end
+
+  def self.price_after_discount(marked, percent)
+    (marked.to_d * (100 - percent.to_d) / 100).round(2)
+  end
+
+  def self.discount_rate_for(marked, selling)
+    marked = marked.to_d
+    return 0.to_d if selling.nil? || marked <= 0
+
+    selling = selling.to_d
+    return 0.to_d if selling >= marked
+    return 100.to_d if selling <= 0
+
+    ((marked - selling) / marked * 100).round(2)
+  end
+
+  def self.format_percent(percent)
+    value = percent.to_d.round(2)
+    return "—" if value.zero?
+
+    text = format("%.2f", value).sub(/0+\z/, "").sub(/\.\z/, "")
+    "#{text}%"
+  end
+
+  def self.discount_summary(marked, percent, selling, currency)
+    return "" if marked.blank? || selling.blank? || percent.to_d.zero?
+
+    "#{format_percent(percent)} off #{currency}#{marked} comes to #{currency}#{selling}."
+  end
+
+  def discount_label
+    self.class.format_percent(discount_percent)
   end
 
   # Primary image first, then the rest, so galleries and cards agree on order.
@@ -317,6 +360,48 @@ class Product < ApplicationRecord
 
   def copy_supplier_from_purchase
     self.supplier ||= purchase&.supplier
+  end
+
+  def sync_discounted_prices
+    DISCOUNT_GROUPS.each { |group| sync_discount_group(group) }
+  end
+
+  def sync_discount_group(group)
+    marked = public_send(group[:marked])
+    if marked.blank?
+      self[group[:percent]] = 0
+      return
+    end
+
+    if discount_driver_for(group) == "percent"
+      self[group[:selling]] = self.class.price_after_discount(marked, public_send(group[:percent]))
+    else
+      selling = public_send(group[:selling])
+      self[group[:percent]] = self.class.discount_rate_for(marked, selling) unless selling.nil?
+    end
+  end
+
+  # "percent" writes the selling price. "selling" writes the percent.
+  # With no explicit choice, a changed percent (or a new discount on a new
+  # piece) sets the price, and a changed selling price sets the percent.
+  def discount_driver_for(group)
+    choice = public_send(group[:driver]).to_s
+    return choice if choice == "percent" || choice == "selling"
+
+    rate = public_send(group[:percent]).to_d
+    return "percent" if new_record? && rate.positive?
+
+    percent_changed = will_save_change_to_attribute?(group[:percent])
+    selling_changed = will_save_change_to_attribute?(group[:selling])
+    marked_changed = will_save_change_to_attribute?(group[:marked])
+
+    if percent_changed && !selling_changed
+      "percent"
+    elsif marked_changed && !selling_changed && !percent_changed && rate.positive?
+      "percent"
+    else
+      "selling"
+    end
   end
 
   # The unique index treats "" as a real value, so a second product left without

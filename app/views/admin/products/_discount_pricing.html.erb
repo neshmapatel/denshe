@@ -1,0 +1,74 @@
+<script>
+  (function () {
+    if (window.__densheDiscountPricing) return;
+    window.__densheDiscountPricing = true;
+
+    function priceAfter(marked, percent) {
+      var markedPaise = Math.round(Number(marked) * 100);
+      var rate = Number(percent);
+      if (!isFinite(markedPaise) || markedPaise <= 0) return "";
+      if (!isFinite(rate) || rate <= 0) return (markedPaise / 100).toFixed(2);
+      if (rate >= 100) return "0.00";
+      return (Math.round(markedPaise * (100 - rate) / 100) / 100).toFixed(2);
+    }
+
+    function rateFor(marked, selling) {
+      var markedValue = Number(marked);
+      var sellingValue = Number(selling);
+      if (!isFinite(markedValue) || markedValue <= 0 || !isFinite(sellingValue)) return "";
+      if (sellingValue >= markedValue) return "0";
+      if (sellingValue <= 0) return "100";
+      return (Math.round((markedValue - sellingValue) / markedValue * 10000) / 100).toFixed(2);
+    }
+
+    function label(percent) {
+      var value = Math.round(Number(percent) * 100) / 100;
+      if (!isFinite(value) || value <= 0) return "";
+      var text = value % 1 === 0 ? String(value) : value.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+      return text + "%";
+    }
+
+    function bind(group) {
+      var marked = document.querySelector('[data-pricing-role="marked"][data-pricing-group="' + group + '"]');
+      var percent = document.querySelector('[data-pricing-role="percent"][data-pricing-group="' + group + '"]');
+      var selling = document.querySelector('[data-pricing-role="selling"][data-pricing-group="' + group + '"]');
+      var driver = document.querySelector('[data-pricing-role="driver"][data-pricing-group="' + group + '"]');
+      var preview = document.querySelector('[data-pricing-preview="' + group + '"]');
+      if (!marked || !percent || !selling || !driver) return;
+
+      function show() {
+        if (!preview) return;
+        var currency = preview.getAttribute("data-pricing-currency") || "";
+        var text = label(percent.value);
+        preview.textContent = text && marked.value && selling.value
+          ? text + " off " + currency + marked.value + " comes to " + currency + selling.value + "."
+          : "";
+      }
+
+      function apply(source) {
+        if (marked.value === "" || Number(marked.value) <= 0) {
+          driver.value = "";
+          show();
+          return;
+        }
+        driver.value = source;
+        if (source === "percent") {
+          selling.value = priceAfter(marked.value, percent.value);
+        } else if (selling.value !== "") {
+          percent.value = rateFor(marked.value, selling.value);
+        }
+        show();
+      }
+
+      percent.addEventListener("input", function () { apply("percent"); });
+      selling.addEventListener("input", function () { apply("selling"); });
+      marked.addEventListener("input", function () {
+        apply(Number(percent.value) > 0 ? "percent" : "selling");
+      });
+      show();
+    }
+
+    bind("in");
+    bind("au");
+  })();
+</script>
