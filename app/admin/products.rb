@@ -5,8 +5,9 @@ ActiveAdmin.register Product do
   searchable placeholder: "Search name, SKU, or slug"
 
   permit_params :category_id, :supplier_id, :purchase_id, :name, :slug, :sku, :description, :short_description,
-                :purchase_price, :selling_price, :compare_at_price, :visible_in_australia,
-                :selling_price_aud, :compare_at_price_aud, :packaging_allocation,
+                :purchase_price, :selling_price, :compare_at_price, :discount_percent, :pricing_driver,
+                :visible_in_australia, :selling_price_aud, :compare_at_price_aud, :discount_percent_aud,
+                :pricing_driver_aud, :packaging_allocation,
                 :shipping_allocation, :gst_rate, :quantity_purchased, :stock_quantity,
                 :low_stock_threshold, :material, :colour, :dimensions, :weight,
                 :care_instructions, :whats_included, :status, :collection_line, :featured, :new_arrival,
@@ -43,6 +44,7 @@ ActiveAdmin.register Product do
     column :status
     column("Purchase") { |product| "₹#{product.purchase_price}" }
     column("Selling") { |product| "₹#{product.selling_price}" }
+    column("Discount") { |product| product.discount_percent.to_d.positive? ? product.discount_label : "—" }
     column("Australia") do |product|
       product.offered_in?(Market.australia) ? "A$#{product.selling_price_aud}" : "—"
     end
@@ -90,13 +92,15 @@ ActiveAdmin.register Product do
         row(:purchase_price) { |product| "₹#{product.purchase_price}" }
         row(:packaging_allocation) { |product| "₹#{product.packaging_allocation}" }
         row(:shipping_allocation) { |product| "₹#{product.shipping_allocation}" }
+        row("Marked price") { |product| product.compare_at_price ? "₹#{product.compare_at_price}" : "—" }
+        row("Discount") { |product| product.discount_label }
         row(:selling_price) { |product| "₹#{product.selling_price}" }
-        row(:compare_at_price) { |product| product.compare_at_price ? "₹#{product.compare_at_price}" : nil }
         row(:gst_rate) { |product| product.gst_rate.present? ? "#{product.gst_rate}%" : "Not set" }
         row(:contribution_margin) { |product| "₹#{product.contribution_margin}" }
         row(:visible_in_australia) { |product| product.visible_in_australia? ? "Yes" : "No" }
+        row("Marked price (AUD)") { |product| product.compare_at_price_aud.present? ? "A$#{product.compare_at_price_aud}" : "—" }
+        row("Discount (AUD)") { |product| Product.format_percent(product.discount_percent_aud) }
         row(:selling_price_aud) { |product| product.selling_price_aud.present? ? "A$#{product.selling_price_aud}" : "—" }
-        row(:compare_at_price_aud) { |product| product.compare_at_price_aud.present? ? "A$#{product.compare_at_price_aud}" : "—" }
       end
     end
 
@@ -212,22 +216,55 @@ ActiveAdmin.register Product do
       f.input :bestseller, label: "Bestseller badge"
     end
 
-    f.inputs "Pricing" do
+    f.inputs "Pricing", data: { pricing_group: "in" } do
       f.input :purchase_price, label: "Purchase price (what DeNshe paid)"
       f.input :packaging_allocation
       f.input :shipping_allocation
-      f.input :selling_price
-      f.input :compare_at_price, label: "Compare-at / MRP"
+      f.input :compare_at_price, label: "Marked price",
+              hint: "The price before discount, such as 339. Customers see it struck through when it is higher than the selling price.",
+              input_html: { data: { pricing_role: "marked", pricing_group: "in" } }
+      f.input :discount_percent, label: "Discount %",
+              hint: "Percent off the marked price. 20 on 339 sets the selling price to 271.20.",
+              input_html: { min: 0, max: 100, step: 0.01, data: { pricing_role: "percent", pricing_group: "in" } }
+      f.input :selling_price,
+              hint: "What the customer pays. Type a selling price and the discount percent fills in from the marked price.",
+              input_html: { data: { pricing_role: "selling", pricing_group: "in" } }
+      f.input :pricing_driver, as: :hidden, input_html: { value: "", data: { pricing_role: "driver", pricing_group: "in" } }
+      text_node helpers.tag.li(class: "input") {
+        helpers.tag.p(
+          Product.discount_summary(f.object.compare_at_price, f.object.discount_percent, f.object.selling_price, "₹"),
+          class: "inline-hints",
+          data: { pricing_preview: "in", pricing_currency: "₹" }
+        )
+      }
       f.input :gst_rate, hint: "Optional percent, e.g. 3 or 18. Leave blank for now."
     end
 
-    f.inputs "Australia" do
+    f.inputs "Australia", data: { pricing_group: "au" } do
       f.input :visible_in_australia, label: "Visible in Australia",
               hint: "Turn this on to list the piece for shoppers in Australia. Leave it off to keep the piece in the India shop only."
+      f.input :compare_at_price_aud, label: "Marked price (AUD)",
+              hint: "The Australian price before discount. The shop strikes it through when it is higher than the selling price.",
+              input_html: { data: { pricing_role: "marked", pricing_group: "au" } }
+      f.input :discount_percent_aud, label: "Discount % (AUD)",
+              hint: "Percent off the Australian marked price. The selling price fills in from it.",
+              input_html: { min: 0, max: 100, step: 0.01, data: { pricing_role: "percent", pricing_group: "au" } }
       f.input :selling_price_aud, label: "Selling price (AUD)",
-              hint: "Required when the piece is visible in Australia. This is the price Australian shoppers see and the amount recorded on their order."
-      f.input :compare_at_price_aud, label: "Compare-at (AUD)",
-              hint: "Optional. When this is higher than the Australian selling price, the shop shows it struck through."
+              hint: "Required when the piece is visible in Australia. Type a selling price to see the discount percent instead.",
+              input_html: { data: { pricing_role: "selling", pricing_group: "au" } }
+      f.input :pricing_driver_aud, as: :hidden, input_html: { value: "", data: { pricing_role: "driver", pricing_group: "au" } }
+      text_node helpers.tag.li(class: "input") {
+        helpers.tag.p(
+          Product.discount_summary(f.object.compare_at_price_aud, f.object.discount_percent_aud, f.object.selling_price_aud, "A$"),
+          class: "inline-hints",
+          data: { pricing_preview: "au", pricing_currency: "A$" }
+        )
+      }
+    end
+
+    unless f.object.instance_variable_get(:@_discount_script)
+      f.object.instance_variable_set(:@_discount_script, true)
+      text_node helpers.render("admin/products/discount_pricing")
     end
 
     f.inputs "Inventory" do
