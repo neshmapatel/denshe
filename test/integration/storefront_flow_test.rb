@@ -289,6 +289,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_select ".catalogue-card__off", text: "20% off"
     assert_select ".catalogue-card__now", text: "₹271.20"
     assert_no_match "Hidden Draft", response.body
+    assert_select "img[loading=eager][fetchpriority=high][width='420'][height='560']", 1
     assert_select "button[data-fullscreen-src]", 1
     assert_select "dialog.lightbox"
     assert_select "button.lightbox__cancel", text: "Cancel"

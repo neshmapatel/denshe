@@ -57,7 +57,7 @@ class Product < ApplicationRecord
   scope :visible_in_australia, -> { where(visible_in_australia: true) }
   scope :offered_in_australia, -> { visible_in_australia.where("selling_price_aud > 0") }
   scope :bestsellers, -> { available.where(bestseller: true) }
-  scope :with_storefront_includes, -> { includes(:category, images_attachments: :blob) }
+  scope :with_storefront_includes, -> { includes(:category, images_attachments: { blob: :variant_records }) }
 
   def self.search_columns
     %w[name sku slug]
@@ -211,6 +211,16 @@ class Product < ApplicationRecord
     return unless images.attached?
 
     images.find_by(id: primary_image_id) || images.first
+  end
+
+  # One photograph for the catalogue grid. Uses the primary when it is set,
+  # otherwise the first upload, without lining up the whole gallery.
+  def catalogue_photo
+    attachments = images_attachments
+    list = attachments.loaded? ? attachments.target : attachments.to_a
+    return if list.empty?
+
+    list.find { |attachment| attachment.id == primary_image_id } || list.first
   end
 
   # The storefront shows a photograph only when one has been marked primary.

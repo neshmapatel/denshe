@@ -7,6 +7,10 @@ module StorefrontHelper
     stage: [ 1400, 1867 ]
   }.freeze
 
+  # The catalogue grid is about 200px wide, so a 420px WebP covers a sharp
+  # screen without sending the 700px shop photo a hundred times.
+  CATALOGUE_IMAGE = [ 420, 560 ].freeze
+
   # Lifestyle art that stands in for a product photo on a collection tile.
   COLLECTION_COVERS = {
     "bracelets" => "collection-bracelets.jpg",
@@ -14,8 +18,8 @@ module StorefrontHelper
     "chain-pendants" => "collection-chain-pendants.jpg"
   }.freeze
 
-  # Active Storage needs libvips (or ImageMagick) to build variants. Production
-  # has it; a bare development machine often does not, so fall back to the
+  # Active Storage prefers libvips. When that library is missing, the
+  # initializer switches to ImageMagick. If neither can load, keep the
   # original file instead of serving a broken image.
   def self.variants_supported?
     return @variants_supported unless @variants_supported.nil?
@@ -42,9 +46,24 @@ module StorefrontHelper
   end
 
   def piece_image_source(attachment, size)
+    image_variant(attachment, resize_to_limit: IMAGE_SIZES.fetch(size), quality: 82)
+  end
+
+  def catalogue_image_source(attachment)
+    image_variant(attachment, resize_to_limit: CATALOGUE_IMAGE, format: :jpeg, quality: 70)
+  end
+
+  def image_variant(attachment, quality:, **transformations)
     return attachment unless StorefrontHelper.variants_supported? && attachment.variable?
 
-    attachment.variant(resize_to_limit: IMAGE_SIZES.fetch(size), saver: { quality: 82 })
+    # libvips takes quality inside saver. ImageMagick takes it as its own step.
+    if ActiveStorage.variant_processor == :mini_magick
+      transformations[:quality] = quality
+    else
+      transformations[:saver] = { quality: quality }
+    end
+
+    attachment.variant(**transformations)
   end
 
   # What the photograph shows. Product names that already say "earrings" are

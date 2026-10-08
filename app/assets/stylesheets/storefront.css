@@ -3163,6 +3163,8 @@ html.js [data-reveal][data-revealed="true"] {
   display: grid;
   gap: 0.75rem;
   break-inside: avoid;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 12rem 22rem;
 }
 
 .catalogue-card__frame {
@@ -3329,6 +3331,7 @@ html.js [data-reveal][data-revealed="true"] {
   .catalogue-card,
   .catalogue-card--sold {
     opacity: 1;
+    content-visibility: visible;
     break-inside: avoid;
     page-break-inside: avoid;
   }

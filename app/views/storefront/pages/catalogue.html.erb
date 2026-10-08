@@ -61,6 +61,7 @@
 </nav>
 
 <% if @categories.any? %>
+  <% eager_photos = 6 %>
   <% @categories.each do |category| %>
     <% pieces = @products_by_category_id[category.id] || [] %>
     <section class="section section--tight catalogue-section" id="<%= category.slug %>">
@@ -75,17 +76,23 @@
 
         <div class="catalogue-grid">
           <% pieces.each do |product| %>
-            <% image = product.display_image || product.gallery_images.first %>
+            <% image = product.catalogue_photo %>
             <% sold_out = product.stock_quantity.to_i <= 0 %>
             <article class="catalogue-card<%= " catalogue-card--sold" if sold_out %>">
               <div class="catalogue-card__frame">
                 <% if image %>
+                  <% eager = eager_photos.positive? %>
+                  <% priority = eager_photos == 6 %>
+                  <% eager_photos -= 1 %>
                   <%= fullscreen_button image,
                         alt: piece_alt(product),
-                        preview: piece_image_source(image, :card),
+                        preview: catalogue_image_source(image),
                         class: "catalogue-card__open",
-                        loading: "lazy",
-                        decoding: "async" %>
+                        loading: (eager ? "eager" : "lazy"),
+                        fetchpriority: ("high" if priority),
+                        decoding: "async",
+                        width: StorefrontHelper::CATALOGUE_IMAGE[0],
+                        height: StorefrontHelper::CATALOGUE_IMAGE[1] %>
                 <% else %>
                   <div class="catalogue-card__placeholder" aria-hidden="true">
                     <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
