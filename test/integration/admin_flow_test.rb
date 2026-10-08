@@ -302,4 +302,22 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
     clip&.close!
     notes&.close!
   end
+
+  test "combo choices can be filtered and hide pieces that are out of stock" do
+    post admin_user_session_path, params: {
+      admin_user: { email: @admin.email, password: "denshe-admin-123" }
+    }
+    Product.create!(category: @category, name: "Festive Jhumka", sku: "IN-1", slug: "festive-jhumka", selling_price: 179, stock_quantity: 1, status: :active, collection_line: :indian)
+    Product.create!(category: @category, name: "Sold Studs", sku: "OUT-1", slug: "sold-studs", selling_price: 129, stock_quantity: 0, status: :active)
+
+    get new_admin_combo_path
+    assert_response :success
+    assert_select "[data-combo-filter=category]"
+    assert_select "[data-combo-filter=line] option", text: "The Festive Edit"
+    assert_select "[data-combo-filter=search]"
+    assert_match "Festive Jhumka", response.body
+    assert_match "IN-1", response.body
+    assert_match "festive-jhumka", response.body
+    assert_no_match "Sold Studs", response.body
+  end
 end

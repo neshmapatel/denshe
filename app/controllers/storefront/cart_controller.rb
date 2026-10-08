@@ -46,7 +46,7 @@ module Storefront
 
     def destroy_combo
       current_cart.remove_combo(params[:token])
-      redirect_to cart_path, notice: "That combo was removed."
+      redirect_to cart_path, notice: "That look was removed."
     end
   end
 end

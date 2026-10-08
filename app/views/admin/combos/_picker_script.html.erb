@@ -1,0 +1,61 @@
+<style>
+  .combo-picker { margin: 0.5rem 0 1rem; }
+  .combo-picker__filters { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; }
+  .combo-picker__filters label { display: grid; gap: 0.2rem; font-size: 12px; }
+  .combo-picker__search { flex: 1; min-width: 12rem; }
+  .combo-picker__search input, .combo-picker__filters select { width: 100%; }
+  .combo-picker__meta { display: flex; justify-content: space-between; gap: 1rem; margin: 0.6rem 0; color: #5c6b73; font-size: 12px; }
+  .combo-picker__meta [data-combo-selected] { text-align: right; }
+  .combo-picker__list { max-height: 22rem; overflow: auto; border: 1px solid #e6e6e6; }
+  .combo-picker__piece { display: grid; grid-template-columns: auto 1fr; gap: 0.6rem; align-items: start; padding: 0.45rem 0.6rem; border-bottom: 1px solid #f0f0f0; }
+  .combo-picker__piece small { display: block; color: #5c6b73; }
+  .combo-picker__piece[hidden] { display: none; }
+</style>
+<script>
+  (function () {
+    if (window.comboPickerBound) return;
+    window.comboPickerBound = true;
+
+    function refreshComboPicker(picker) {
+      var category = picker.querySelector("[data-combo-filter='category']").value;
+      var line = picker.querySelector("[data-combo-filter='line']").value;
+      var query = picker.querySelector("[data-combo-filter='search']").value.trim().toLowerCase();
+      var shown = 0;
+      var names = [];
+
+      picker.querySelectorAll("[data-combo-piece]").forEach(function (row) {
+        var visible = (!category || row.dataset.category === category) &&
+          (!line || row.dataset.line === line) &&
+          (!query || row.dataset.search.indexOf(query) !== -1);
+        row.hidden = !visible;
+        if (visible) shown += 1;
+        if (row.querySelector("input").checked) names.push(row.dataset.name);
+      });
+
+      picker.querySelector("[data-combo-count]").textContent = shown + (shown === 1 ? " piece" : " pieces");
+      picker.querySelector("[data-combo-selected]").textContent = names.length ? names.join(", ") : "Nothing selected yet.";
+    }
+
+    function pickerFrom(target) {
+      return target && target.closest ? target.closest(".combo-picker") : null;
+    }
+
+    document.addEventListener("input", function (event) {
+      var picker = pickerFrom(event.target);
+      if (picker && event.target.matches("[data-combo-filter]")) refreshComboPicker(picker);
+    });
+
+    document.addEventListener("change", function (event) {
+      var picker = pickerFrom(event.target);
+      if (picker) refreshComboPicker(picker);
+    });
+
+    document.addEventListener("has_many_add:after", function (event) {
+      event.target.querySelectorAll(".combo-picker").forEach(refreshComboPicker);
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll(".combo-picker").forEach(refreshComboPicker);
+    });
+  })();
+</script>

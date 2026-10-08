@@ -28,7 +28,7 @@
         <% combos.each do |line| %>
           <li class="bag__row bag__row--plain">
             <div class="bag__copy">
-              <p class="piece__meta">Combo</p>
+              <p class="piece__meta">Look</p>
               <h2><%= line.combo.name %></h2>
               <p><%= line.products.map(&:name).to_sentence %></p>
               <p class="piece__price"><%= line.offered? ? price(line.line_total) : "Available in India" %></p>

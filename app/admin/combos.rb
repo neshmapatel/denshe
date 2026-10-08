@@ -64,31 +64,35 @@ ActiveAdmin.register Combo do
         group.input :name, hint: "Earrings, necklaces, and so on."
         group.input :choose_count,
                     label: "Pieces the shopper can pick",
-                    hint: "How many they pick from the list below. 1 means one earring from these earrings. The list must contain at least this many pieces.",
+                    hint: "How many they pick from the list below. 1 means one necklace from these necklaces.",
                     input_html: { min: 1 }
         group.input :position
-        group.input :selected_product_ids,
-                    label: "Pieces to choose from",
-                    as: :select,
-                    multiple: true,
-                    collection: controller.combo_product_choices,
-                    input_html: { size: 10 },
-                    hint: "Only these pieces appear for this choice."
+        li do
+          group.template.concat(
+            group.template.render(partial: "admin/combos/piece_picker", locals: { builder: group })
+          )
+        end
       end
     end
 
     f.actions
+
+    text_node render(partial: "admin/combos/picker_script")
   end
 
   controller do
+    helper_method :combo_piece_choices, :combo_piece_categories
+
     def scoped_collection
       super.includes(:groups)
     end
 
-    def combo_product_choices
-      @combo_product_choices ||= Product.includes(:category).order("categories.name", "products.name").map do |product|
-        [ "#{product.category.name} — #{product.name}", product.id ]
-      end
+    def combo_piece_choices
+      @combo_piece_choices ||= Product.in_stock.includes(:category).order("categories.name", "products.name").to_a
+    end
+
+    def combo_piece_categories
+      @combo_piece_categories ||= combo_piece_choices.map(&:category).uniq
     end
   end
 end
