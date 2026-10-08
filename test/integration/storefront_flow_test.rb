@@ -278,8 +278,16 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_select "select#catalogue-collection option", text: "The Festive Edit"
     assert_select "article.catalogue-card", 1
     assert_select ".catalogue-card__batch", text: "Batch MV-LOT-001"
-    assert_select ".catalogue-card__facts dd", text: "₹699"
+    assert_select ".catalogue-card__now", text: "₹699"
+    assert_select ".catalogue-card__off", count: 0
     assert_select ".catalogue-card__facts dd", text: "1"
+
+    @product.pricing_driver = "percent"
+    @product.update!(compare_at_price: 339, discount_percent: 20)
+    get catalogue_path
+    assert_select "del", text: "₹339"
+    assert_select ".catalogue-card__off", text: "20% off"
+    assert_select ".catalogue-card__now", text: "₹271.20"
     assert_no_match "Hidden Draft", response.body
     assert_select "button[data-fullscreen-src]", 1
     assert_select "dialog.lightbox"

@@ -104,7 +104,13 @@
                 <dl class="catalogue-card__facts">
                   <div>
                     <dt>Price</dt>
-                    <dd><%= price(product.selling_price, currency: "INR") %></dd>
+                    <dd>
+                      <% if product.on_sale? %>
+                        <del><%= price(product.compare_at_price, currency: "INR") %></del>
+                        <span class="catalogue-card__off"><%= product.discount_label %> off</span>
+                      <% end %>
+                      <span class="catalogue-card__now"><%= price(product.selling_price, currency: "INR") %></span>
+                    </dd>
                   </div>
                   <div>
                     <dt>Qty</dt>

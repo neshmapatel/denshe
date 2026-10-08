@@ -3264,6 +3264,23 @@ html.js [data-reveal][data-revealed="true"] {
   color: var(--ink);
 }
 
+.catalogue-card__facts dd del {
+  display: block;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 400;
+  text-decoration: line-through;
+}
+
+.catalogue-card__off {
+  display: block;
+  margin: 0.15rem 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
 .catalogue-card__facts div:last-child {
   text-align: right;
 }
