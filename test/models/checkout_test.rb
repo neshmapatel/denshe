@@ -34,11 +34,11 @@ class CheckoutTest < ActiveSupport::TestCase
   end
 
   test "waives shipping at the free shipping threshold" do
-    @product.update!(selling_price: 999)
+    @product.update!(selling_price: 799)
     order = checkout.place!(@cart)
 
     assert_equal 0, order.shipping_amount
-    assert_equal 999, order.total
+    assert_equal 799, order.total
   end
 
   test "keeps a separate billing address when it differs" do
