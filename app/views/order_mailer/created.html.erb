@@ -29,7 +29,13 @@
 <p><strong>Items</strong></p>
 <ul>
   <% @order.order_items.each do |item| %>
-    <li><%= item.quantity %> × <%= item.name %> — <%= @order.money(item.line_total) %></li>
+    <li>
+      <% if item.combo? && item.unit_price.to_d.zero? %>
+        included: <%= item.name %>
+      <% else %>
+        <%= item.quantity %> × <%= item.name %> — <%= @order.money(item.line_total) %>
+      <% end %>
+    </li>
   <% end %>
   <li>Shipping — <%= @order.australia? && !@order.shipping_amount.to_d.positive? ? "to confirm with the customer" : (@order.shipping_amount.to_d.positive? ? @order.money(@order.shipping_amount) : "Complimentary") %></li>
 </ul>

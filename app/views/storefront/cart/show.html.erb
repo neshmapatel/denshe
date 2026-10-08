@@ -13,7 +13,8 @@
     </header>
 
     <% lines = current_cart.items %>
-    <% if lines.empty? %>
+    <% combos = current_cart.combo_lines %>
+    <% if lines.empty? && combos.empty? %>
       <div class="empty">
         <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
         <h2>Nothing selected yet.</h2>
@@ -24,6 +25,17 @@
       </div>
     <% else %>
       <ul class="bag">
+        <% combos.each do |line| %>
+          <li class="bag__row bag__row--plain">
+            <div class="bag__copy">
+              <p class="piece__meta">Combo</p>
+              <h2><%= line.combo.name %></h2>
+              <p><%= line.products.map(&:name).to_sentence %></p>
+              <p class="piece__price"><%= line.offered? ? price(line.line_total) : "Available in India" %></p>
+            </div>
+            <%= button_to "Remove", cart_combo_path(line.token), method: :delete, class: "link-quiet bag__remove" %>
+          </li>
+        <% end %>
         <% lines.each do |line| %>
           <% image = line.product.display_image %>
           <li class="bag__row<%= " bag__row--plain" unless image %>">
@@ -55,7 +67,7 @@
           <p><%= australia? ? "Total" : "To pay" %></p>
           <p><%= price(due_for(current_cart.subtotal)) %></p>
         </div>
-        <% if current_cart.items.any? { |line| !line.offered? } %>
+        <% if current_cart.items.any? { |line| !line.offered? } || combos.any? { |line| !line.offered? } %>
           <p class="checkout__note">Some pieces are part of the India shop. Remove them to check out here, or switch to India.</p>
           <%= link_to market_switch_path("in"), class: "btn btn--block" do %>
             <span>Shop in India</span>

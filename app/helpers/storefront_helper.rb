@@ -86,11 +86,13 @@ module StorefrontHelper
   # Units still free to select: stock, minus other carts, minus this shopper's own selection.
   def quantity_left(product)
     others = holds_by_others[product.id].to_i
-    [ product.stock_quantity - others - current_cart.quantity_of(product), 0 ].max
+    own = current_cart.quantity_of(product)
+    own += 1 if current_cart.combo_product_ids.include?(product.id)
+    [ product.stock_quantity - others - own, 0 ].max
   end
 
   def held_by_someone_else?(product)
-    product.available_for_sale? && !current_cart.include?(product) && quantity_left(product).zero?
+    product.available_for_sale? && !current_cart.holding?(product) && quantity_left(product).zero?
   end
 
   def availability_copy(count)

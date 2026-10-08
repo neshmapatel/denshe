@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_07_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -105,6 +105,41 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_180000) do
     t.datetime "updated_at", null: false
     t.index ["position"], name: "index_categories_on_position"
     t.index ["slug"], name: "index_categories_on_slug", unique: true
+  end
+
+  create_table "combo_groups", force: :cascade do |t|
+    t.integer "choose_count", default: 1, null: false
+    t.bigint "combo_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["combo_id"], name: "index_combo_groups_on_combo_id"
+  end
+
+  create_table "combo_options", force: :cascade do |t|
+    t.bigint "combo_group_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "position", default: 0, null: false
+    t.bigint "product_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["combo_group_id", "product_id"], name: "index_combo_options_on_combo_group_id_and_product_id", unique: true
+    t.index ["combo_group_id"], name: "index_combo_options_on_combo_group_id"
+    t.index ["product_id"], name: "index_combo_options_on_product_id"
+  end
+
+  create_table "combos", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.decimal "price", precision: 10, scale: 2, default: "0.0", null: false
+    t.text "short_description"
+    t.string "slug", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["slug"], name: "index_combos_on_slug", unique: true
+    t.index ["status"], name: "index_combos_on_status"
   end
 
   create_table "customers", force: :cascade do |t|
@@ -341,6 +376,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_180000) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "addresses", "customers"
   add_foreign_key "cart_holds", "products"
+  add_foreign_key "combo_groups", "combos"
+  add_foreign_key "combo_options", "combo_groups"
+  add_foreign_key "combo_options", "products"
   add_foreign_key "inventory_movements", "admin_users"
   add_foreign_key "inventory_movements", "orders"
   add_foreign_key "inventory_movements", "products"

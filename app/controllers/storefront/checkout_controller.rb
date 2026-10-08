@@ -114,9 +114,9 @@ module Storefront
     private
 
     def require_pieces
-      return if current_cart.checkout_items.any?
+      return if current_cart.checkout_items.any? || current_cart.combo_lines.any?(&:offered?)
 
-      if current_cart.items.any?
+      if current_cart.items.any? || current_cart.combo_lines.any?
         redirect_to cart_path, alert: "These pieces are part of the India shop. Remove them, or switch to India, to continue."
       else
         redirect_to cart_path, alert: "Select a piece before checkout."

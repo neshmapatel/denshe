@@ -6,7 +6,7 @@
     <p class="eyebrow">For a quiet order</p>
     <h1>Every piece, with its price.</h1>
     <p class="lede">
-      Photograph, price, how many we have, and the batch it came from. Message us the name or the code, and we will set the piece aside.
+      Photograph, price, how many we have. Message us the name or the code, and we will set the piece aside.
     </p>
     <div class="catalogue-intro__actions">
       <% if whatsapp_url("Hello DeNshe, I would like to order from the catalogue.") %>
@@ -26,9 +26,21 @@
   </div>
 </header>
 
-<% if @categories.any? %>
-  <nav class="catalogue-jump" aria-label="Jump to a collection">
-    <div class="page">
+<nav class="catalogue-jump" aria-label="Catalogue filters">
+  <div class="page">
+    <%= form_with url: catalogue_path, method: :get, class: "catalogue-filter" do %>
+      <label for="catalogue-collection">Collection</label>
+      <%= select_tag :collection,
+            options_for_select(
+              [ [ "All pieces", "" ] ] + @collection_lines.map { |line| [ line.name, line.slug ] },
+              @collection_line&.slug
+            ),
+            id: "catalogue-collection",
+            onchange: "this.form.requestSubmit()" %>
+      <noscript><button type="submit" class="btn">Show</button></noscript>
+    <% end %>
+
+    <% if @categories.any? %>
       <p class="eyebrow"><%= pluralize(@piece_count, "piece") %></p>
       <% if @batches.any? %>
         <p class="catalogue-jump__batches">
@@ -42,9 +54,13 @@
           <%= link_to category.name, "##{category.slug}" %>
         <% end %>
       </div>
-    </div>
-  </nav>
+    <% elsif @collection_line %>
+      <p class="lede">Nothing from <%= @collection_line.name %> is on this list yet.</p>
+    <% end %>
+  </div>
+</nav>
 
+<% if @categories.any? %>
   <% @categories.each do |category| %>
     <% pieces = @products_by_category_id[category.id] || [] %>
     <section class="section section--tight catalogue-section" id="<%= category.slug %>">
@@ -108,7 +124,7 @@
       </div>
     </section>
   <% end %>
-<% else %>
+<% elsif @collection_line.nil? %>
   <section class="section">
     <div class="page">
       <div class="empty">

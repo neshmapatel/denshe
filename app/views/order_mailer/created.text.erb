@@ -22,7 +22,11 @@ Shipping:
 
 Items:
 <% @order.order_items.each do |item| %>
+<% if item.combo? && item.unit_price.to_d.zero? %>
+- included: <%= item.name %>
+<% else %>
 - <%= item.quantity %> × <%= item.name %> — <%= @order.money(item.line_total) %>
+<% end %>
 <% end %>
 - Shipping — <%= @order.australia? && !@order.shipping_amount.to_d.positive? ? "to confirm with the customer" : (@order.shipping_amount.to_d.positive? ? @order.money(@order.shipping_amount) : "Complimentary") %>
 

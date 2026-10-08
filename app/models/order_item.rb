@@ -4,7 +4,7 @@ class OrderItem < ApplicationRecord
   belongs_to :order
   belongs_to :product, optional: true
 
-  enum :item_type, { catalogue: 0, mystery_box: 1 }
+  enum :item_type, { catalogue: 0, mystery_box: 1, combo: 2 }
 
   validates :name, presence: true
   validates :quantity, numericality: { only_integer: true, greater_than: 0 }

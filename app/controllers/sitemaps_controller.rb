@@ -1,6 +1,6 @@
 class SitemapsController < ApplicationController
   def show
-    @entries = static_pages + collection_pages + piece_pages
+    @entries = static_pages + collection_pages + combo_pages + piece_pages
   end
 
   private
@@ -40,6 +40,15 @@ class SitemapsController < ApplicationController
   def piece_pages
     Product.active.order(:updated_at).map do |product|
       entry(piece_url(product.public_slug), changefreq: "weekly", priority: "0.7", lastmod: product.updated_at)
+    end
+  end
+
+  def combo_pages
+    combos = Combo.active.ordered.to_a
+    return [] if combos.empty?
+
+    [ entry(combos_url, changefreq: "weekly", priority: "0.6") ] + combos.map do |combo|
+      entry(combo_url(combo.slug), changefreq: "weekly", priority: "0.6", lastmod: combo.updated_at)
     end
   end
 
