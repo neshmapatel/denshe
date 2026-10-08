@@ -3,13 +3,13 @@
 
 <section class="section section--tight">
   <div class="page">
-    <%= render "storefront/shared/breadcrumbs", crumbs: [ { name: "Combos", url: combos_path }, { name: @combo.name } ] %>
+    <%= render "storefront/shared/breadcrumbs", crumbs: [ { name: "Looks", url: combos_path }, { name: @combo.name } ] %>
 
     <header class="section-head">
       <div class="section-head__text">
         <p class="eyebrow">Choose <%= @combo.choice_summary %></p>
         <h1><%= @combo.name %></h1>
-        <p class="lede"><%= @combo.short_description.presence || "Pick from the pieces set aside for this combo." %></p>
+        <p class="lede"><%= @combo.short_description.presence || "The pieces set aside for this look, at one price." %></p>
       </div>
       <p class="piece__price combo-price"><%= price(@combo.price) %></p>
     </header>
@@ -21,7 +21,7 @@
     <% end %>
 
     <% if australia? %>
-      <p class="checkout__note">Combos are part of the India shop.</p>
+      <p class="checkout__note">This look is part of the India shop.</p>
       <%= link_to market_switch_path("in"), class: "btn btn--solid" do %>
         <span>Shop in India</span>
       <% end %>
@@ -70,10 +70,10 @@
         <% ready = @combo.groups.all? { |group| group.products.count { |product| quantity_left(product).positive? && !current_cart.holding?(product) } >= group.choose_count } %>
         <% if ready %>
           <button type="submit" class="btn btn--solid">
-            <span>Select this combo · <%= price(@combo.price) %></span>
+            <span>Take this look · <%= price(@combo.price) %></span>
           </button>
         <% else %>
-          <p class="checkout__note">There are not enough pieces left to complete this combo.</p>
+          <p class="checkout__note">There are not enough pieces left for this look.</p>
         <% end %>
       <% end %>
     <% end %>

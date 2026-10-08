@@ -24,12 +24,14 @@ class ComboFlowTest < ActionDispatch::IntegrationTest
   test "a shopper builds a combo from the pieces the admin set aside" do
     get combos_path
     assert_response :success
+    assert_select "h1", "Looks"
     assert_select "a.combo-card", text: /Festive pair/
     assert_select "a.combo-card", text: /₹299/
 
     get combo_path(@combo.slug)
     assert_response :success
     assert_select "h1", "Festive pair"
+    assert_select "button", text: /Take this look/
     assert_select "label.combo-pick", 3
     assert_select ".combo-pick__price", text: "₹200"
     assert_select ".combo-pick__name", text: "Left Out", count: 0

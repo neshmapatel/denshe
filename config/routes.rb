@@ -16,8 +16,8 @@ Rails.application.routes.draw do
     get "collections", to: "categories#index", as: :collections
     get "collections/:slug", to: "categories#show", as: :collection
     get "pieces/:slug", to: "products#show", as: :piece
-    get "combos", to: "combos#index", as: :combos
-    get "combos/:slug", to: "combos#show", as: :combo
+    get "looks", to: "combos#index", as: :combos
+    get "looks/:slug", to: "combos#show", as: :combo
     post "cart/combos", to: "cart#create_combo", as: :cart_combos
     delete "cart/combos/:token", to: "cart#destroy_combo", as: :cart_combo
 
