@@ -111,7 +111,7 @@ class Order < ApplicationRecord
   def deduct_catalogue_stock!
     order_items.includes(:product).each do |item|
       product = item.product
-      next if product.nil? || !item.catalogue?
+      next if product.nil? || item.mystery_box?
       next if inventory_movements.exists?(product_id: product.id, movement_type: :customer_order)
 
       needed = item.quantity.to_i

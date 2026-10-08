@@ -1,0 +1,78 @@
+<% page_title @combo.name %>
+<% meta description: @combo.short_description.presence || "Choose the pieces in #{@combo.name}. One price, from DeNshe." %>
+
+<section class="section section--tight">
+  <div class="page">
+    <%= render "storefront/shared/breadcrumbs", crumbs: [ { name: "Combos", url: combos_path }, { name: @combo.name } ] %>
+
+    <header class="section-head">
+      <div class="section-head__text">
+        <p class="eyebrow">Choose <%= @combo.choice_summary %></p>
+        <h1><%= @combo.name %></h1>
+        <p class="lede"><%= @combo.short_description.presence || "Pick from the pieces set aside for this combo." %></p>
+      </div>
+      <p class="piece__price combo-price"><%= price(@combo.price) %></p>
+    </header>
+
+    <% if @combo.description.present? %>
+      <div class="prose page--narrow">
+        <%= simple_format(@combo.description) %>
+      </div>
+    <% end %>
+
+    <% if australia? %>
+      <p class="checkout__note">Combos are part of the India shop.</p>
+      <%= link_to market_switch_path("in"), class: "btn btn--solid" do %>
+        <span>Shop in India</span>
+      <% end %>
+    <% else %>
+      <%= form_with url: cart_combos_path, method: :post, class: "combo-form" do %>
+        <%= hidden_field_tag :slug, @combo.slug %>
+
+        <% @combo.groups.each do |group| %>
+          <fieldset class="combo-group">
+            <legend>
+              <%= group.name %>
+              <span>Choose <%= group.choose_count %></span>
+            </legend>
+            <div class="combo-picks">
+              <% group.products.each do |product| %>
+                <% open = quantity_left(product).positive? && !current_cart.holding?(product) %>
+                <label class="combo-pick<%= " combo-pick--off" unless open %>">
+                  <% if open %>
+                    <% if group.choose_count == 1 %>
+                      <%= radio_button_tag "picks[#{group.id}]", product.id, false, required: true %>
+                    <% else %>
+                      <%= check_box_tag "picks[#{group.id}][]", product.id, false %>
+                    <% end %>
+                  <% end %>
+                  <% image = product.display_image %>
+                  <span class="combo-pick__photo">
+                    <% if image %>
+                      <%= piece_image image, size: :thumb, alt: "" %>
+                    <% else %>
+                      <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
+                    <% end %>
+                  </span>
+                  <span class="combo-pick__name"><%= product.name %></span>
+                  <% unless open %>
+                    <span class="combo-pick__note"><%= current_cart.holding?(product) ? "Selected" : "Unavailable" %></span>
+                  <% end %>
+                </label>
+              <% end %>
+            </div>
+          </fieldset>
+        <% end %>
+
+        <% ready = @combo.groups.all? { |group| group.products.count { |product| quantity_left(product).positive? && !current_cart.holding?(product) } >= group.choose_count } %>
+        <% if ready %>
+          <button type="submit" class="btn btn--solid">
+            <span>Select this combo · <%= price(@combo.price) %></span>
+          </button>
+        <% else %>
+          <p class="checkout__note">There are not enough pieces left to complete this combo.</p>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+</section>

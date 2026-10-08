@@ -50,7 +50,7 @@
   </div>
 
   <% if product.available_for_sale? && !held_by_someone_else?(product) %>
-    <% if current_cart.include?(product) %>
+    <% if current_cart.holding?(product) %>
       <%= link_to cart_path, class: "btn btn--small btn--block piece__select" do %>
         <span>Selected</span>
       <% end %>

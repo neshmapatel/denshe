@@ -12,7 +12,7 @@ Rails.application.config.x.brand = ActiveSupport::OrderedOptions.new.merge(
   city: "Anand, Gujarat",
   ships_from: "Dispatched from Anand, Gujarat",
   standard_shipping: 80,
-  free_shipping_above: 999,
+  free_shipping_above: 799,
   dispatch_window: "2 to 4 working days"
 )
 

@@ -1,0 +1,38 @@
+<% page_title "Combos" %>
+<% meta description: "Build a DeNshe combo from pieces we have set aside, at one price." %>
+
+<header class="page-intro">
+  <div class="page page--narrow">
+    <p class="eyebrow">Put together</p>
+    <h1>Combos</h1>
+    <p class="lede">A few pieces, one price. You choose which ones, from the ones we have set aside.</p>
+  </div>
+</header>
+
+<section class="section section--tight">
+  <div class="page page--narrow">
+    <% if @combos.any? %>
+      <div class="combo-list">
+        <% @combos.each do |combo| %>
+          <%= link_to combo_path(combo.slug), class: "combo-card" do %>
+            <p class="eyebrow">Choose <%= combo.choice_summary %></p>
+            <h2><%= combo.name %></h2>
+            <% if combo.short_description.present? %>
+              <p><%= combo.short_description %></p>
+            <% end %>
+            <p class="piece__price"><%= price(combo.price) %></p>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="empty">
+        <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
+        <h2>Combos are on their way.</h2>
+        <p>When a set is ready, it will be here to put together.</p>
+        <%= link_to shop_path, class: "btn" do %>
+          <span>Shop the collection</span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</section>

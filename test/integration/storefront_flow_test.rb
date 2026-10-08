@@ -273,6 +273,9 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     get catalogue_path
     assert_response :success
     assert_select "h1", /every piece, with its price/i
+    assert_select "p.lede", text: "Photograph, price, how many we have. Message us the name or the code, and we will set the piece aside."
+    assert_select "select#catalogue-collection option", text: "The Modern Edit"
+    assert_select "select#catalogue-collection option", text: "The Festive Edit"
     assert_select "article.catalogue-card", 1
     assert_select ".catalogue-card__batch", text: "Batch MV-LOT-001"
     assert_select ".catalogue-card__facts dd", text: "₹699"
@@ -282,6 +285,25 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_select "dialog.lightbox"
     assert_select "button.lightbox__cancel", text: "Cancel"
     assert_match "Catalogue", response.body
+
+    Product.create!(
+      category: @category,
+      name: "Festive Kada",
+      selling_price: 899,
+      stock_quantity: 1,
+      status: :active,
+      collection_line: :indian
+    )
+
+    get catalogue_path(collection: "western")
+    assert_select "article.catalogue-card", 1
+    assert_select "h3.catalogue-card__name", text: "Aurelia Hoops"
+    assert_select "h3.catalogue-card__name", text: "Festive Kada", count: 0
+
+    get catalogue_path(collection: "indian")
+    assert_select "article.catalogue-card", 1
+    assert_select "h3.catalogue-card__name", text: "Festive Kada"
+    assert_select "h3.catalogue-card__name", text: "Aurelia Hoops", count: 0
 
     get contact_path
     assert_response :success

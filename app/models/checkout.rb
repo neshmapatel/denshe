@@ -87,19 +87,21 @@ class Checkout
 
   def place!(cart)
     lines = cart.checkout_items
-    if lines.empty?
+    combos = cart.combo_lines.select(&:offered?)
+    if lines.empty? && combos.empty?
       errors.add(:base, "Select a piece before checkout.")
       return
     end
     parked = cart.items.reject(&:offered?)
-    if parked.any?
-      names = parked.map { |line| line.product.name }
+    parked_combos = cart.combo_lines.reject(&:offered?)
+    if parked.any? || parked_combos.any?
+      names = parked.map { |line| line.product.name } + parked_combos.map { |line| line.combo.name }
       errors.add(:base, "#{names.to_sentence} #{names.one? ? "is" : "are"} part of the India shop. Remove #{names.one? ? "it" : "them"} to place this order.")
       return
     end
     return if invalid?
 
-    subtotal = lines.sum(&:line_total)
+    subtotal = lines.sum(&:line_total) + combos.sum(&:line_total)
     shipping_amount = australia? ? 0.to_d : self.class.shipping_amount_for(subtotal)
 
     Order.transaction do
@@ -129,6 +131,25 @@ class Checkout
           unit_price: line.product.price_for(market),
           item_type: :catalogue
         )
+      end
+
+      combos.each do |line|
+        order.order_items.create!(
+          name: line.combo.name,
+          quantity: 1,
+          unit_price: line.combo.price,
+          item_type: :combo
+        )
+        line.products.each do |product|
+          order.order_items.create!(
+            product: product,
+            name: product.name,
+            sku: product.sku,
+            quantity: 1,
+            unit_price: 0,
+            item_type: :combo
+          )
+        end
       end
 
       order.reserve_catalogue_stock!
