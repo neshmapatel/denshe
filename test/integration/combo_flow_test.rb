@@ -31,6 +31,7 @@ class ComboFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", "Festive pair"
     assert_select "label.combo-pick", 3
+    assert_select ".combo-pick__price", text: "₹200"
     assert_select ".combo-pick__name", text: "Left Out", count: 0
 
     post cart_combos_path, params: { slug: @combo.slug, picks: {} }

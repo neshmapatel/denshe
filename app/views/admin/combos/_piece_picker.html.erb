@@ -1,0 +1,59 @@
+<% selected = Array(builder.object.selected_product_ids) %>
+<% pieces = controller.combo_piece_choices %>
+<div class="combo-picker">
+  <%= hidden_field_tag "#{builder.object_name}[selected_product_ids][]", "" %>
+  <div class="combo-picker__filters">
+    <label>
+      Type
+      <select data-combo-filter="category">
+        <option value="">All</option>
+        <% controller.combo_piece_categories.each do |category| %>
+          <option value="<%= category.id %>"><%= category.name %></option>
+        <% end %>
+      </select>
+    </label>
+    <label>
+      Line
+      <select data-combo-filter="line">
+        <option value="">All</option>
+        <option value="indian">The Festive Edit</option>
+        <option value="western">The Modern Edit</option>
+      </select>
+    </label>
+    <label class="combo-picker__search">
+      Search
+      <input type="search" data-combo-filter="search" placeholder="Name, SKU, or slug" autocomplete="off">
+    </label>
+  </div>
+  <p class="combo-picker__meta">
+    <span data-combo-count><%= pieces.size %> pieces</span>
+    <span data-combo-selected>Nothing selected yet.</span>
+  </p>
+  <div class="combo-picker__list">
+    <% pieces.each do |product| %>
+      <% search = [ product.name, product.sku, product.slug ].compact.join(" ").downcase %>
+      <label class="combo-picker__piece"
+             data-combo-piece
+             data-category="<%= product.category_id %>"
+             data-line="<%= product.collection_line %>"
+             data-name="<%= product.name %>"
+             data-search="<%= search %>">
+        <%= check_box_tag "#{builder.object_name}[selected_product_ids][]", product.id, selected.include?(product.id) %>
+        <span>
+          <strong><%= product.name %></strong>
+          <small>
+            <%= product.category.name %>
+            · <%= product.collection_line_label %>
+            <% if product.sku.present? %>· <%= product.sku %><% end %>
+            · <%= product.slug %>
+            · ₹<%= product.selling_price.to_i %>
+            <% if product.draft? %>· Draft<% end %>
+          </small>
+        </span>
+      </label>
+    <% end %>
+    <% if pieces.empty? %>
+      <p>No pieces are in stock.</p>
+    <% end %>
+  </div>
+</div>

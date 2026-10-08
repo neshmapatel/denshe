@@ -37,7 +37,9 @@
             </legend>
             <div class="combo-picks">
               <% group.products.each do |product| %>
+                <% next unless product.stock_quantity.positive? %>
                 <% open = quantity_left(product).positive? && !current_cart.holding?(product) %>
+                <% next unless open || current_cart.holding?(product) %>
                 <label class="combo-pick<%= " combo-pick--off" unless open %>">
                   <% if open %>
                     <% if group.choose_count == 1 %>
@@ -46,17 +48,18 @@
                       <%= check_box_tag "picks[#{group.id}][]", product.id, false %>
                     <% end %>
                   <% end %>
-                  <% image = product.display_image %>
+                  <% image = product.display_image || product.images.first %>
                   <span class="combo-pick__photo">
                     <% if image %>
-                      <%= piece_image image, size: :thumb, alt: "" %>
+                      <%= piece_image image, size: :card, alt: product.name %>
                     <% else %>
                       <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
                     <% end %>
                   </span>
                   <span class="combo-pick__name"><%= product.name %></span>
+                  <span class="combo-pick__price"><%= price(listed_price(product)) %></span>
                   <% unless open %>
-                    <span class="combo-pick__note"><%= current_cart.holding?(product) ? "Selected" : "Unavailable" %></span>
+                    <span class="combo-pick__note">Selected</span>
                   <% end %>
                 </label>
               <% end %>

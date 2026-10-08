@@ -3444,13 +3444,19 @@ html.js [data-reveal][data-revealed="true"] {
 }
 
 .combo-pick__name,
+.combo-pick__price,
 .combo-pick__note {
-  padding: 0 0.55rem 0.65rem;
+  padding: 0 0.55rem;
   font-size: 0.82rem;
   line-height: 1.35;
 }
 
+.combo-pick__price {
+  padding-bottom: 0.7rem;
+}
+
 .combo-pick__note {
+  padding-bottom: 0.7rem;
   color: var(--muted);
   letter-spacing: 0.08em;
   text-transform: uppercase;
