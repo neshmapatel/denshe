@@ -31,11 +31,19 @@ ActiveAdmin.register Combo do
       row :description
     end
 
-    resource.groups.includes(options: :product).each do |group|
+    resource.groups.includes(options: { product: { images_attachments: :blob } }).each do |group|
+      pieces = group.options.filter_map(&:product)
       panel "#{group.name} — shopper picks #{group.choose_count}" do
-        if group.products.any?
-          table_for group.products do
+        if pieces.any?
+          table_for pieces do
+            column("Image") do |product|
+              if (image = product.catalogue_photo)
+                fullscreen_button image, alt: product.name, width: 48, height: 48,
+                                 style: "object-fit:cover;border-radius:4px;"
+              end
+            end
             column(:name) { |product| link_to product.name, admin_product_path(product) }
+            column("Price") { |product| "₹#{product.selling_price}" }
             column :status
             column("Stock", &:stock_quantity)
           end

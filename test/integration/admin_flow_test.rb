@@ -320,4 +320,25 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
     assert_match "festive-jhumka", response.body
     assert_no_match "Sold Studs", response.body
   end
+
+  test "combo page shows each piece photograph and selling price" do
+    post admin_user_session_path, params: {
+      admin_user: { email: @admin.email, password: "denshe-admin-123" }
+    }
+    product = Product.create!(category: @category, name: "Festive Jhumka", sku: "IN-1", slug: "festive-jhumka", selling_price: 179, stock_quantity: 1, status: :active)
+    attach_product_image(product, "jhumka.png")
+    combo = Combo.create!(
+      name: "Festive pair",
+      price: 299,
+      status: :active,
+      groups_attributes: [
+        { name: "Earrings", choose_count: 1, position: 1, selected_product_ids: [ product.id ] }
+      ]
+    )
+
+    get admin_combo_path(combo)
+    assert_response :success
+    assert_select "img[alt='Festive Jhumka']"
+    assert_select "td[data-column=price]", text: "₹179.0"
+  end
 end
