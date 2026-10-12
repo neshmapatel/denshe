@@ -17,6 +17,7 @@ class CheckoutTest < ActiveSupport::TestCase
   end
 
   test "records an unpaid order with shipping and billing addresses" do
+    @product.update!(selling_price: 499)
     order = checkout.place!(@cart)
 
     assert_predicate order, :persisted?
@@ -27,7 +28,7 @@ class CheckoutTest < ActiveSupport::TestCase
     assert_equal order.shipping_address, order.billing_address
     assert_equal 1, order.order_items.count
     assert_equal 80, order.shipping_amount
-    assert_equal 779, order.total
+    assert_equal 579, order.total
     assert_equal 0, @product.reload.stock_quantity
     assert_equal 1, order.inventory_movements.where(movement_type: :customer_order).count
     assert_not @product.available_for_sale?
@@ -78,6 +79,65 @@ class CheckoutTest < ActiveSupport::TestCase
 
     assert_equal :not_offered, cart.add(@product)
     assert_nil checkout.tap { |form| form.market = Market.australia }.place!(cart)
+  end
+
+  test "takes the coupon percent off the pieces and leaves shipping alone" do
+    coupon = Coupon.create!(code: "festive10", percent: 10)
+    @cart.apply_coupon("festive10")
+
+    order = checkout.place!(@cart)
+
+    assert_equal coupon, order.coupon
+    assert_equal "FESTIVE10", order.coupon_code
+    assert_equal BigDecimal("69.9"), order.discount
+    assert_equal 0, order.shipping_amount
+    assert_equal BigDecimal("629.1"), order.total
+  end
+
+  test "applies the best active voucher once the pieces reach its amount" do
+    Voucher.create!(name: "Too soon", minimum_spend: 500, discount_amount: 80, active: true, starts_on: Date.current + 1)
+    Voucher.create!(name: "Paused", minimum_spend: 500, discount_amount: 90, active: false)
+    Voucher.create!(name: "Festive 50", minimum_spend: 500, discount_amount: 50, active: true)
+    Voucher.create!(name: "Festive 100", minimum_spend: 600, discount_amount: 100, active: true)
+
+    order = checkout.place!(@cart)
+
+    assert_equal "Festive 100", order.voucher_name
+    assert_equal 100, order.discount
+    assert_equal 0, order.shipping_amount
+    assert_equal 599, order.total
+  end
+
+  test "a code can be used only as many times as it allows for that shopper" do
+    Coupon.create!(code: "ONCE", percent: 10, uses_per_customer: 1)
+    @cart.apply_coupon("ONCE")
+    assert checkout.place!(@cart)
+
+    second = Product.create!(
+      category: @category,
+      name: "Second hoop",
+      selling_price: 699,
+      purchase_price: 180,
+      stock_quantity: 1,
+      status: :active
+    )
+    cart = Cart.new({})
+    cart.add(second)
+    cart.apply_coupon("ONCE")
+    form = checkout
+
+    assert_nil form.place!(cart)
+    assert_includes form.errors[:base], "That code has already been used the allowed number of times."
+  end
+
+  test "refuses checkout when the code was turned off" do
+    Coupon.create!(code: "PAUSE", percent: 10, active: false)
+    @session[:coupon_code] = "PAUSE"
+    form = checkout
+
+    assert_nil form.place!(@cart)
+    assert_includes form.errors[:base], "That code is no longer available."
+    assert_equal 0, Order.count
   end
 
   test "rejects a checkout without a name or a valid PIN" do

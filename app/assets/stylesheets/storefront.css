@@ -2982,6 +2982,33 @@ html.js [data-reveal][data-revealed="true"] {
   font-size: 1.35rem;
 }
 
+.coupon {
+  display: grid;
+  gap: 0.65rem;
+  margin: 1.5rem 0 0.25rem;
+}
+
+.coupon__applied {
+  margin: 0;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.coupon__form {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.coupon__form input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  padding: 0.85rem 1rem;
+}
+
 .pay {
   display: grid;
   gap: 1.5rem;
@@ -3231,6 +3258,89 @@ html.js [data-reveal][data-revealed="true"] {
   border-bottom: 1px solid var(--line);
 }
 
+.catalogue-shipping {
+  margin: 1rem 0 0;
+}
+
+.catalogue-card__whatsapp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: #128c7e;
+  color: #fff;
+  text-decoration: none;
+}
+
+.catalogue-card__whatsapp svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.festive-note {
+  margin: 1.15rem 0 0;
+  max-width: 38rem;
+}
+
+.festive-note p {
+  margin: 0.4rem 0 0;
+}
+
+.festive-note__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 500;
+}
+
+.festive-note__fine {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.festive-offer {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  width: min(22rem, calc(100vw - 2.5rem));
+  max-height: calc(100dvh - 2.5rem);
+  overflow: visible;
+}
+
+.festive-offer::backdrop {
+  background: rgba(12, 16, 48, 0.78);
+}
+
+.festive-offer__link {
+  display: block;
+}
+
+.festive-offer__link img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 1.1rem;
+}
+
+.festive-offer__cancel {
+  position: absolute;
+  z-index: 1;
+  top: 0.65rem;
+  right: 0.65rem;
+  border: 0;
+  border-radius: 999px;
+  background: #f7f1e6;
+  color: #181848;
+  padding: 0.4rem 0.8rem;
+  font: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
 .catalogue-card__name {
   margin: 0;
   font-family: var(--font-display);
@@ -3304,7 +3414,11 @@ html.js [data-reveal][data-revealed="true"] {
   .panel,
   .jewellery-box-drawer,
   .catalogue-intro__actions,
-  .catalogue-jump {
+  .catalogue-jump,
+  .catalogue-card__whatsapp,
+  .catalogue-look__whatsapp,
+  .festive-offer,
+  .festive-note {
     display: none !important;
   }
 
@@ -3340,6 +3454,49 @@ html.js [data-reveal][data-revealed="true"] {
 .combo-list {
   display: grid;
   gap: 0.75rem;
+}
+
+.combo-list--home {
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 720px) {
+  .combo-list--home {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.catalogue-looks {
+  display: grid;
+  gap: 1rem;
+}
+
+.catalogue-look {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.15rem 1.25rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.catalogue-look__head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 500;
+}
+
+.catalogue-look__head p {
+  margin: 0.35rem 0 0;
+}
+
+.catalogue-look__group ul {
+  margin: 0.35rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.catalogue-look__whatsapp {
+  justify-self: start;
 }
 
 .combo-card {

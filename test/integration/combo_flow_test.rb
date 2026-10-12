@@ -81,4 +81,23 @@ class ComboFlowTest < ActionDispatch::IntegrationTest
     assert_equal 1, @jhumkas.reload.stock_quantity
     assert_equal 1, @left_out.reload.stock_quantity
   end
+
+  test "the landing page opens a look and the catalogue only offers a message" do
+    get root_path
+    assert_response :success
+    assert_select "a.combo-card[href='#{combo_path(@combo.slug)}']", text: /Festive pair/
+    assert_select "a.combo-card", text: /Choose the pieces/
+
+    get catalogue_path
+    assert_response :success
+    assert_select "#looks h3", text: "Festive pair"
+    assert_select "#looks", text: /Rose Studs/
+    assert_select "#looks input", count: 0
+    assert_select "#looks button", count: 0
+    note = CGI.unescape(css_select("#looks a.catalogue-look__whatsapp").first["href"])
+    assert_includes note, "I am interested in this look, and I would like to purchase these pieces from it."
+    assert_includes note, "Rose Studs"
+    assert_includes note, "Sun Pendant"
+    assert_includes note, "wa.me/919586488320"
+  end
 end

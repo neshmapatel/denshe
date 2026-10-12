@@ -103,6 +103,24 @@ class Checkout
 
     subtotal = lines.sum(&:line_total) + combos.sum(&:line_total)
     shipping_amount = australia? ? 0.to_d : self.class.shipping_amount_for(subtotal)
+    coupon = cart.coupon
+    if cart.coupon_code.present? && coupon.nil?
+      errors.add(:base, "That code is no longer available.")
+      return
+    end
+    if coupon && !coupon.available_to?(phone: phone, email: email)
+      errors.add(:base, "That code has already been used the allowed number of times.")
+      return
+    end
+    voucher = Voucher.for_subtotal(subtotal)
+    coupon_off = coupon ? coupon.discount_for(subtotal) : 0.to_d
+    voucher_off = if voucher
+      room = subtotal - coupon_off
+      room.positive? ? [ voucher.discount_for(subtotal), room ].min : 0.to_d
+    else
+      0.to_d
+    end
+    discount = coupon_off + voucher_off
 
     Order.transaction do
       shipping = Address.create!(shipping_attributes)
@@ -115,8 +133,12 @@ class Checkout
         billing_address: billing,
         subtotal: subtotal,
         shipping_amount: shipping_amount,
-        discount: 0,
-        total: subtotal + shipping_amount,
+        discount: discount,
+        coupon: coupon,
+        coupon_code: coupon&.code,
+        voucher: voucher_off.positive? ? voucher : nil,
+        voucher_name: voucher_off.positive? ? voucher.name : nil,
+        total: subtotal - discount + shipping_amount,
         currency: market.currency,
         status: :pending,
         payment_status: :unpaid

@@ -28,6 +28,9 @@ Items:
 - <%= item.quantity %> × <%= item.name %> — <%= @order.money(item.line_total) %>
 <% end %>
 <% end %>
+<% if @order.discount.to_d.positive? %>
+- Offer<%= " #{[@order.coupon_code, @order.voucher_name].compact_blank.join(" ")}" if @order.coupon_code.present? || @order.voucher_name.present? %> — −<%= @order.money(@order.discount) %>
+<% end %>
 - Shipping — <%= @order.australia? && !@order.shipping_amount.to_d.positive? ? "to confirm with the customer" : (@order.shipping_amount.to_d.positive? ? @order.money(@order.shipping_amount) : "Complimentary") %>
 
 <% if @order.mystery_box? && @order.mystery_box_preference.present? %>

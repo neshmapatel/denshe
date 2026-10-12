@@ -79,6 +79,18 @@
               <span><%= price(line.line_total) %></span>
             </li>
           <% end %>
+          <% if current_cart.coupon_discount.positive? %>
+            <li>
+              <span>Offer · <%= current_cart.coupon.code %></span>
+              <span>−<%= price(current_cart.coupon_discount) %></span>
+            </li>
+          <% end %>
+          <% if current_cart.voucher_discount.positive? %>
+            <li>
+              <span><%= current_cart.voucher.name %></span>
+              <span>−<%= price(current_cart.voucher_discount) %></span>
+            </li>
+          <% end %>
           <li>
             <span>Shipping</span>
             <span><%= shipping_label_for(current_cart.subtotal) %></span>
@@ -86,7 +98,7 @@
         </ul>
         <div class="bag__due">
           <p><%= australia? ? "Total" : "To pay" %></p>
-          <p><%= price(due_for(current_cart.subtotal)) %></p>
+          <p><%= price(cart_due) %></p>
         </div>
         <p class="checkout__note">
           <% if australia? %>

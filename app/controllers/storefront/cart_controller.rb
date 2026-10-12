@@ -48,5 +48,18 @@ module Storefront
       current_cart.remove_combo(params[:token])
       redirect_to cart_path, notice: "That look was removed."
     end
+
+    def apply_coupon
+      if current_cart.apply_coupon(params[:code]) == :applied
+        redirect_to cart_path, notice: "#{current_cart.coupon.code} takes #{current_cart.coupon.percent_label} off."
+      else
+        redirect_to cart_path, alert: "That code is not available."
+      end
+    end
+
+    def remove_coupon
+      current_cart.remove_coupon
+      redirect_to cart_path, notice: "The code was removed."
+    end
   end
 end

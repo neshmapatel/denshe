@@ -193,6 +193,54 @@ class Cart
     checkout_items.sum(&:line_total) + combo_lines.select(&:offered?).sum(&:line_total)
   end
 
+  def coupon_code
+    @session[:coupon_code].presence
+  end
+
+  def coupon
+    return @coupon if defined?(@coupon)
+
+    @coupon = Coupon.redeemable(coupon_code)
+  end
+
+  def apply_coupon(code)
+    found = Coupon.redeemable(code)
+    return :invalid unless found
+
+    @session[:coupon_code] = found.code
+    @coupon = found
+    :applied
+  end
+
+  def remove_coupon
+    @session.delete(:coupon_code)
+    @coupon = nil
+  end
+
+  def coupon_discount
+    return 0.to_d unless coupon
+
+    coupon.discount_for(subtotal)
+  end
+
+  def voucher
+    Voucher.for_subtotal(subtotal)
+  end
+
+  def voucher_discount
+    offer = voucher
+    return 0.to_d unless offer
+
+    room = subtotal - coupon_discount
+    return 0.to_d unless room.positive?
+
+    [ offer.discount_for(subtotal), room ].min
+  end
+
+  def discount_amount
+    coupon_discount + voucher_discount
+  end
+
   # Lines that can be bought in the shop the visitor is browsing.
   def checkout_items
     items.select(&:offered?)
@@ -203,6 +251,7 @@ class Cart
     @session[:cart] = {}
     @session[:cart_combos] = {}
     @combo_lines = nil
+    remove_coupon
   end
 
   def combo_data

@@ -6,6 +6,10 @@ ActiveAdmin.register Customer do
 
   permit_params :name, :email, :phone
 
+  action_item :new_order, only: :show do
+    link_to "New order", new_admin_order_path(customer_id: resource.id)
+  end
+
   index do
     selectable_column
     id_column

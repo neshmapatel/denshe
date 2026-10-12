@@ -37,6 +37,9 @@
       <% end %>
     </li>
   <% end %>
+  <% if @order.discount.to_d.positive? %>
+    <li>Offer<%= " #{[@order.coupon_code, @order.voucher_name].compact_blank.join(" ")}" if @order.coupon_code.present? || @order.voucher_name.present? %> — −<%= @order.money(@order.discount) %></li>
+  <% end %>
   <li>Shipping — <%= @order.australia? && !@order.shipping_amount.to_d.positive? ? "to confirm with the customer" : (@order.shipping_amount.to_d.positive? ? @order.money(@order.shipping_amount) : "Complimentary") %></li>
 </ul>
 

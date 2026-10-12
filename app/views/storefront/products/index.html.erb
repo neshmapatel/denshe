@@ -35,6 +35,8 @@
       </div>
     </header>
 
+    <%= render "storefront/shared/festive_note" %>
+
     <% if !catalogue_live? && !@filter.filtering? %>
       <div class="empty">
         <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
