@@ -1,0 +1,9 @@
+<dialog class="festive-offer" data-controller="festive-offer" aria-label="Festive sale, live until 30 October">
+  <button type="button" class="festive-offer__cancel" data-action="festive-offer#close">Cancel</button>
+  <%= link_to shop_path, class: "festive-offer__link", data: { action: "festive-offer#close" } do %>
+    <%= image_tag "festive-offer.png",
+          alt: "DeNshe Jewellery. Celebrate festivals with timeless jewellery. Up to 20% off. Sale ends on 30th October.",
+          width: 941,
+          height: 1672 %>
+  <% end %>
+</dialog>

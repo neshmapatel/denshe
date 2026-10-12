@@ -54,18 +54,42 @@
         <% end %>
       </ul>
 
+      <div class="coupon">
+        <% if current_cart.voucher %>
+          <p class="coupon__applied"><%= current_cart.voucher.name %> · <%= price(current_cart.voucher_discount) %> off</p>
+        <% end %>
+        <% if current_cart.coupon %>
+          <p class="coupon__applied"><%= current_cart.coupon.code %> · <%= current_cart.coupon.percent_label %> off</p>
+        <% elsif current_cart.coupon_code.present? %>
+          <p class="checkout__note">That code is no longer available.</p>
+        <% end %>
+        <%= form_with url: cart_coupon_path, class: "coupon__form" do %>
+          <%= text_field_tag :code, nil, placeholder: "Code", autocomplete: "off", aria: { label: "Code" } %>
+          <button type="submit" class="btn"><span>Apply</span></button>
+        <% end %>
+        <% if current_cart.coupon %>
+          <%= button_to "Remove code", cart_coupon_path, method: :delete, class: "link-quiet" %>
+        <% end %>
+      </div>
+
       <div class="bag__total">
         <div>
           <p>Pieces</p>
           <p><%= price(current_cart.subtotal) %></p>
         </div>
+        <% if current_cart.discount_amount.positive? %>
+          <div>
+            <p>Offer</p>
+            <p>−<%= price(current_cart.discount_amount) %></p>
+          </div>
+        <% end %>
         <div>
           <p>Shipping</p>
           <p><%= shipping_label_for(current_cart.subtotal) %></p>
         </div>
         <div class="bag__due">
           <p><%= australia? ? "Total" : "To pay" %></p>
-          <p><%= price(due_for(current_cart.subtotal)) %></p>
+          <p><%= price(cart_due) %></p>
         </div>
         <% if current_cart.items.any? { |line| !line.offered? } || combos.any? { |line| !line.offered? } %>
           <p class="checkout__note">Some pieces are part of the India shop. Remove them to check out here, or switch to India.</p>

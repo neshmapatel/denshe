@@ -303,6 +303,17 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
     notes&.close!
   end
 
+  test "new coupon form opens" do
+    post admin_user_session_path, params: {
+      admin_user: { email: @admin.email, password: "denshe-admin-123" }
+    }
+    get new_admin_coupon_path
+    assert_response :success
+    assert_select "input[name='coupon[code]']"
+    assert_select "input[name='coupon[percent]']"
+    assert_select "input[name='coupon[uses_per_customer]']"
+  end
+
   test "combo choices can be filtered and hide pieces that are out of stock" do
     post admin_user_session_path, params: {
       admin_user: { email: @admin.email, password: "denshe-admin-123" }

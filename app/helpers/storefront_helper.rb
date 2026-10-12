@@ -180,11 +180,56 @@ module StorefrontHelper
     subtotal.to_d + shipping_amount_for(subtotal)
   end
 
-  def whatsapp_url(message = nil)
-    return if brand.whatsapp.blank?
+  def cart_due
+    due_for(current_cart.subtotal) - current_cart.discount_amount
+  end
 
-    url = "https://wa.me/#{brand.whatsapp}"
+  CATALOGUE_WHATSAPP = "919586488320"
+
+  def whatsapp_url(message = nil, number: nil)
+    digits = number.presence || brand.whatsapp
+    return if digits.blank?
+
+    url = "https://wa.me/#{digits}"
     message.present? ? "#{url}?text=#{CGI.escape(message)}" : url
+  end
+
+  # Click-to-chat is free. The photograph is a piece address, so the stored file name stays hidden.
+  def catalogue_whatsapp_url(product, image = nil)
+    lines = [
+      "Hello,",
+      "",
+      "I have my eye on this piece.",
+      "",
+      "*#{product.name}*",
+      price(product.selling_price, currency: "INR")
+    ]
+    if image
+      lines << ""
+      lines << "Photograph"
+      lines << piece_photo_url(product.public_slug)
+    end
+    whatsapp_url(lines.join("\n"), number: CATALOGUE_WHATSAPP)
+  end
+
+  def catalogue_look_whatsapp_url(combo)
+    lines = [
+      "Hello,",
+      "",
+      "I am interested in this look, and I would like to purchase these pieces from it.",
+      "",
+      "*#{combo.name}*",
+      price(combo.price, currency: "INR")
+    ]
+    combo.groups.each do |group|
+      names = group.products.map(&:name)
+      next if names.empty?
+
+      lines << ""
+      lines << "#{group.name} · choose #{group.choose_count}"
+      names.each { |name| lines << name }
+    end
+    whatsapp_url(lines.join("\n"), number: CATALOGUE_WHATSAPP)
   end
 
   def instagram_url

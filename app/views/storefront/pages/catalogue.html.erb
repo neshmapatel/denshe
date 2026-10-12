@@ -8,6 +8,8 @@
     <p class="lede">
       Photograph, price, how many we have. Message us the name or the code, and we will set the piece aside.
     </p>
+    <%= render "storefront/shared/festive_note" %>
+    <p class="catalogue-shipping">Shipping in India is free on orders of <%= price(brand.free_shipping_above, currency: "INR") %> and above.</p>
     <div class="catalogue-intro__actions">
       <% if whatsapp_url("Hello DeNshe, I would like to order from the catalogue.") %>
         <%= link_to whatsapp_url("Hello DeNshe, I would like to order from the catalogue."),
@@ -50,6 +52,9 @@
         </p>
       <% end %>
       <div class="catalogue-jump__links">
+        <% if @looks.any? %>
+          <%= link_to "Looks", "#looks" %>
+        <% end %>
         <% @categories.each do |category| %>
           <%= link_to category.name, "##{category.slug}" %>
         <% end %>
@@ -59,6 +64,49 @@
     <% end %>
   </div>
 </nav>
+
+<% if @looks.any? %>
+  <section class="section section--tight catalogue-section" id="looks">
+    <div class="page">
+      <header class="section-head">
+        <div class="section-head__text">
+          <p class="eyebrow">Looks</p>
+          <h2>A few pieces, one price.</h2>
+          <p class="lede">Message us the look and the pieces you want from it. We will set them aside.</p>
+        </div>
+      </header>
+      <div class="catalogue-looks">
+        <% @looks.each do |combo| %>
+          <article class="catalogue-look">
+            <div class="catalogue-look__head">
+              <h3><%= combo.name %></h3>
+              <% if combo.short_description.present? %>
+                <p><%= combo.short_description %></p>
+              <% end %>
+              <p class="piece__price"><%= price(combo.price, currency: "INR") %></p>
+            </div>
+            <% combo.groups.each do |group| %>
+              <div class="catalogue-look__group">
+                <p class="eyebrow"><%= group.name %> · choose <%= group.choose_count %></p>
+                <ul>
+                  <% group.products.each do |product| %>
+                    <li><%= product.name %></li>
+                  <% end %>
+                </ul>
+              </div>
+            <% end %>
+            <%= link_to catalogue_look_whatsapp_url(combo),
+                  class: "btn catalogue-look__whatsapp",
+                  target: "_blank",
+                  rel: "noopener" do %>
+              <span>Message about this look</span>
+            <% end %>
+          </article>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>
 
 <% if @categories.any? %>
   <% eager_photos = 6 %>
@@ -107,6 +155,13 @@
                 <h3 class="catalogue-card__name"><%= product.name %></h3>
                 <% if product.purchase %>
                   <p class="catalogue-card__batch">Batch <%= product.purchase.reference %></p>
+                <% end %>
+                <%= link_to catalogue_whatsapp_url(product, image),
+                      class: "catalogue-card__whatsapp",
+                      target: "_blank",
+                      rel: "noopener",
+                      aria: { label: "Send #{product.name} on WhatsApp" } do %>
+                  <%= icon :whatsapp %>
                 <% end %>
                 <dl class="catalogue-card__facts">
                   <div>

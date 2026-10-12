@@ -277,10 +277,26 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_select "select#catalogue-collection option", text: "The Modern Edit"
     assert_select "select#catalogue-collection option", text: "The Festive Edit"
     assert_select "article.catalogue-card", 1
+    assert_select "dialog.festive-offer button", text: "Cancel"
+    assert_select "img[src*='festive-offer']"
+    assert_match "A little festive something", response.body
+    assert_match "Shipping in India is free on orders of ₹599 and above.", response.body
+    assert_select "a.catalogue-card__whatsapp[href*='wa.me/919586488320']"
+    whatsapp = css_select("a.catalogue-card__whatsapp").first["href"]
+    note = CGI.unescape(whatsapp)
+    assert_includes note, "I have my eye on this piece."
+    assert_includes note, "*Aurelia Hoops*"
+    assert_includes note, "#{piece_photo_url(@product.public_slug)}"
+    assert_no_match(/active_storage|chatgpt/i, whatsapp)
     assert_select ".catalogue-card__batch", text: "Batch MV-LOT-001"
     assert_select ".catalogue-card__now", text: "₹699"
     assert_select ".catalogue-card__off", count: 0
     assert_select ".catalogue-card__facts dd", text: "1"
+
+    get piece_photo_path(@product.public_slug)
+    assert_response :success
+    assert_equal "image/png", response.media_type
+    assert_match(/filename="#{@product.public_slug}\.png"/, response.headers["Content-Disposition"])
 
     @product.pricing_driver = "percent"
     @product.update!(compare_at_price: 339, discount_percent: 20)
@@ -397,8 +413,8 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     end
     assert_redirected_to checkout_payment_path
     order = Order.mystery_box.order(:id).last
-    assert_equal 80, order.shipping_amount
-    assert_equal 979, order.total
+    assert_equal 0, order.shipping_amount
+    assert_equal 899, order.total
     preference = order.mystery_box_preference
     assert_equal 6, preference.piece_count_min
     assert_equal 7, preference.piece_count_max
@@ -740,6 +756,10 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
       status: :active
     )
     @product.update!(visible_in_australia: true, selling_price_aud: 49, compare_at_price_aud: 59)
+
+    get catalogue_path, headers: { "CF-IPCountry" => "AU" }
+    assert_match "Shipping in India is free on orders of ₹599 and above.", response.body
+    assert_no_match "A$599", response.body
 
     get shop_path, headers: { "CF-IPCountry" => "AU" }
     assert_response :success

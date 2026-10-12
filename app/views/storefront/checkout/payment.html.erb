@@ -21,6 +21,12 @@
             <span><%= price(item.line_total) %></span>
           </li>
         <% end %>
+        <% if @order.discount.to_d.positive? %>
+          <li>
+            <span>Offer<%= " · #{[@order.coupon_code, @order.voucher_name].compact_blank.join(" · ")}" if @order.coupon_code.present? || @order.voucher_name.present? %></span>
+            <span>−<%= price(@order.discount) %></span>
+          </li>
+        <% end %>
         <li>
           <span>Shipping</span>
           <span><%= @order.shipping_amount.to_d.positive? ? price(@order.shipping_amount) : "Complimentary" %></span>

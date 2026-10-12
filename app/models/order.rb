@@ -3,6 +3,10 @@ class Order < ApplicationRecord
   include Searchable
 
   belongs_to :customer, optional: true
+  belongs_to :coupon, optional: true
+  belongs_to :voucher, optional: true
+
+  attr_accessor :new_customer_name, :new_customer_email, :new_customer_phone
   belongs_to :shipping_address, class_name: "Address", optional: true
   belongs_to :billing_address, class_name: "Address", optional: true
   has_many :order_items, dependent: :destroy
@@ -27,10 +31,11 @@ class Order < ApplicationRecord
 
   validates :subtotal, :shipping_amount, :discount, :total, numericality: { greater_than_or_equal_to: 0 }
 
+  before_validation :create_customer_from_entry
   after_create :assign_order_number
 
   scope :newest_first, -> { order(created_at: :desc) }
-  scope :revenue_paid, -> { where(payment_status: :payment_paid) }
+  scope :revenue_paid, -> { where(payment_status: :payment_paid).where("payment_method IS NULL OR payment_method != ?", "owner_gift") }
 
   def self.search_columns
     %w[number guest_name guest_email guest_phone customers.name customers.email customers.phone]
@@ -50,6 +55,22 @@ class Order < ApplicationRecord
 
   def australia?
     currency == "AUD"
+  end
+
+  def payment_label
+    {
+      "cash" => "Collected in cash",
+      "owner_gift" => "Gifted by the owner",
+      "razorpay" => "Razorpay"
+    }[payment_method] || payment_method
+  end
+
+  def collect_cash!
+    settle_offline!(code: "cash", gateway_name: "Cash", method: "cash", reference: "Collected in cash", amount: total)
+  end
+
+  def gift_by_owner!
+    settle_offline!(code: "owner_gift", gateway_name: "Gifted by the owner", method: "owner_gift", reference: "Gifted by the owner", amount: 0)
   end
 
   def money(amount)
@@ -87,6 +108,51 @@ class Order < ApplicationRecord
   end
 
   private
+
+  def create_customer_from_entry
+    return if customer_id.present? || customer&.persisted?
+    return if new_customer_name.blank? && new_customer_email.blank? && new_customer_phone.blank?
+
+    built = Customer.new(
+      name: new_customer_name.to_s.strip,
+      email: new_customer_email.to_s.strip,
+      phone: new_customer_phone.to_s.strip.presence
+    )
+    unless built.valid?
+      built.errors.full_messages.each { |message| errors.add(:base, message) }
+      throw :abort
+    end
+
+    built.save!
+    self.customer = built
+    self.guest_name = built.name if guest_name.blank?
+    self.guest_email = built.email if guest_email.blank?
+    self.guest_phone = built.phone if guest_phone.blank?
+  end
+
+  def settle_offline!(code:, gateway_name:, method:, reference:, amount:)
+    transaction do
+      lock!
+      return self if payment_paid? && payment_method == method
+
+      gateway = PaymentGateway.find_or_create_by!(code: code) { |row| row.name = gateway_name }
+      update!(
+        payment_status: :payment_paid,
+        status: pending? ? :paid : status,
+        payment_method: method,
+        payment_reference: reference
+      )
+      payments.create!(
+        payment_gateway: gateway,
+        amount: amount,
+        currency: currency,
+        status: :paid
+      )
+      deduct_catalogue_stock!
+    end
+
+    self
+  end
 
   def assign_order_number
     return if number.present?

@@ -15,6 +15,7 @@ Rails.application.routes.draw do
     get "shop", to: "products#index", as: :shop
     get "collections", to: "categories#index", as: :collections
     get "collections/:slug", to: "categories#show", as: :collection
+    get "pieces/:slug/photo", to: "products#photo", as: :piece_photo
     get "pieces/:slug", to: "products#show", as: :piece
     get "looks", to: "combos#index", as: :combos
     get "looks/:slug", to: "combos#show", as: :combo
@@ -22,6 +23,8 @@ Rails.application.routes.draw do
     delete "cart/combos/:token", to: "cart#destroy_combo", as: :cart_combo
 
     get "cart", to: "cart#show", as: :cart
+    post "cart/coupon", to: "cart#apply_coupon", as: :cart_coupon
+    delete "cart/coupon", to: "cart#remove_coupon"
     post "cart/items", to: "cart#create", as: :cart_items
     delete "cart/items/:slug", to: "cart#destroy", as: :cart_item
     get "checkout", to: "checkout#new", as: :checkout

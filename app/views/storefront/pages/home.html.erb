@@ -78,6 +78,34 @@
   </div>
 </section>
 
+<% if @looks.any? %>
+  <section class="section" data-reveal>
+    <div class="page">
+      <header class="section-head">
+        <div class="section-head__text">
+          <p class="eyebrow">Looks</p>
+          <h2>A few pieces, one price.</h2>
+          <p class="lede">Open a look, choose the pieces, and take it to checkout.</p>
+        </div>
+        <%= link_to "All looks", combos_path, class: "link-quiet" %>
+      </header>
+      <div class="combo-list combo-list--home">
+        <% @looks.each do |combo| %>
+          <%= link_to combo_path(combo.slug), class: "combo-card" do %>
+            <p class="eyebrow">Choose <%= combo.choice_summary %></p>
+            <h2><%= combo.name %></h2>
+            <% if combo.short_description.present? %>
+              <p><%= combo.short_description %></p>
+            <% end %>
+            <p class="piece__price"><%= price(combo.price) %></p>
+            <span class="link-quiet">Choose the pieces</span>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>
+
 <ol class="promises">
   <li>
     <span>01</span>

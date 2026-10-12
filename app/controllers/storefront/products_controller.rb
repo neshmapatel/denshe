@@ -7,6 +7,25 @@ module Storefront
       load_products
     end
 
+    def photo
+      requested = params[:slug].to_s
+      product = Product.find_by_slug!(requested, scope: Product.active)
+      image = product.catalogue_photo
+      raise ActiveRecord::RecordNotFound if image.nil?
+
+      if requested != product.public_slug
+        redirect_to piece_photo_path(product.public_slug), status: :moved_permanently
+        return
+      end
+
+      blob = image.blob
+      expires_in 12.hours, public: true
+      send_file blob.service.path_for(blob.key),
+        type: blob.content_type.presence || "image/jpeg",
+        disposition: "inline",
+        filename: "#{product.public_slug}#{share_photo_extension(blob)}"
+    end
+
     def show
       # Sold pieces stay reachable so shared links and search results never 404;
       # the page itself makes the sold-out state obvious.
@@ -21,6 +40,11 @@ module Storefront
     end
 
     private
+
+    def share_photo_extension(blob)
+      ext = blob.filename.extension_with_delimiter.to_s.downcase
+      ext.match?(/\A\.(jpe?g|png|webp|gif)\z/) ? ext : ".jpg"
+    end
 
     def related_pieces
       Product.catalogue_for(current_market)

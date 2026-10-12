@@ -4,10 +4,33 @@ ActiveAdmin.register Order do
   menu parent: "Sales", priority: 1
   searchable placeholder: "Search order number, customer, or email"
 
-  permit_params :customer_id, :shipping_address_id, :billing_address_id, :order_type,
+  permit_params :customer_id, :new_customer_name, :new_customer_email, :new_customer_phone,
+                :shipping_address_id, :billing_address_id, :order_type,
                 :status, :subtotal, :shipping_amount, :discount, :total, :payment_status,
                 :payment_reference, :payment_method, :shipping_status, :guest_name,
                 :guest_email, :guest_phone, :customer_notes, :admin_notes
+
+  action_item :collect_cash, only: :show, if: -> { !resource.payment_paid? } do
+    link_to "Collected in cash", collect_cash_admin_order_path(resource), method: :post
+  end
+
+  action_item :gift_by_owner, only: :show, if: -> { !resource.payment_paid? } do
+    link_to "Gifted by the owner", gift_by_owner_admin_order_path(resource), method: :post
+  end
+
+  member_action :collect_cash, method: :post do
+    resource.collect_cash!
+    redirect_to resource_path, notice: "Collected in cash and marked as paid."
+  rescue ArgumentError => error
+    redirect_to resource_path, alert: error.message
+  end
+
+  member_action :gift_by_owner, method: :post do
+    resource.gift_by_owner!
+    redirect_to resource_path, notice: "Marked as paid. Gifted by the owner."
+  rescue ArgumentError => error
+    redirect_to resource_path, alert: error.message
+  end
 
   scope :all, default: true
   scope :pending
@@ -22,6 +45,18 @@ ActiveAdmin.register Order do
   controller do
     def scoped_collection
       super.includes(:customer, order_items: :product)
+    end
+
+    def build_new_resource
+      order = super
+      customer = Customer.find_by(id: params[:customer_id]) if params[:customer_id].present?
+      if customer
+        order.customer = customer
+        order.guest_name = customer.name
+        order.guest_email = customer.email
+        order.guest_phone = customer.phone
+      end
+      order
     end
   end
 
@@ -56,12 +91,14 @@ ActiveAdmin.register Order do
       row("Guest phone", &:guest_phone)
       row :shipping_address
       row :payment_status
-      row :payment_method
+      row("Payment") { |order| order.payment_label }
       row :payment_reference
       row :shipping_status
       row :currency
       row(:subtotal) { |order| order.money(order.subtotal) }
       row(:shipping_amount) { |order| order.money(order.shipping_amount) }
+      row(:coupon_code)
+      row(:voucher_name)
       row(:discount) { |order| order.money(order.discount) }
       row(:total) { |order| order.money(order.total) }
       row :customer_notes
@@ -116,6 +153,15 @@ ActiveAdmin.register Order do
 
   form do |f|
     f.semantic_errors
+    f.inputs "Customer" do
+      f.input :customer, collection: Customer.order(:name), include_blank: "Choose a customer"
+      f.input :new_customer_name, as: :string, label: "Or add a new customer", hint: "Name, email, and phone. Leave these blank when you chose someone above."
+      f.input :new_customer_email, as: :string, label: "New customer email"
+      f.input :new_customer_phone, as: :string, label: "New customer phone"
+      f.input :guest_name
+      f.input :guest_email
+      f.input :guest_phone
+    end
     f.inputs "Fulfilment" do
       f.input :status
       f.input :payment_status
