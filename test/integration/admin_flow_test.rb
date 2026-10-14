@@ -312,6 +312,8 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
     assert_select "input[name='coupon[code]']"
     assert_select "input[name='coupon[percent]']"
     assert_select "input[name='coupon[uses_per_customer]']"
+    assert_select "input[name='coupon[valid_until]'][type='date']"
+    assert_select "select[name='coupon[customer_id]']"
   end
 
   test "combo choices can be filtered and hide pieces that are out of stock" do

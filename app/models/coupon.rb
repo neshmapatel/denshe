@@ -1,6 +1,7 @@
 class Coupon < ApplicationRecord
   include Ransackable
 
+  belongs_to :customer, optional: true
   has_many :orders, dependent: :nullify
 
   normalizes :code, with: ->(code) { code.to_s.strip.upcase.gsub(/\s+/, "") }
@@ -17,7 +18,7 @@ class Coupon < ApplicationRecord
     normalized = code.to_s.strip.upcase.gsub(/\s+/, "")
     return if normalized.blank?
 
-    active.find_by(code: normalized)
+    active.where("valid_until IS NULL OR valid_until >= ?", Date.current).find_by(code: normalized)
   end
 
   def percent_label
@@ -31,6 +32,20 @@ class Coupon < ApplicationRecord
     return 0.to_d if base <= 0
 
     [ (base * percent.to_d / 100).round(2), base ].min
+  end
+
+  def for_customer?(phone:, email:, customer: nil)
+    return true if customer_id.blank?
+
+    assigned = self.customer
+    return false if assigned.nil?
+    return true if customer&.id == assigned.id
+
+    key = self.class.phone_key(phone)
+    assigned_key = self.class.phone_key(assigned.phone)
+    return true if key.present? && assigned_key.present? && key == assigned_key
+
+    email.present? && assigned.email.present? && email.strip.downcase == assigned.email.downcase
   end
 
   def available_to?(phone:, email:, customer: nil)

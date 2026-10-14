@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_12_233000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_13_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -147,15 +147,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_233000) do
     t.boolean "active", default: true, null: false
     t.string "code", null: false
     t.datetime "created_at", null: false
+    t.bigint "customer_id"
     t.decimal "percent", precision: 5, scale: 2, null: false
     t.datetime "updated_at", null: false
     t.integer "uses_per_customer", default: 1, null: false
+    t.date "valid_until"
     t.index ["code"], name: "index_coupons_on_code", unique: true
+    t.index ["customer_id"], name: "index_coupons_on_customer_id"
   end
 
   create_table "customers", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.string "email", null: false
+    t.string "email"
     t.string "name", null: false
     t.string "phone"
     t.datetime "updated_at", null: false
@@ -224,7 +227,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_233000) do
   end
 
   create_table "order_items", force: :cascade do |t|
+    t.decimal "compare_at_price", precision: 10, scale: 2
     t.datetime "created_at", null: false
+    t.decimal "discount_amount", precision: 10, scale: 2, default: "0.0", null: false
     t.integer "item_type", default: 0, null: false
     t.string "name", null: false
     t.bigint "order_id", null: false
@@ -239,8 +244,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_233000) do
 
   create_table "orders", force: :cascade do |t|
     t.text "admin_notes"
+    t.decimal "amount_paid", precision: 10, scale: 2
     t.bigint "billing_address_id"
+    t.integer "channel", default: 0, null: false
     t.string "coupon_code"
+    t.decimal "coupon_discount", precision: 10, scale: 2, default: "0.0", null: false
     t.bigint "coupon_id"
     t.datetime "created_at", null: false
     t.string "currency", default: "INR", null: false
@@ -250,6 +258,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_233000) do
     t.string "guest_email"
     t.string "guest_name"
     t.string "guest_phone"
+    t.string "invoice_token"
     t.string "number"
     t.integer "order_type", default: 0, null: false
     t.string "payment_method"
@@ -262,11 +271,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_233000) do
     t.decimal "subtotal", precision: 10, scale: 2, default: "0.0", null: false
     t.decimal "total", precision: 10, scale: 2, default: "0.0", null: false
     t.datetime "updated_at", null: false
+    t.decimal "voucher_discount", precision: 10, scale: 2, default: "0.0", null: false
     t.bigint "voucher_id"
     t.string "voucher_name"
     t.index ["billing_address_id"], name: "index_orders_on_billing_address_id"
+    t.index ["channel"], name: "index_orders_on_channel"
     t.index ["coupon_id"], name: "index_orders_on_coupon_id"
     t.index ["customer_id"], name: "index_orders_on_customer_id"
+    t.index ["invoice_token"], name: "index_orders_on_invoice_token", unique: true
     t.index ["number"], name: "index_orders_on_number", unique: true
     t.index ["order_type"], name: "index_orders_on_order_type"
     t.index ["payment_status"], name: "index_orders_on_payment_status"
@@ -567,6 +579,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_233000) do
     t.date "ends_on"
     t.decimal "minimum_spend", precision: 10, scale: 2, default: "0.0", null: false
     t.string "name", null: false
+    t.decimal "percent", precision: 5, scale: 2
     t.date "starts_on"
     t.datetime "updated_at", null: false
   end
@@ -578,6 +591,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_233000) do
   add_foreign_key "combo_groups", "combos"
   add_foreign_key "combo_options", "combo_groups"
   add_foreign_key "combo_options", "products"
+  add_foreign_key "coupons", "customers"
   add_foreign_key "inventory_movements", "admin_users"
   add_foreign_key "inventory_movements", "orders"
   add_foreign_key "inventory_movements", "products"

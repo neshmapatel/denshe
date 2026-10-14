@@ -38,6 +38,8 @@ class ComboFlowTest < ActionDispatch::IntegrationTest
 
     post cart_combos_path, params: { slug: @combo.slug, picks: {} }
     assert_redirected_to combo_path(@combo.slug)
+    follow_redirect!
+    assert_match "Choose 1 from Earrings", response.body
 
     get cart_path
     assert_select "h2", text: "Nothing selected yet."
@@ -82,6 +84,36 @@ class ComboFlowTest < ActionDispatch::IntegrationTest
     assert_equal 1, @left_out.reload.stock_quantity
   end
 
+  test "a look stops once the shopper has chosen the number of pieces it asks for" do
+    earrings = Category.find_by!(name: "Earrings")
+    pieces = 5.times.map do |index|
+      Product.create!(category: earrings, name: "Jhumka #{index + 1}", selling_price: 150 + index, stock_quantity: 1, status: :active)
+    end
+    combo = Combo.create!(
+      name: "Jhumkas",
+      price: 339,
+      status: :active,
+      groups_attributes: [
+        { name: "Jhumkas", choose_count: 3, position: 1, selected_product_ids: pieces.map(&:id) }
+      ]
+    )
+
+    get combo_path(combo.slug)
+    assert_response :success
+    assert_select "fieldset[data-limit='3']"
+    assert_select "input[type=checkbox][data-action='combo-picks#change']", 5
+    assert_select "button[data-combo-picks-target='submit']", text: /Take this look/
+
+    group = combo.groups.find_by!(name: "Jhumkas")
+    post cart_combos_path, params: { slug: combo.slug, picks: { group.id => pieces.map(&:id) } }
+    assert_redirected_to combo_path(combo.slug)
+    follow_redirect!
+    assert_match "Choose 3 from Jhumkas", response.body
+
+    post cart_combos_path, params: { slug: combo.slug, picks: { group.id => pieces.first(3).map(&:id) } }
+    assert_redirected_to cart_path
+  end
+
   test "the landing page opens a look and the catalogue only offers a message" do
     get root_path
     assert_response :success
@@ -91,7 +123,9 @@ class ComboFlowTest < ActionDispatch::IntegrationTest
     get catalogue_path
     assert_response :success
     assert_select "#looks h3", text: "Festive pair"
-    assert_select "#looks", text: /Rose Studs/
+    assert_select "#looks .catalogue-look__name", text: "Rose Studs"
+    assert_select "#looks .catalogue-look__name", text: "Sun Pendant"
+    assert_select "#looks .catalogue-look__photo img", 3
     assert_select "#looks input", count: 0
     assert_select "#looks button", count: 0
     note = CGI.unescape(css_select("#looks a.catalogue-look__whatsapp").first["href"])

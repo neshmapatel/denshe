@@ -184,6 +184,17 @@ module StorefrontHelper
     due_for(current_cart.subtotal) - current_cart.discount_amount
   end
 
+  def voucher_nudge(subtotal)
+    return if australia?
+
+    offer = Voucher.next_above(subtotal)
+    return if offer.nil?
+
+    gap = offer.minimum_spend.to_d - subtotal.to_d
+    label = offer.offer_label || price(offer.discount_amount, currency: "INR")
+    "Add products worth #{price(gap, currency: "INR")} to avail an additional #{label} discount."
+  end
+
   CATALOGUE_WHATSAPP = "919586488320"
 
   def whatsapp_url(message = nil, number: nil)

@@ -32,6 +32,43 @@ class CheckoutTest < ActiveSupport::TestCase
     assert_equal 0, @product.reload.stock_quantity
     assert_equal 1, order.inventory_movements.where(movement_type: :customer_order).count
     assert_not @product.available_for_sale?
+    assert_equal "website", order.channel
+    assert_equal "Aisha Shah", order.customer.name
+    assert_equal order.customer_id, order.shipping_address.reload.customer_id
+  end
+
+  test "a website order keeps the piece price and its discount, and reuses the customer" do
+    @product.update!(selling_price: 499, compare_at_price: 699)
+    order = checkout.place!(@cart)
+
+    item = order.order_items.sole
+    assert_equal 499, item.unit_price
+    assert_equal 699, item.compare_at_price
+    assert_equal 200, item.discount_amount
+    assert_equal "website", order.channel
+
+    other = Product.create!(
+      category: @category,
+      name: "Second Hoops",
+      selling_price: 200,
+      purchase_price: 40,
+      stock_quantity: 1,
+      status: :active
+    )
+    cart = Cart.new({})
+    cart.add(other)
+    again = checkout(email: "other@example.com").place!(cart)
+
+    assert_equal order.customer_id, again.customer_id
+    assert_equal 1, Customer.where("LOWER(email) = ?", "aisha@example.com").count
+  end
+
+  test "a checkout without an email still opens a customer from the phone" do
+    order = checkout(email: "").place!(@cart)
+
+    assert_equal "Aisha Shah", order.customer.name
+    assert_nil order.customer.email
+    assert_equal "9876543210", order.customer.phone
   end
 
   test "waives shipping at the free shipping threshold" do
@@ -81,6 +118,20 @@ class CheckoutTest < ActiveSupport::TestCase
     assert_nil checkout.tap { |form| form.market = Market.australia }.place!(cart)
   end
 
+  test "a reserved code is refused for another customer and accepted for the chosen one" do
+    customer = Customer.create!(name: "Aisha Shah", email: "aisha@example.com", phone: "9876543210")
+    Coupon.create!(code: "AISHA10", percent: 10, customer: customer)
+    @cart.apply_coupon("AISHA10")
+
+    refused = checkout(phone: "9000000000", email: "other@example.com")
+    assert_nil refused.place!(@cart)
+    assert_includes refused.errors[:base], "That code is reserved for another customer."
+
+    order = checkout.place!(@cart)
+    assert_equal "AISHA10", order.coupon_code
+    assert_equal customer, order.customer
+  end
+
   test "takes the coupon percent off the pieces and leaves shipping alone" do
     coupon = Coupon.create!(code: "festive10", percent: 10)
     @cart.apply_coupon("festive10")
@@ -92,6 +143,18 @@ class CheckoutTest < ActiveSupport::TestCase
     assert_equal BigDecimal("69.9"), order.discount
     assert_equal 0, order.shipping_amount
     assert_equal BigDecimal("629.1"), order.total
+  end
+
+  test "applies a percent voucher on its own and leaves shipping alone" do
+    @product.update!(selling_price: 600)
+    Voucher.create!(name: "Above 599", minimum_spend: 599, percent: 5, discount_amount: 0)
+
+    order = checkout.place!(@cart)
+
+    assert_equal "Above 599", order.voucher_name
+    assert_equal BigDecimal("30"), order.voucher_discount
+    assert_equal 0, order.shipping_amount
+    assert_equal BigDecimal("570"), order.total
   end
 
   test "applies the best active voucher once the pieces reach its amount" do

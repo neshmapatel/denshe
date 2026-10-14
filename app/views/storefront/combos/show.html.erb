@@ -26,14 +26,14 @@
         <span>Shop in India</span>
       <% end %>
     <% else %>
-      <%= form_with url: cart_combos_path, method: :post, class: "combo-form" do %>
+      <%= form_with url: cart_combos_path, method: :post, class: "combo-form", data: { controller: "combo-picks" } do %>
         <%= hidden_field_tag :slug, @combo.slug %>
 
         <% @combo.groups.each do |group| %>
-          <fieldset class="combo-group">
+          <fieldset class="combo-group" data-combo-picks-target="group" data-limit="<%= group.choose_count %>">
             <legend>
               <%= group.name %>
-              <span>Choose <%= group.choose_count %></span>
+              <span data-combo-picks-target="count">Choose <%= group.choose_count %></span>
             </legend>
             <div class="combo-picks">
               <% group.products.each do |product| %>
@@ -43,9 +43,9 @@
                 <label class="combo-pick<%= " combo-pick--off" unless open %>">
                   <% if open %>
                     <% if group.choose_count == 1 %>
-                      <%= radio_button_tag "picks[#{group.id}]", product.id, false, required: true %>
+                      <%= radio_button_tag "picks[#{group.id}]", product.id, false, required: true, data: { action: "combo-picks#change" } %>
                     <% else %>
-                      <%= check_box_tag "picks[#{group.id}][]", product.id, false %>
+                      <%= check_box_tag "picks[#{group.id}][]", product.id, false, data: { action: "combo-picks#change" } %>
                     <% end %>
                   <% end %>
                   <% image = product.display_image || product.images.first %>
@@ -69,7 +69,7 @@
 
         <% ready = @combo.groups.all? { |group| group.products.count { |product| quantity_left(product).positive? && !current_cart.holding?(product) } >= group.choose_count } %>
         <% if ready %>
-          <button type="submit" class="btn btn--solid">
+          <button type="submit" class="btn btn--solid" data-combo-picks-target="submit">
             <span>Take this look · <%= price(@combo.price) %></span>
           </button>
         <% else %>

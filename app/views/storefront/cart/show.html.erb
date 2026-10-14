@@ -56,10 +56,16 @@
 
       <div class="coupon">
         <% if current_cart.voucher %>
-          <p class="coupon__applied"><%= current_cart.voucher.name %> · <%= price(current_cart.voucher_discount) %> off</p>
+          <p class="coupon__applied"><%= current_cart.voucher.name %><%= " · #{current_cart.voucher.offer_label}" if current_cart.voucher.offer_label %> · <%= price(current_cart.voucher_discount) %> off</p>
         <% end %>
         <% if current_cart.coupon %>
           <p class="coupon__applied"><%= current_cart.coupon.code %> · <%= current_cart.coupon.percent_label %> off</p>
+          <% if current_cart.coupon.customer %>
+            <p class="checkout__note">This code is reserved for one customer. It is confirmed at checkout.</p>
+          <% end %>
+          <% if current_cart.coupon.valid_until %>
+            <p class="checkout__note">Valid till <%= current_cart.coupon.valid_until.strftime("%-d %B %Y") %>.</p>
+          <% end %>
         <% elsif current_cart.coupon_code.present? %>
           <p class="checkout__note">That code is no longer available.</p>
         <% end %>
@@ -91,6 +97,9 @@
           <p><%= australia? ? "Total" : "To pay" %></p>
           <p><%= price(cart_due) %></p>
         </div>
+        <% if (nudge = voucher_nudge(current_cart.subtotal)) %>
+          <p class="bag__nudge"><%= nudge %></p>
+        <% end %>
         <% if current_cart.items.any? { |line| !line.offered? } || combos.any? { |line| !line.offered? } %>
           <p class="checkout__note">Some pieces are part of the India shop. Remove them to check out here, or switch to India.</p>
           <%= link_to market_switch_path("in"), class: "btn btn--block" do %>

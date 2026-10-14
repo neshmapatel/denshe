@@ -5,13 +5,29 @@ ActiveAdmin.register Order do
   searchable placeholder: "Search order number, customer, or email"
 
   permit_params :customer_id, :new_customer_name, :new_customer_email, :new_customer_phone,
-                :shipping_address_id, :billing_address_id, :order_type,
-                :status, :subtotal, :shipping_amount, :discount, :total, :payment_status,
+                :shipping_address_id, :billing_address_id, :order_type, :channel,
+                :status, :subtotal, :shipping_amount, :discount, :coupon_code, :coupon_discount,
+                :voucher_name, :voucher_discount, :total, :amount_paid, :payment_status,
                 :payment_reference, :payment_method, :shipping_status, :guest_name,
-                :guest_email, :guest_phone, :customer_notes, :admin_notes
+                :guest_email, :guest_phone, :customer_notes, :admin_notes,
+                order_items_attributes: [ :id, :quantity, :unit_price, :compare_at_price ]
 
   action_item :collect_cash, only: :show, if: -> { !resource.payment_paid? } do
     link_to "Collected in cash", collect_cash_admin_order_path(resource), method: :post
+  end
+
+  action_item :invoice_pdf, only: :show do
+    link_to "Invoice PDF", invoice_path(resource.invoice_token, format: :pdf), target: "_blank", rel: "noopener"
+  end
+
+  action_item :invoice_whatsapp, only: :show, if: -> { resource.whatsapp_number.present? } do
+    link_to "Invoice on WhatsApp", resource.invoice_whatsapp_url, target: "_blank", rel: "noopener",
+      onclick: "densheShareInvoice(event, this)",
+      data: {
+        invoice_pdf: invoice_url(resource.invoice_token, format: :pdf),
+        invoice_name: "DeNshe-#{resource.number}.pdf",
+        invoice_note: "DeNshe invoice #{resource.number}. Total #{resource.money(resource.total)}."
+      }
   end
 
   action_item :gift_by_owner, only: :show, if: -> { !resource.payment_paid? } do
@@ -56,6 +72,7 @@ ActiveAdmin.register Order do
         order.guest_email = customer.email
         order.guest_phone = customer.phone
       end
+      order.channel = :offline
       order
     end
   end
@@ -67,6 +84,7 @@ ActiveAdmin.register Order do
     column("Customer", &:customer_display_name)
     column("Products") { |order| order.order_items.map { |item| item.product&.name || item.name }.join(", ") }
     column :order_type
+    column("Sold through") { |order| order.channel.humanize }
     column :status
     column :payment_status
     column("Total") { |order| order.money(order.total) }
@@ -77,6 +95,7 @@ ActiveAdmin.register Order do
   filter :status
   filter :payment_status
   filter :order_type
+  filter :channel, label: "Sold through"
   filter :currency
   filter :created_at
 
@@ -84,6 +103,7 @@ ActiveAdmin.register Order do
     attributes_table do
       row :number
       row :order_type
+      row("Sold through") { |order| order.channel.humanize }
       row :status
       row :customer
       row("Guest name", &:guest_name)
@@ -97,10 +117,11 @@ ActiveAdmin.register Order do
       row :currency
       row(:subtotal) { |order| order.money(order.subtotal) }
       row(:shipping_amount) { |order| order.money(order.shipping_amount) }
-      row(:coupon_code)
-      row(:voucher_name)
+      row("Coupon") { |order| order.coupon_summary }
+      row("Voucher") { |order| order.voucher_summary }
       row(:discount) { |order| order.money(order.discount) }
-      row(:total) { |order| order.money(order.total) }
+      row("Total") { |order| order.money(order.total) }
+      row("Amount paid") { |order| order.amount_paid.nil? ? "Not collected yet" : order.money(order.amount_paid) }
       row :customer_notes
       row :admin_notes
       row :created_at
@@ -135,7 +156,9 @@ ActiveAdmin.register Order do
         column :item_type
         column :sku
         column :quantity
-        column("Unit price") { |item| resource.money(item.unit_price) }
+        column("Marked price") { |item| item.compare_at_price.present? ? resource.money(item.compare_at_price) : "—" }
+        column("Price") { |item| resource.money(item.unit_price) }
+        column("Discount") { |item| item.discount_amount.to_d.positive? ? resource.money(item.discount_amount) : "—" }
         column("Line total") { |item| resource.money(item.line_total) }
       end
     end
@@ -161,6 +184,27 @@ ActiveAdmin.register Order do
       f.input :guest_name
       f.input :guest_email
       f.input :guest_phone
+    end
+    f.inputs "Price" do
+      f.input :channel, label: "Sold through", include_blank: false
+      f.input :subtotal, input_html: { min: 0, step: "0.01" }
+      f.input :shipping_amount, input_html: { min: 0, step: "0.01" }
+      f.input :coupon_code, label: "Coupon applied"
+      f.input :coupon_discount, label: "Coupon discount", input_html: { min: 0, step: "0.01" }
+      f.input :voucher_name, label: "Voucher applied"
+      f.input :voucher_discount, label: "Voucher discount", input_html: { min: 0, step: "0.01" }
+      f.input :discount, label: "Total discount", hint: "Coupon and voucher together. A piece’s own discount stays on that piece.", input_html: { min: 0, step: "0.01" }
+      f.input :total, label: "Total", hint: "The price after piece discounts, the coupon, the voucher, and shipping.", input_html: { min: 0, step: "0.01" }
+      f.input :amount_paid, label: "Amount paid", hint: "What the customer paid. This can be less than the total. Leave blank until you have collected it.", input_html: { min: 0, step: "0.01" }
+    end
+    if f.object.order_items.any?
+      f.inputs "Pieces" do
+        f.has_many :order_items, heading: false, allow_destroy: false, new_record: false do |item|
+          item.input :quantity, input_html: { min: 1 }
+          item.input :unit_price, label: "Price charged for #{item.object.name}", input_html: { min: 0, step: "0.01" }
+          item.input :compare_at_price, label: "Marked price", hint: "Leave blank when the piece has no marked price. The discount is the marked price minus the price charged.", input_html: { min: 0, step: "0.01" }
+        end
+      end
     end
     f.inputs "Fulfilment" do
       f.input :status

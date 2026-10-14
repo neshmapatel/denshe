@@ -42,7 +42,7 @@ module Storefront
       @categories = Category.ordered.where(id: @products_by_category_id.keys)
       @piece_count = products.size
       @batches = products.filter_map(&:purchase).uniq.sort_by { |purchase| [ purchase.purchased_on || Date.new(1900, 1, 1), purchase.reference ] }
-      @looks = Combo.active.ordered.includes(groups: :products)
+      @looks = Combo.active.ordered.includes(groups: { products: [ :category, { images_attachments: { blob: :variant_records } } ] })
     end
   end
 end
