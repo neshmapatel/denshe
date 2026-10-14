@@ -3,6 +3,7 @@
 <p>
   <strong>Order</strong> <%= @order.number %><br>
   <strong>Type</strong> <%= @order.mystery_box? ? "Mystery box" : "Catalogue" %><br>
+  <strong>Sold through</strong> <%= @order.channel.humanize %><br>
   <strong>Market</strong> <%= @order.australia? ? "Australia" : "India" %><br>
   <strong>Total</strong> <%= @order.money(@order.total) %><br>
   <strong>Payment</strong> <%= @order.payment_status.humanize %>
@@ -31,14 +32,20 @@
   <% @order.order_items.each do |item| %>
     <li>
       <% if item.combo? && item.unit_price.to_d.zero? %>
-        included: <%= item.name %>
+        included: <%= item.name %><% if item.compare_at_price.present? %> — <%= @order.money(item.compare_at_price) %><% end %>
       <% else %>
-        <%= item.quantity %> × <%= item.name %> — <%= @order.money(item.line_total) %>
+        <%= item.quantity %> × <%= item.name %> — <%= @order.money(item.line_total) %><% if item.discount_amount.to_d.positive? %> (marked <%= @order.money(item.compare_at_price) %>, discount <%= @order.money(item.discount_amount) %>)<% end %>
       <% end %>
     </li>
   <% end %>
-  <% if @order.discount.to_d.positive? %>
-    <li>Offer<%= " #{[@order.coupon_code, @order.voucher_name].compact_blank.join(" ")}" if @order.coupon_code.present? || @order.voucher_name.present? %> — −<%= @order.money(@order.discount) %></li>
+  <% if @order.coupon_code.present? %>
+    <li>Coupon <%= @order.coupon_code %> — −<%= @order.money(@order.coupon_discount) %></li>
+  <% end %>
+  <% if @order.voucher_name.present? %>
+    <li>Voucher <%= @order.voucher_name %> — −<%= @order.money(@order.voucher_discount) %></li>
+  <% end %>
+  <% if @order.discount.to_d.positive? && @order.coupon_discount.to_d.zero? && @order.voucher_discount.to_d.zero? %>
+    <li>Offer — −<%= @order.money(@order.discount) %></li>
   <% end %>
   <li>Shipping — <%= @order.australia? && !@order.shipping_amount.to_d.positive? ? "to confirm with the customer" : (@order.shipping_amount.to_d.positive? ? @order.money(@order.shipping_amount) : "Complimentary") %></li>
 </ul>

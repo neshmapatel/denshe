@@ -19,6 +19,10 @@ gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 
+# Customer invoices shared from the order desk
+gem "prawn", "~> 2.5"
+gem "prawn-table", "~> 0.2.2"
+
 # json 3.0 only accepts keyword options; Rails 8.1 still calls JSON.parse(json, options)
 gem "json", "~> 2.16"
 

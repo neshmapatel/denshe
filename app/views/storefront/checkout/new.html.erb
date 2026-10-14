@@ -100,6 +100,9 @@
           <p><%= australia? ? "Total" : "To pay" %></p>
           <p><%= price(cart_due) %></p>
         </div>
+        <% if (nudge = voucher_nudge(current_cart.subtotal)) %>
+          <p class="bag__nudge"><%= nudge %></p>
+        <% end %>
         <p class="checkout__note">
           <% if australia? %>
             We'll write to you to confirm delivery and payment. Placing the order reserves the piece.

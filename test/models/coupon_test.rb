@@ -10,6 +10,16 @@ class CouponTest < ActiveSupport::TestCase
     assert_equal coupon, Coupon.redeemable("festive10")
   end
 
+  test "a code is valid through its last day and refused after that" do
+    open_ended = Coupon.create!(code: "OPEN", percent: 10)
+    today = Coupon.create!(code: "TODAY", percent: 10, valid_until: Date.current)
+    Coupon.create!(code: "YESTERDAY", percent: 10, valid_until: Date.current - 1)
+
+    assert_equal open_ended, Coupon.redeemable("open")
+    assert_equal today, Coupon.redeemable("today")
+    assert_nil Coupon.redeemable("yesterday")
+  end
+
   test "an inactive code cannot be redeemed" do
     Coupon.create!(code: "PAUSE", percent: 15, active: false)
 
@@ -26,6 +36,18 @@ class CouponTest < ActiveSupport::TestCase
 
     order.update!(status: :cancelled)
     assert coupon.available_to?(phone: "9876543210", email: "aisha@example.com")
+  end
+
+  test "a code reserved for one customer matches that phone or email" do
+    customer = Customer.create!(name: "Aisha Shah", email: "aisha@example.com", phone: "9876543210")
+    coupon = Coupon.create!(code: "AISHA10", percent: 10, customer: customer)
+
+    assert coupon.for_customer?(phone: "+91 98765 43210", email: nil)
+    assert coupon.for_customer?(phone: nil, email: "AISHA@example.com")
+    assert_not coupon.for_customer?(phone: "9000000000", email: "other@example.com")
+
+    open_code = Coupon.create!(code: "OPEN10", percent: 10)
+    assert open_code.for_customer?(phone: "9000000000", email: nil)
   end
 
   test "rejects a blank code and a percent above 100" do

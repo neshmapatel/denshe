@@ -423,6 +423,25 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_match "Mystery box, 6 to 7 pieces", response.body
   end
 
+  test "the bag says how much more reaches the next percent offer" do
+    piece = Product.create!(
+      category: @category,
+      name: "Small Hoops",
+      selling_price: 520,
+      purchase_price: 100,
+      stock_quantity: 1,
+      status: :active
+    )
+    Voucher.create!(name: "Above 599", minimum_spend: 599, percent: 5, discount_amount: 0)
+
+    post cart_items_path, params: { slug: piece.slug }
+    get cart_path
+    assert_match "Add products worth ₹79 to avail an additional 5% discount.", response.body
+
+    get checkout_path
+    assert_match "Add products worth ₹79 to avail an additional 5% discount.", response.body
+  end
+
   test "a selected piece can be checked out through to payment" do
     get shop_path
     assert_select "button", text: /Select/

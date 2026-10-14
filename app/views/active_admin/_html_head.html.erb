@@ -10,5 +10,26 @@
   } else {
     document.documentElement.classList.remove('dark')
   }
+
+  window.densheShareInvoice = function (event, link) {
+    if (!navigator.share) return
+
+    event.preventDefault()
+    var fallback = link.href
+    fetch(link.dataset.invoicePdf)
+      .then(function (response) { return response.blob() })
+      .then(function (blob) {
+        var file = new File([blob], link.dataset.invoiceName, { type: "application/pdf" })
+        if (!navigator.canShare || !navigator.canShare({ files: [file] })) {
+          window.open(fallback, "_blank", "noopener")
+          return
+        }
+        return navigator.share({ files: [file], title: link.dataset.invoiceName, text: link.dataset.invoiceNote })
+      })
+      .catch(function (error) {
+        if (error && error.name === "AbortError") return
+        window.open(fallback, "_blank", "noopener")
+      })
+  }
 <% end %>
 <%= javascript_importmap_tags "active_admin", importmap: ActiveAdmin.importmap %>

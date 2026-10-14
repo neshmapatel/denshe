@@ -108,11 +108,15 @@ class Checkout
       errors.add(:base, "That code is no longer available.")
       return
     end
+    if coupon && !coupon.for_customer?(phone: phone, email: email, customer: Customer.find_for_contact(email: email, phone: phone))
+      errors.add(:base, "That code is reserved for another customer.")
+      return
+    end
     if coupon && !coupon.available_to?(phone: phone, email: email)
       errors.add(:base, "That code has already been used the allowed number of times.")
       return
     end
-    voucher = Voucher.for_subtotal(subtotal)
+    voucher = cart.voucher
     coupon_off = coupon ? coupon.discount_for(subtotal) : 0.to_d
     voucher_off = if voucher
       room = subtotal - coupon_off
@@ -136,10 +140,13 @@ class Checkout
         discount: discount,
         coupon: coupon,
         coupon_code: coupon&.code,
+        coupon_discount: coupon_off,
         voucher: voucher_off.positive? ? voucher : nil,
         voucher_name: voucher_off.positive? ? voucher.name : nil,
+        voucher_discount: voucher_off,
         total: subtotal - discount + shipping_amount,
         currency: market.currency,
+        channel: :website,
         status: :pending,
         payment_status: :unpaid
       )
@@ -150,9 +157,10 @@ class Checkout
           name: line.product.name,
           sku: line.product.sku,
           quantity: line.quantity,
-          unit_price: line.product.price_for(market),
           item_type: :catalogue
-        )
+        ) do |item|
+          item.capture_product_price!(product: line.product, market: market, charged: line.product.price_for(market))
+        end
       end
 
       combos.each do |line|
@@ -168,9 +176,10 @@ class Checkout
             name: product.name,
             sku: product.sku,
             quantity: 1,
-            unit_price: 0,
             item_type: :combo
-          )
+          ) do |item|
+            item.capture_product_price!(product: product, market: market, charged: 0)
+          end
         end
       end
 
@@ -202,6 +211,7 @@ class Checkout
         shipping_amount: shipping_amount,
         discount: 0,
         total: subtotal + shipping_amount,
+        channel: :website,
         status: :pending,
         payment_status: :unpaid,
         customer_notes: answers["note"].presence

@@ -224,6 +224,8 @@ class Cart
   end
 
   def voucher
+    return if @market&.australia?
+
     Voucher.for_subtotal(subtotal)
   end
 

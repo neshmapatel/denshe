@@ -88,9 +88,24 @@
             <% combo.groups.each do |group| %>
               <div class="catalogue-look__group">
                 <p class="eyebrow"><%= group.name %> · choose <%= group.choose_count %></p>
-                <ul>
+                <ul class="catalogue-look__pieces">
                   <% group.products.each do |product| %>
-                    <li><%= product.name %></li>
+                    <% image = product.catalogue_photo %>
+                    <li class="catalogue-look__piece">
+                      <span class="catalogue-look__photo">
+                        <% if image %>
+                          <%= image_tag catalogue_image_source(image),
+                                alt: piece_alt(product),
+                                loading: "lazy",
+                                decoding: "async",
+                                width: StorefrontHelper::CATALOGUE_IMAGE[0],
+                                height: StorefrontHelper::CATALOGUE_IMAGE[1] %>
+                        <% else %>
+                          <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
+                        <% end %>
+                      </span>
+                      <span class="catalogue-look__name"><%= product.name %></span>
+                    </li>
                   <% end %>
                 </ul>
               </div>

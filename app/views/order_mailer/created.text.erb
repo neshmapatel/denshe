@@ -2,6 +2,7 @@ A new order was placed on denshe.shop.
 
 Order: <%= @order.number %>
 Type: <%= @order.mystery_box? ? "Mystery box" : "Catalogue" %>
+Sold through: <%= @order.channel.humanize %>
 Market: <%= @order.australia? ? "Australia" : "India" %>
 Total: <%= @order.money(@order.total) %>
 Payment: <%= @order.payment_status.humanize %>
@@ -23,13 +24,19 @@ Shipping:
 Items:
 <% @order.order_items.each do |item| %>
 <% if item.combo? && item.unit_price.to_d.zero? %>
-- included: <%= item.name %>
+- included: <%= item.name %><% if item.compare_at_price.present? %> — <%= @order.money(item.compare_at_price) %><% end %>
 <% else %>
-- <%= item.quantity %> × <%= item.name %> — <%= @order.money(item.line_total) %>
+- <%= item.quantity %> × <%= item.name %> — <%= @order.money(item.line_total) %><% if item.discount_amount.to_d.positive? %> (marked <%= @order.money(item.compare_at_price) %>, discount <%= @order.money(item.discount_amount) %>)<% end %>
 <% end %>
 <% end %>
-<% if @order.discount.to_d.positive? %>
-- Offer<%= " #{[@order.coupon_code, @order.voucher_name].compact_blank.join(" ")}" if @order.coupon_code.present? || @order.voucher_name.present? %> — −<%= @order.money(@order.discount) %>
+<% if @order.coupon_code.present? %>
+- Coupon <%= @order.coupon_code %> — −<%= @order.money(@order.coupon_discount) %>
+<% end %>
+<% if @order.voucher_name.present? %>
+- Voucher <%= @order.voucher_name %> — −<%= @order.money(@order.voucher_discount) %>
+<% end %>
+<% if @order.discount.to_d.positive? && @order.coupon_discount.to_d.zero? && @order.voucher_discount.to_d.zero? %>
+- Offer — −<%= @order.money(@order.discount) %>
 <% end %>
 - Shipping — <%= @order.australia? && !@order.shipping_amount.to_d.positive? ? "to confirm with the customer" : (@order.shipping_amount.to_d.positive? ? @order.money(@order.shipping_amount) : "Complimentary") %>
 
