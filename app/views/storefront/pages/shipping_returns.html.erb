@@ -1,52 +1,48 @@
 <% page_title "Shipping & returns" %>
-<% meta description: "Shipping charges, dispatch times, and returns for DeNshe Jewellery." %>
+<% meta description: "Shipping charges, delivery timelines, cancellation rules, and refund policy for DeNshe Jewellery." %>
 
 <header class="page-intro">
   <div class="page page--narrow">
     <p class="eyebrow">DeNshe Jewellery</p>
-    <h1>Shipping & returns.</h1>
-    <p class="lede">How your order leaves Anand, what delivery costs, and what to do if something is not right. Last updated <%= Date.current.strftime("%-d %B %Y") %>.</p>
+    <h1>Shipping, cancellations &amp; returns.</h1>
+    <p class="lede">How your order leaves Anand, what delivery costs, our cancellation policy, and what to do if something is not right. Last updated <%= Date.current.strftime("%-d %B %Y") %>.</p>
   </div>
 </header>
 
 <section class="section section--tight">
   <div class="page page--narrow prose">
-    <h2>Where we ship</h2>
+    <h2 id="shipping">Where we ship</h2>
     <% if australia? %>
       <p>Orders for Australia leave from Anand, Gujarat. After you place an order we write to confirm delivery and payment, then pack the piece.</p>
     <% else %>
       <p>DeNshe Jewellery ships across India from Anand, Gujarat. We currently do not ship outside India.</p>
     <% end %>
 
-    <h2>Charges</h2>
+    <h2>Shipping charges</h2>
     <% if australia? %>
       <p>Prices on this shop are in Australian dollars. Delivery is confirmed with you before the parcel leaves. If Australian customs charges import GST or duty, that is paid by you on delivery.</p>
     <% else %>
       <p>Standard shipping is <%= price(brand.standard_shipping) %> on orders below <%= price(brand.free_shipping_above) %>. Shipping is complimentary on orders of <%= price(brand.free_shipping_above) %> and above.</p>
     <% end %>
 
-    <h2>Dispatch</h2>
+    <h2>Dispatch &amp; delivery timelines</h2>
     <% if australia? %>
       <p>Once we have confirmed payment and delivery with you, the order is packed and handed to the courier. International delivery takes longer than a parcel within India. We send tracking when it is available.</p>
     <% else %>
-      <p>Orders are usually packed and handed to the courier within <%= brand.dispatch_window %> after payment is confirmed. Delivery time after that depends on your PIN code and the courier. You will receive tracking details by email or message when they are available.</p>
+      <p>Orders are usually packed and handed to reputed courier partners within <%= brand.dispatch_window %> after payment is confirmed. Estimated delivery time across India is 3 to 7 working days depending on your destination PIN code. You will receive active tracking details by email and message as soon as the parcel is dispatched.</p>
     <% end %>
 
-    <h2>Mystery boxes</h2>
-    <% if australia? %>
-      <p>Mystery boxes are part of the India shop. Switch to India in the header if you would like one.</p>
-    <% else %>
-      <p>Mystery boxes follow the same shipping rates and dispatch window. The pieces inside are chosen for you after you order; they are not returnable for a different selection once the box has been opened, unless something arrived damaged or incorrect.</p>
-    <% end %>
+    <h2 id="cancellations">Cancellation policy</h2>
+    <p>Orders can be cancelled before they are dispatched from our studio. If you wish to cancel an order, please email <%= mail_to brand.email %> as soon as possible with your Order Number. Once an order has been dispatched and handed over to the courier partner, it cannot be cancelled.</p>
 
-    <h2>Returns & exchanges</h2>
-    <p>If a piece arrives damaged, or we sent the wrong item, write to <%= mail_to brand.email %> within 48 hours of delivery with your order number and a clear photo. We will arrange a replacement or refund for DeNshe Jewellery’s error.</p>
-    <p>Because many pieces are one of a kind or packed to order, we do not accept returns for change of mind, fit preference, or colour difference on screen once a parcel has been opened. Unopened orders may be discussed case by case — please write to us before sending anything back.</p>
+    <h2 id="returns">Returns &amp; exchanges</h2>
+    <p>If a piece arrives damaged or defective, or if you received an incorrect item, please write to <%= mail_to brand.email %> within 48 hours of delivery with your order number and clear photographs of the package and item. We will inspect the case and arrange a replacement or refund for our mistake.</p>
+    <p>Because pieces are handcrafted, curated, and packed to order, we do not accept returns for change of mind or personal preference once the sealed packaging has been opened. Unopened parcels may be considered on a case-by-case basis — please reach out to us before returning any parcel.</p>
 
-    <h2>Refunds</h2>
-    <p>Approved refunds are returned to the original payment method within 5 to 10 working days after we confirm the return. Shipping is not refunded unless the return is because of our mistake.</p>
+    <h2 id="refunds">Refunds</h2>
+    <p>Approved refunds are processed back to the original payment method (Bank Account, Credit/Debit Card, or UPI) within 5 to 7 working days after confirmation. Shipping charges are non-refundable unless the return is due to our error.</p>
 
-    <h2>Contact</h2>
-    <p>For shipping or return questions: <%= mail_to brand.email %>. We are DeNshe Jewellery, <%= brand.city %>.</p>
+    <h2>Customer care contact</h2>
+    <p>For any shipping, cancellation, or return queries, write to <%= mail_to brand.email %> or reach out via our <%= link_to "contact page", contact_path %>. We are <%= brand.name %>, <%= brand.operating_address %>.</p>
   </div>
 </section>

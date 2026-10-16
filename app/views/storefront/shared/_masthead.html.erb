@@ -40,8 +40,8 @@
       <% unless australia? %>
         <%= link_to "Looks", combos_path, class: "nav-link",
                     "aria-current": ("page" if request.path.start_with?("/looks")) %>
-        <%= link_to "Mystery box", mystery_box_path, class: "nav-link",
-                    "aria-current": ("page" if current_page?(mystery_box_path)) %>
+        <%= link_to "Potlis & Jars", potlis_and_jars_path, class: "nav-link",
+                    "aria-current": ("page" if current_page?(potlis_and_jars_path)) %>
       <% end %>
     </nav>
 
@@ -117,7 +117,7 @@
       <%= link_to "Catalogue", catalogue_path %>
       <% unless australia? %>
         <%= link_to "Looks", combos_path %>
-        <%= link_to "Mystery box", mystery_box_path %>
+        <%= link_to "Potlis & Jars", potlis_and_jars_path %>
       <% end %>
       <%= link_to "Our story", story_path %>
       <%= link_to "Care guide", care_path %>

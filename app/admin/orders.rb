@@ -55,7 +55,7 @@ ActiveAdmin.register Order do
   scope :shipped
   scope :delivered
   scope :cancelled
-  scope("Mystery boxes") { |orders| orders.mystery_box }
+  scope("Curated gift sets") { |orders| orders.mystery_box }
   scope("Australia") { |orders| orders.where(currency: "AUD") }
 
   controller do
@@ -164,7 +164,7 @@ ActiveAdmin.register Order do
     end
 
     if resource.mystery_box_preference
-      panel "Mystery box answers" do
+      panel "Curated gift set details" do
         attributes_table_for resource.mystery_box_preference do
           resource.mystery_box_preference.summary_lines.each do |label, value|
             row(label) { value }

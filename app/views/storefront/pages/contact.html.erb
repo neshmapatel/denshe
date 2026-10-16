@@ -1,11 +1,11 @@
 <% page_title "Contact" %>
-<% meta description: "Write to DeNshe in Anand, Gujarat about a piece, a mystery box, or an order. We answer by email#{brand.whatsapp.present? ? " and WhatsApp" : ""}." %>
+<% meta description: "Write to DeNshe Jewellery in Anand, Gujarat about a piece, curated gifting, or an order. We answer by email#{brand.whatsapp.present? ? " and WhatsApp" : ""}." %>
 
 <header class="page-intro">
   <div class="page page--narrow">
     <p class="eyebrow"><%= brand.city %></p>
     <h1>Write to us.</h1>
-    <p class="lede">A piece you want held, a box you want chosen, or a question about something you already wear. We read every note.</p>
+    <p class="lede">A piece you want held, a curated gift set, or a question about something you already wear. We read every note.</p>
   </div>
 </header>
 
@@ -13,29 +13,42 @@
   <div class="page">
     <div class="contact-grid">
       <article class="contact-card">
-        <p class="eyebrow">Email</p>
+        <p class="eyebrow">Customer Support Email</p>
         <h3><%= mail_to brand.email, brand.email %></h3>
-        <p>Best for photographs and longer notes. We reply from Anand, Gujarat.</p>
+        <p>Best for order queries, custom pieces, and photograph enquiries. We reply within 24 hours.</p>
+      </article>
+
+      <article class="contact-card">
+        <p class="eyebrow">Customer Support Phone</p>
+        <h3><%= link_to brand.phone, "tel:#{brand.phone.gsub(/[^\d+]/, '')}" %></h3>
+        <p>Direct telephone helpline for customer care. Active <%= brand.support_hours %>.</p>
       </article>
 
       <% if whatsapp_url %>
         <article class="contact-card">
-          <p class="eyebrow">WhatsApp</p>
-          <h3><%= link_to "Message DeNshe", whatsapp_url, target: "_blank", rel: "noopener" %></h3>
-          <p>Useful when you are holding a piece in the jewellery box and want it set aside today.</p>
+          <p class="eyebrow">WhatsApp Support</p>
+          <h3><%= link_to "+#{brand.whatsapp}", whatsapp_url, target: "_blank", rel: "noopener" %></h3>
+          <p>Instant chat for questions, custom sets, and orders. Active <%= brand.support_hours %>.</p>
         </article>
       <% end %>
+
+      <article class="contact-card">
+        <p class="eyebrow">Operating &amp; Registered Address</p>
+        <h3><%= brand.name %></h3>
+        <p><%= brand.operating_address %></p>
+        <p>Support hours: <%= brand.support_hours %></p>
+      </article>
 
       <% if instagram_url %>
         <article class="contact-card">
           <p class="eyebrow">Instagram</p>
           <h3><%= link_to "@#{brand.instagram}", instagram_url, target: "_blank", rel: "noopener" %></h3>
-          <p>New lots, as they are photographed.</p>
+          <p>New drops, styling edits, and atelier updates.</p>
         </article>
       <% end %>
 
       <article class="contact-card">
-        <p class="eyebrow">Dispatch</p>
+        <p class="eyebrow">Shipping &amp; Dispatch</p>
         <h3><%= brand.ships_from %></h3>
         <% if australia? %>
           <p>Prices are in Australian dollars. After you place an order we write to confirm delivery and payment, then dispatch from <%= brand.city %>.</p>

@@ -237,7 +237,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_select "video.clips__player", 1
   end
 
-  test "story, care, contact, mystery box, and jewellery box render" do
+  test "story, care, contact, potlis and jars, and jewellery box render" do
     get story_path
     assert_response :success
     assert_select "h1", /two friends/i
@@ -351,15 +351,15 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_match "₹80", response.body
     assert_match "DeNshe Jewellery", response.body
 
-    get mystery_box_path
+    get potlis_and_jars_path
     assert_response :success
-    assert_select "h1", /box/i
+    assert_select "h1", /potlis/i
+    assert_match "Launching soon", response.body
     assert_no_match "See something you love?", response.body
-    assert_select "[data-controller='fitting']"
-    assert_select "[data-fitting-value-param='799']", text: /799/
-    assert_select "[data-fitting-value-param='899']", text: /899/
-    assert_select "[data-fitting-value-param='1199']", text: /1,199/
-    assert_no_match "Send by email", response.body
+    assert_no_match "mystery", response.body.downcase
+
+    get "/mystery-box"
+    assert_redirected_to potlis_and_jars_path
 
     get jewellery_box_path
     assert_response :success
@@ -378,49 +378,18 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     Rails.application.config.x.google_analytics_id = previous
   end
 
-  test "a mystery box continues to name, shipping, and payment" do
-    get mystery_box_details_path
-    assert_redirected_to mystery_box_path
+  test "legacy mystery box routes redirect to potlis and jars launching soon" do
+    get "/mystery-box"
+    assert_redirected_to potlis_and_jars_path
 
-    post mystery_box_path, params: {
-      mystery_box: {
-        box: "899",
-        recipient: "myself",
-        personality: "minimal_effortless",
-        occasion: "everyday",
-        pieces: [ "earrings" ],
-        finish: [ "gold" ],
-        note: "Gold hoops."
-      }
-    }
-    assert_redirected_to mystery_box_details_path
-    follow_redirect!
-    assert_match "We have recorded your response", response.body
+    get "/mystery-box/details"
+    assert_redirected_to potlis_and_jars_path
 
-    assert_difference -> { Order.mystery_box.count }, 1 do
-      post mystery_box_details_path, params: {
-        checkout: {
-          name: "Aisha Shah",
-          phone: "9876543210",
-          email: "aisha@example.com",
-          line1: "14 Sea Face",
-          city: "Mumbai",
-          state: "Maharashtra",
-          pin_code: "400001",
-          billing_same: "1"
-        }
-      }
-    end
-    assert_redirected_to checkout_payment_path
-    order = Order.mystery_box.order(:id).last
-    assert_equal 0, order.shipping_amount
-    assert_equal 899, order.total
-    preference = order.mystery_box_preference
-    assert_equal 6, preference.piece_count_min
-    assert_equal 7, preference.piece_count_max
-    assert_equal "Gold hoops.", preference.personal_message
-    follow_redirect!
-    assert_match "Mystery box, 6 to 7 pieces", response.body
+    post "/mystery-box"
+    assert_redirected_to potlis_and_jars_path
+
+    post "/mystery-box/details"
+    assert_redirected_to potlis_and_jars_path
   end
 
   test "the bag says how much more reaches the next percent offer" do

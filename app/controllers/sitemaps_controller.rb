@@ -15,7 +15,7 @@ class SitemapsController < ApplicationController
       entry(care_url, changefreq: "monthly", priority: "0.5"),
       entry(contact_url, changefreq: "monthly", priority: "0.5"),
       entry(shipping_returns_url, changefreq: "monthly", priority: "0.4"),
-      entry(mystery_box_url, changefreq: "monthly", priority: "0.6")
+      entry(potlis_and_jars_url, changefreq: "monthly", priority: "0.6")
     ]
   end
 

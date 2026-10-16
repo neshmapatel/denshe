@@ -12,10 +12,12 @@
           "url" => root_url,
           "logo" => absolute_asset(image_url("denshe-logo.jpg")),
           "email" => brand.email,
+          "telephone" => brand.phone,
           "address" => {
             "@type" => "PostalAddress",
             "addressLocality" => "Anand",
             "addressRegion" => "Gujarat",
+            "postalCode" => "388001",
             "addressCountry" => "IN"
           },
           "sameAs" => [ instagram_url ].compact
@@ -50,8 +52,8 @@
         <span>Explore the collection</span>
       <% end %>
       <% unless australia? %>
-        <%= link_to mystery_box_path, class: "btn btn--ivory" do %>
-          <span>Discover the mystery box</span>
+        <%= link_to potlis_and_jars_path, class: "btn btn--ivory" do %>
+          <span>Discover Potlis & Jars</span>
         <% end %>
       <% end %>
     </div>
@@ -144,10 +146,10 @@
 <% unless australia? %>
   <section class="section section--ink" data-reveal>
     <div class="page centre">
-      <p class="eyebrow">Mystery box</p>
-      <h2>Tell us a little about you.<br>We’ll take care of the rest.</h2>
-      <%= link_to mystery_box_path, class: "btn btn--ivory" do %>
-        <span>Build your mystery box</span>
+      <p class="eyebrow">Jewellery Potlis & Jars</p>
+      <h2>Curated gifting sets.<br>Launching soon.</h2>
+      <%= link_to potlis_and_jars_path, class: "btn btn--ivory" do %>
+        <span>Explore Potlis & Jars</span>
       <% end %>
     </div>
   </section>

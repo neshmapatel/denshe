@@ -34,7 +34,7 @@
           <li><%= link_to "Collections", collections_path %></li>
           <% unless australia? %>
             <li><%= link_to "Looks", combos_path %></li>
-            <li><%= link_to "Mystery box", mystery_box_path %></li>
+            <li><%= link_to "Potlis & Jars", potlis_and_jars_path %></li>
           <% end %>
           <li><%= link_to "Your jewellery box", jewellery_box_path %></li>
         </ul>
@@ -57,14 +57,16 @@
       </div>
 
       <div class="footer__column">
-        <h3>Help</h3>
+        <h3>Help & Policies</h3>
         <ul>
           <li><%= link_to "Our story", story_path %></li>
           <li><%= link_to "Care guide", care_path %></li>
           <li><%= link_to "Contact us", contact_path %></li>
-          <li><%= link_to "Shipping & returns", shipping_returns_path %></li>
-          <li><%= link_to "Privacy", privacy_path %></li>
-          <li><%= link_to "Terms", terms_path %></li>
+          <li><%= link_to "Shipping & Delivery", shipping_returns_path(anchor: "shipping") %></li>
+          <li><%= link_to "Cancellation & Refund Policy", shipping_returns_path(anchor: "returns") %></li>
+          <li><%= link_to "Privacy Policy", privacy_path %></li>
+          <li><%= link_to "Terms of Use", terms_path %></li>
+          <li><%= link_to brand.phone, "tel:#{brand.phone.gsub(/[^\d+]/, '')}" %></li>
           <li><%= link_to brand.email, "mailto:#{brand.email}" %></li>
         </ul>
       </div>
