@@ -1,7 +1,7 @@
 A new order was placed on denshe.shop.
 
 Order: <%= @order.number %>
-Type: <%= @order.mystery_box? ? "Mystery box" : "Catalogue" %>
+Type: <%= @order.mystery_box? ? "Curated Potli / Jar" : "Catalogue" %>
 Sold through: <%= @order.channel.humanize %>
 Market: <%= @order.australia? ? "Australia" : "India" %>
 Total: <%= @order.money(@order.total) %>
@@ -41,7 +41,7 @@ Items:
 - Shipping — <%= @order.australia? && !@order.shipping_amount.to_d.positive? ? "to confirm with the customer" : (@order.shipping_amount.to_d.positive? ? @order.money(@order.shipping_amount) : "Complimentary") %>
 
 <% if @order.mystery_box? && @order.mystery_box_preference.present? %>
-Mystery box answers:
+Curated selection preferences:
 <% @order.mystery_box_preference.summary_lines.each do |label, value| %>
 - <%= label %>: <%= value %>
 <% end %>

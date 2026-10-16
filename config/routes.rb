@@ -39,10 +39,11 @@ Rails.application.routes.draw do
 
     get "jewellery-box", to: "pages#jewellery_box", as: :jewellery_box
     get "catalogue", to: "pages#catalogue", as: :catalogue
-    get "mystery-box", to: "mystery_boxes#show", as: :mystery_box
-    post "mystery-box", to: "mystery_boxes#create"
-    get "mystery-box/details", to: "mystery_boxes#details", as: :mystery_box_details
-    post "mystery-box/details", to: "mystery_boxes#place"
+    get "potlis-and-jars", to: "potlis_and_jars#show", as: :potlis_and_jars
+    get "mystery-box", to: redirect("/potlis-and-jars"), as: :mystery_box
+    post "mystery-box", to: redirect("/potlis-and-jars")
+    get "mystery-box/details", to: redirect("/potlis-and-jars"), as: :mystery_box_details
+    post "mystery-box/details", to: redirect("/potlis-and-jars")
     get "our-story", to: "pages#story", as: :story
     get "care-guide", to: "pages#care", as: :care
     get "contact", to: "pages#contact", as: :contact

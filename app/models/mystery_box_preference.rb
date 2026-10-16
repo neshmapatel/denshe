@@ -75,12 +75,12 @@ class MysteryBoxPreference < ApplicationRecord
   validate :preferred_finishes_are_known
 
   def to_s
-    "Mystery box for #{order}"
+    "Curated gift set for #{order}"
   end
 
   def summary_lines
     {
-      "Box" => "₹#{box_price.to_i} · #{piece_count_min} to #{piece_count_max} pieces",
+      "Gift set" => "₹#{box_price.to_i} · #{piece_count_min} to #{piece_count_max} pieces",
       "Recipient" => recipient_type&.humanize,
       "Personality" => jewellery_personality&.humanize,
       "Preferred pieces" => preferred_categories.map(&:humanize).join(", ").presence,

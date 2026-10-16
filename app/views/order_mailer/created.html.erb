@@ -2,7 +2,7 @@
 
 <p>
   <strong>Order</strong> <%= @order.number %><br>
-  <strong>Type</strong> <%= @order.mystery_box? ? "Mystery box" : "Catalogue" %><br>
+  <strong>Type</strong> <%= @order.mystery_box? ? "Curated Potli / Jar" : "Catalogue" %><br>
   <strong>Sold through</strong> <%= @order.channel.humanize %><br>
   <strong>Market</strong> <%= @order.australia? ? "Australia" : "India" %><br>
   <strong>Total</strong> <%= @order.money(@order.total) %><br>
@@ -52,7 +52,7 @@
 
 <% if @order.mystery_box? && @order.mystery_box_preference.present? %>
   <% preference = @order.mystery_box_preference %>
-  <p><strong>Mystery box answers</strong></p>
+  <p><strong>Curated selection preferences</strong></p>
   <ul>
     <% preference.summary_lines.each do |label, value| %>
       <li><%= label %>: <%= value %></li>

@@ -217,7 +217,7 @@ class Checkout
         customer_notes: answers["note"].presence
       )
       order.order_items.create!(
-        name: "Mystery box, #{box[:pieces]}",
+        name: "Curated gift set, #{box[:pieces]}",
         quantity: 1,
         unit_price: box[:price],
         item_type: :mystery_box

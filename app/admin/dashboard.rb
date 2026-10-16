@@ -47,7 +47,7 @@ ActiveAdmin.register_page "Dashboard" do
         li "All orders: #{Order.count}"
         li "Paid orders: #{Order.revenue_paid.count}"
         li "Revenue (paid): ₹#{Order.revenue_paid.sum(:total)}"
-        li "Mystery boxes: #{Order.mystery_box.count}"
+        li "Curated gift sets: #{Order.mystery_box.count}"
       end
     end
 

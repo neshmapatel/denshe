@@ -163,6 +163,14 @@ module StorefrontHelper
     Rails.application.config.x.payments_open && RazorpayGateway.configured?
   end
 
+  def mystery_box_path(*args)
+    potlis_and_jars_path(*args)
+  end
+
+  def mystery_box_url(*args)
+    potlis_and_jars_url(*args)
+  end
+
   def shipping_amount_for(subtotal)
     return 0.to_d if australia?
 
