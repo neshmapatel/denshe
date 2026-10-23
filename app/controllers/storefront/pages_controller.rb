@@ -1,7 +1,7 @@
 module Storefront
   class PagesController < BaseController
     def home
-      @looks = australia? ? Combo.none : Combo.active.ordered.includes(:groups)
+      @looks = australia? ? Combo.none : Combo.active.ordered.includes(groups: { products: [ :category, { images_attachments: { blob: :variant_records } } ] })
     end
 
     def story

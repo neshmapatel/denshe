@@ -262,7 +262,7 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
 
     get admin_products_path
     assert_response :success
-    assert_match %r{/rails/active_storage/blobs/proxy/}, response.body
+    assert_match %r{/rails/active_storage/blobs/(?:proxy|redirect)/}, response.body
   end
 
   test "admin can upload a short clip and remove it" do

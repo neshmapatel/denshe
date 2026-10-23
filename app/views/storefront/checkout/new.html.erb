@@ -66,7 +66,7 @@
         </fieldset>
 
         <%= form.button class: "btn btn--solid" do %>
-          <span><%= australia? ? "Place order" : "Continue to payment" %></span>
+          <span><%= (australia? || !payments_open?) ? "Place order" : "Continue to payment" %></span>
         <% end %>
       <% end %>
 
@@ -76,6 +76,18 @@
           <% current_cart.checkout_items.each do |line| %>
             <li>
               <span><%= line.product.name %></span>
+              <span><%= price(line.line_total) %></span>
+            </li>
+          <% end %>
+          <% current_cart.combo_lines.select(&:offered?).each do |line| %>
+            <li>
+              <span><%= line.combo.name %></span>
+              <span><%= price(line.line_total) %></span>
+            </li>
+          <% end %>
+          <% current_cart.curated_gift_lines.select(&:offered?).each do |line| %>
+            <li>
+              <span><%= line.curated_gift.title %> × <%= line.quantity %></span>
               <span><%= price(line.line_total) %></span>
             </li>
           <% end %>
@@ -106,6 +118,8 @@
         <p class="checkout__note">
           <% if australia? %>
             We'll write to you to confirm delivery and payment. Placing the order reserves the piece.
+          <% elsif !payments_open? %>
+            No payment is charged online right now. Placing your order reserves your pieces, and we'll reach out on WhatsApp or phone to confirm details and arrange payment before dispatch.
           <% elsif shipping_amount_for(current_cart.subtotal).zero? %>
             Shipping is complimentary on this order.
           <% else %>

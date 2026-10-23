@@ -49,6 +49,25 @@ module Storefront
       redirect_to cart_path, notice: "That look was removed."
     end
 
+    def create_curated_gift
+      curated_gift = CuratedGift.active.find_by!(slug: params[:slug])
+      quantity = params[:quantity].presence || 1
+
+      case current_cart.add_curated_gift(curated_gift, quantity)
+      when :added
+        redirect_to cart_path, notice: "#{curated_gift.name} is selected."
+      when :not_offered
+        redirect_back fallback_location: potlis_and_jars_path, alert: "#{curated_gift.name} is part of the India shop."
+      else
+        redirect_back fallback_location: potlis_and_jars_path, alert: "#{curated_gift.name} is currently unavailable."
+      end
+    end
+
+    def destroy_curated_gift
+      current_cart.remove_curated_gift(params[:token])
+      redirect_to cart_path, notice: "That curated gift was removed."
+    end
+
     def apply_coupon
       if current_cart.apply_coupon(params[:code]) == :applied
         redirect_to cart_path, notice: "#{current_cart.coupon.code} takes #{current_cart.coupon.percent_label} off."

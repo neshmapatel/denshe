@@ -1,26 +1,132 @@
-<% page_title "Order placed" %>
-<% meta description: "Your DeNshe order has been placed.", index: false %>
+<% page_title "Order #{ @order.number } placed" %>
+<% meta description: "Your DeNshe order ##{@order.number} has been received and reserved.", index: false %>
 
 <section class="section section--tight">
   <div class="page page--narrow">
-    <header class="section-head">
-      <div class="section-head__text">
-        <p class="eyebrow">Order <%= @order.number %></p>
-        <h1>Hey<% if @order.guest_name.present? %>, <%= @order.guest_name.split.first %><% end %>.</h1>
+    <%= render "storefront/shared/checkout_steps", current: :payment %>
+
+    <div class="order-confirmed">
+      <div class="order-confirmed__status">
+        <span class="order-confirmed__icon" aria-hidden="true">✓</span>
+        <div class="order-confirmed__headline">
+          <p class="eyebrow">Order <%= @order.number %> · Reserved</p>
+          <h1>Hey<% if @order.guest_name.present? %>, <%= @order.guest_name.split.first %><% end %>.</h1>
+        </div>
+      </div>
+
+      <div class="order-confirmed__alert">
         <% if @order.australia? %>
-          <p class="lede">Your order is reserved. The total is <%= price(@order.total, currency: @order.currency) %>. We'll contact you to arrange payment and delivery to Australia.</p>
+          <p class="order-confirmed__lede">Your order is reserved. The total is <strong><%= price(@order.total, currency: @order.currency) %></strong>. We'll contact you to arrange payment and delivery to Australia.</p>
+        <% elsif !payments_open? || @order.unpaid? %>
+          <div class="order-confirmed__notice">
+            <p class="order-confirmed__lede">
+              <strong>Your jewellery pieces have been placed on reserve for you.</strong>
+            </p>
+            <p>
+              As our online card checkout is temporarily offline, <strong>no payment was deducted online</strong>.
+            </p>
+            <p>
+              Our team will reach out directly to your mobile <strong><%= @order.guest_phone %></strong> via WhatsApp or phone call to confirm your delivery address and share seamless direct payment options (Google Pay, PhonePe, Paytm, UPI, or Direct Bank Transfer) prior to dispatch.
+            </p>
+            <p class="order-confirmed__subtle">
+              Once payment is confirmed, your parcel will be hand-packed with care and dispatched within <%= brand.dispatch_window %> from <%= brand.city %>.
+            </p>
+          </div>
         <% else %>
-          <p class="lede">Your order has been placed. Our team will reach out to you in case of any queries.</p>
+          <p class="order-confirmed__lede">Your order has been placed and payment confirmed. Thank you for choosing DeNshe Jewellery!</p>
         <% end %>
       </div>
-    </header>
 
-    <div class="pay">
-      <p>If you have a question or a problem, call <%= link_to "495894589459", "tel:495894589459" %> or email us at <%= mail_to brand.email %>.</p>
-
-      <%= link_to shop_path, class: "btn btn--solid" do %>
-        <span>Back to the collection</span>
+      <% if whatsapp_url %>
+        <% wa_message = "Hello DeNshe, I placed Order ##{@order.number} for #{price(@order.total, currency: @order.currency)}. I would like to confirm my order and complete the payment." %>
+        <div class="order-confirmed__whatsapp-card">
+          <div class="order-confirmed__whatsapp-text">
+            <p class="order-confirmed__whatsapp-title">Want faster confirmation?</p>
+            <p class="order-confirmed__whatsapp-desc">Connect with us directly on WhatsApp to confirm your order and get UPI details right away.</p>
+          </div>
+          <%= link_to whatsapp_url(wa_message), class: "btn btn--solid order-confirmed__whatsapp-btn", target: "_blank", rel: "noopener" do %>
+            <%= icon :whatsapp %>
+            <span>Confirm on WhatsApp</span>
+          <% end %>
+        </div>
       <% end %>
+
+      <div class="order-confirmed__card">
+        <h2 class="order-confirmed__section-title">Order summary</h2>
+        <ul class="order-confirmed__items">
+          <% @order.order_items.includes(:product, :curated_gift).each do |item| %>
+            <% photo = item.product&.display_image || item.product&.gallery_images&.first || item.curated_gift&.display_image %>
+            <li class="order-confirmed__item">
+              <div class="order-confirmed__item-photo">
+                <% if photo %>
+                  <%= image_tag piece_image_source(photo, :thumb), alt: item.name, loading: "lazy", width: 64, height: 85 %>
+                <% else %>
+                  <div class="order-confirmed__placeholder" aria-hidden="true">
+                    <%= image_tag "denshe-mark-navy.png", alt: "", width: 28, height: 26 %>
+                  </div>
+                <% end %>
+              </div>
+              <div class="order-confirmed__item-details">
+                <p class="order-confirmed__item-name"><%= item.name %></p>
+                <p class="order-confirmed__item-qty">Qty: <%= item.quantity %></p>
+              </div>
+              <div class="order-confirmed__item-price">
+                <%= price(item.line_total, currency: @order.currency) %>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+
+        <div class="order-confirmed__breakdown">
+          <div class="order-confirmed__row">
+            <span>Subtotal</span>
+            <span><%= price(@order.subtotal, currency: @order.currency) %></span>
+          </div>
+          <% if @order.discount.to_d.positive? %>
+            <div class="order-confirmed__row order-confirmed__row--discount">
+              <span>Offer · <%= [@order.coupon_code, @order.voucher_name].compact_blank.join(" · ").presence || "Discount" %></span>
+              <span>−<%= price(@order.discount, currency: @order.currency) %></span>
+            </div>
+          <% end %>
+          <div class="order-confirmed__row">
+            <span>Shipping</span>
+            <span><%= @order.shipping_amount.to_d.positive? ? price(@order.shipping_amount, currency: @order.currency) : "Complimentary" %></span>
+          </div>
+          <div class="order-confirmed__row order-confirmed__row--total">
+            <span>Total</span>
+            <span><%= price(@order.total, currency: @order.currency) %></span>
+          </div>
+        </div>
+      </div>
+
+      <% if @order.shipping_address %>
+        <div class="order-confirmed__card">
+          <h2 class="order-confirmed__section-title">Shipping to</h2>
+          <div class="order-confirmed__address">
+            <p class="order-confirmed__recipient"><strong><%= @order.guest_name %></strong></p>
+            <p><%= @order.shipping_address.line1 %></p>
+            <% if @order.shipping_address.line2.present? %>
+              <p><%= @order.shipping_address.line2 %></p>
+            <% end %>
+            <p><%= @order.shipping_address.city %>, <%= @order.shipping_address.state %> — <%= @order.shipping_address.pin_code %></p>
+            <p class="order-confirmed__contact-line">Phone: <%= @order.guest_phone %><% if @order.guest_email.present? %> · <%= @order.guest_email %><% end %></p>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="order-confirmed__support">
+        <p>Questions or need to update your address? Call <%= link_to brand.phone, "tel:#{brand.phone.gsub(/\s+/, "")}" %> or write to <%= mail_to brand.email %>.</p>
+        <p class="order-confirmed__hours"><%= brand.support_hours %></p>
+      </div>
+
+      <div class="order-confirmed__actions">
+        <%= link_to shop_path, class: "btn btn--solid" do %>
+          <span>Back to the collection</span>
+        <% end %>
+        <%= link_to catalogue_path, class: "btn" do %>
+          <span>Browse catalogue</span>
+        <% end %>
+      </div>
     </div>
   </div>
 </section>

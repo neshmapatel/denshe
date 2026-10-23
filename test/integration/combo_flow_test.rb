@@ -72,7 +72,7 @@ class ComboFlowTest < ActionDispatch::IntegrationTest
         }
       }
     end
-    assert_redirected_to checkout_payment_path
+    assert_redirected_to checkout_success_path
 
     order = Order.order(:id).last
     assert_equal 299, order.subtotal.to_i

@@ -1,46 +1,123 @@
-<% page_title "Jewellery Potlis & Jars · Launching Soon" %>
-<% meta description: "Handcrafted jewellery potlis and curated jars from DeNshe Jewellery. Thoughtfully paired gifting sets, launching soon in Anand, Gujarat." %>
+<% page_title "Jewellery Potlis, Jars & Treasure Drops · DeNshe" %>
+<% meta description: "Explore DeNshe's curated jewellery gift sets and mystery jars. Handpicked anti-tarnish, oxidised, and contemporary jewellery curations from ₹499." %>
 
 <header class="page-intro page-intro--ink">
   <div class="page page--narrow">
     <%= image_tag "denshe-mark-ivory.png", alt: "DeNshe Jewellery", class: "page-intro__mark", width: 87, height: 80 %>
-    <p class="eyebrow">Curated Gifting</p>
-    <h1>Jewellery Potlis &amp; Jars.</h1>
+    <p class="eyebrow">Curated Gifting &amp; Mystery Jars</p>
+    <h1>Treasure Drops &amp; Curated Jars.</h1>
     <p class="lede">
-      Handcrafted keepsake potlis and curated jewellery jars — each set thoughtfully paired for celebrations, everyday gifting, and meaningful moments. Launching soon.
+      Handcrafted keepsake jars and thoughtfully paired mystery jewellery sets — each drop layered with signature anti-tarnish, oxidised, and contemporary pieces from DeNshe.
     </p>
   </div>
 </header>
+
+<section class="section">
+  <div class="page">
+    <div class="section-head section-head--centred">
+      <div class="section-head__text">
+        <p class="eyebrow">Curated Gift Options</p>
+        <h2>Choose your surprise.</h2>
+        <p class="lede">
+          Each curation is created to surprise and delight. From accessible introductions to premium fusion jewellery jars, explore our signature treasure drops below.
+        </p>
+      </div>
+    </div>
+
+    <% if @curated_gifts.present? && @curated_gifts.any? %>
+      <div class="drops-grid">
+        <% @curated_gifts.each do |gift| %>
+          <article class="drop-card">
+            <div class="drop-card__media">
+              <% if gift.images.attached? %>
+                <%= image_tag gift.display_image, alt: gift.name, loading: "lazy" %>
+              <% else %>
+                <%= image_tag "denshe-mark-navy.png", alt: gift.name, style: "width:auto;height:4rem;margin:auto;" %>
+              <% end %>
+
+              <% if gift.subtitle.present? %>
+                <span class="drop-card__badge"><%= gift.subtitle %></span>
+              <% end %>
+
+              <% if gift.on_sale? %>
+                <span class="drop-card__discount-tag"><%= gift.discount_label %> OFF</span>
+              <% end %>
+            </div>
+
+            <div class="drop-card__body">
+              <h2 class="drop-card__title"><%= gift.name %></h2>
+              <% if gift.product_title.present? && gift.product_title != gift.name %>
+                <p class="drop-card__product-title"><%= gift.product_title %></p>
+              <% end %>
+
+              <% if gift.description.present? %>
+                <p class="drop-card__desc"><%= gift.description %></p>
+              <% end %>
+
+              <div class="drop-card__footer">
+                <div class="drop-card__pricing">
+                  <span class="drop-card__price"><%= price(gift.price) %></span>
+                  <% if gift.on_sale? %>
+                    <span class="drop-card__marked-price"><%= price(gift.compare_at_price) %></span>
+                  <% end %>
+                </div>
+
+                <div class="drop-card__action">
+                  <% unless australia? %>
+                    <%= button_to cart_curated_gifts_path(slug: gift.slug), method: :post, class: "btn btn--solid" do %>
+                      <span>Add to bag</span>
+                    <% end %>
+                  <% else %>
+                    <span class="piece__meta">India Shop</span>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </article>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="empty">
+        <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
+        <h2>Our next drop is in the works.</h2>
+        <p>Curated gifting sets and treasure drops will be available shortly.</p>
+        <%= link_to shop_path, class: "btn" do %>
+          <span>Browse the collection</span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</section>
 
 <section class="section section--sand">
   <div class="page">
     <div class="section-head section-head--centred">
       <div class="section-head__text">
-        <p class="eyebrow">Coming Soon</p>
-        <h2>Thoughtfully crafted for gifting.</h2>
+        <p class="eyebrow">The DeNshe Difference</p>
+        <h2>Thoughtfully layered jewellery gifting.</h2>
         <p class="lede">
-          We are putting together our first collection of paired gift sets. Every potli and jar will feature clearly itemised, anti-tarnish and gold-tone jewellery from our signature collection.
+          We believe gifting should feel joyful and personal. Here is what goes into every curated drop.
         </p>
       </div>
     </div>
 
     <div class="contact-grid">
       <article class="contact-card">
-        <p class="eyebrow">Edition 01</p>
-        <h3>Handcrafted Potlis</h3>
-        <p>Traditional raw silk and embroidered potlis paired with everyday earrings, kadas, and delicate pieces.</p>
+        <p class="eyebrow">Handpicked Quality</p>
+        <h3>Signature Jewellery</h3>
+        <p>Every piece is chosen from our verified anti-tarnish, 18k gold tone, and authentic oxidised jewellery collections.</p>
       </article>
 
       <article class="contact-card">
-        <p class="eyebrow">Edition 02</p>
-        <h3>Jewellery Jars</h3>
-        <p>Re-usable keepsake glass jars layered with everyday rings, chains, and anti-tarnish studs.</p>
+        <p class="eyebrow">Keepsake Packaging</p>
+        <h3>Reusable Jars &amp; Potlis</h3>
+        <p>Glass keepsake jars and artisanal potlis you can use long after unboxing to store your treasured pieces.</p>
       </article>
 
       <article class="contact-card">
-        <p class="eyebrow">Edition 03</p>
-        <h3>Occasion &amp; Bridal Sets</h3>
-        <p>Curated gifting sets for bridesmaids, weddings, and festive celebrations, tailored with care.</p>
+        <p class="eyebrow">Surprise &amp; Value</p>
+        <h3>Generous Curations</h3>
+        <p>Each drop is valued higher than the price you pay, ensuring an exceptional, heartwarming unboxing moment.</p>
       </article>
     </div>
   </div>
@@ -51,17 +128,17 @@
     <div class="ornament" aria-hidden="true" style="margin-bottom: 2rem;">
       <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0 12 6 6 12 0 6Z" fill="currentColor"/></svg>
     </div>
-    <p class="eyebrow">Launching Soon</p>
-    <h2>Our first batch arrives shortly.</h2>
+    <p class="eyebrow">Bespoke Gifting</p>
+    <h2>Looking for wedding or bulk gifting?</h2>
     <p class="lede" style="max-width: 36rem; margin: 0 auto 2.5rem;">
-      Individual pieces are available right now in our shop. Explore our current catalogue or write to us for bespoke gifting enquiries.
+      We craft bespoke potlis and customised gift hampers for weddings, bridesmaids, celebrations, and corporate gifting.
     </p>
     <div class="hero__actions" style="justify-content: center; display: flex; gap: 1rem; flex-wrap: wrap;">
-      <%= link_to shop_path, class: "btn btn--solid" do %>
-        <span>Browse the collection</span>
+      <%= link_to contact_path, class: "btn btn--solid" do %>
+        <span>Inquire about custom gifting</span>
       <% end %>
-      <%= link_to contact_path, class: "btn" do %>
-        <span>Contact for custom orders</span>
+      <%= link_to shop_path, class: "btn" do %>
+        <span>Browse regular collection</span>
       <% end %>
     </div>
   </div>

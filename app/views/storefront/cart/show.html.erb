@@ -14,7 +14,8 @@
 
     <% lines = current_cart.items %>
     <% combos = current_cart.combo_lines %>
-    <% if lines.empty? && combos.empty? %>
+    <% curated_gifts = current_cart.curated_gift_lines %>
+    <% if lines.empty? && combos.empty? && curated_gifts.empty? %>
       <div class="empty">
         <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
         <h2>Nothing selected yet.</h2>
@@ -25,6 +26,25 @@
       </div>
     <% else %>
       <ul class="bag">
+        <% curated_gifts.each do |line| %>
+          <% image = line.curated_gift.display_image %>
+          <li class="bag__row<%= " bag__row--plain" unless image %>">
+            <% if image %>
+              <div class="bag__photo">
+                <%= image_tag image, alt: line.curated_gift.name, width: 80, height: 80, style: "object-fit:cover;border-radius:4px;" %>
+              </div>
+            <% end %>
+            <div class="bag__copy">
+              <p class="piece__meta"><%= line.curated_gift.subtitle.presence || "Curated Gift" %></p>
+              <h2><%= line.curated_gift.product_title.presence || line.curated_gift.name %></h2>
+              <% if line.quantity > 1 %>
+                <p>Quantity: <%= line.quantity %></p>
+              <% end %>
+              <p class="piece__price"><%= line.offered? ? price(line.line_total) : "Available in India" %></p>
+            </div>
+            <%= button_to "Remove", cart_curated_gift_path(line.token), method: :delete, class: "link-quiet bag__remove" %>
+          </li>
+        <% end %>
         <% combos.each do |line| %>
           <li class="bag__row bag__row--plain">
             <div class="bag__copy">

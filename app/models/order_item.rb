@@ -3,6 +3,7 @@ class OrderItem < ApplicationRecord
 
   belongs_to :order
   belongs_to :product, optional: true
+  belongs_to :curated_gift, optional: true
 
   enum :item_type, { catalogue: 0, mystery_box: 1, combo: 2 }
 

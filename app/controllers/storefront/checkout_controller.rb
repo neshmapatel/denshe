@@ -14,19 +14,20 @@ module Storefront
 
       if order
         order.order_items.each { |item| current_cart.remove(item.product) if item.product }
+        current_cart.clear
         session[:order_id] = order.id
-        redirect_to(order.australia? ? checkout_success_path : checkout_payment_path)
+        redirect_to(order.australia? || !payments_open? ? checkout_success_path : checkout_payment_path)
       else
         render :new, status: :unprocessable_entity
       end
     end
 
     def payment
-      redirect_to checkout_success_path if @order.payment_paid? || @order.australia?
+      redirect_to checkout_success_path if @order.payment_paid? || @order.australia? || !payments_open?
     end
 
     def success
-      return if @order.australia?
+      return if @order.australia? || !payments_open?
 
       redirect_to checkout_payment_path unless @order.payment_paid?
     end
@@ -114,9 +115,11 @@ module Storefront
     private
 
     def require_pieces
-      return if current_cart.checkout_items.any? || current_cart.combo_lines.any?(&:offered?)
+      return if current_cart.checkout_items.any? ||
+                current_cart.combo_lines.any?(&:offered?) ||
+                current_cart.curated_gift_lines.any?(&:offered?)
 
-      if current_cart.items.any? || current_cart.combo_lines.any?
+      if current_cart.items.any? || current_cart.combo_lines.any? || current_cart.curated_gift_lines.any?
         redirect_to cart_path, alert: "These pieces are part of the India shop. Remove them, or switch to India, to continue."
       else
         redirect_to cart_path, alert: "Select a piece before checkout."

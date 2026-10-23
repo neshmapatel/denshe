@@ -1,7 +1,7 @@
 module Storefront
   class CombosController < BaseController
     def index
-      @combos = Combo.active.ordered.includes(:groups)
+      @combos = Combo.active.ordered.includes(groups: { products: [ :category, { images_attachments: { blob: :variant_records } } ] })
     end
 
     def show

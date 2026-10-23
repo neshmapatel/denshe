@@ -29,25 +29,42 @@
       <%= form_with url: cart_combos_path, method: :post, class: "combo-form", data: { controller: "combo-picks" } do %>
         <%= hidden_field_tag :slug, @combo.slug %>
 
-        <% @combo.groups.each do |group| %>
+        <div class="combo-steps-guide">
+          <div class="combo-steps-guide__item">
+            <span class="combo-steps-guide__num">1</span>
+            <span>Choose <%= @combo.choice_summary %></span>
+          </div>
+          <div class="combo-steps-guide__sep">→</div>
+          <div class="combo-steps-guide__item">
+            <span class="combo-steps-guide__num">2</span>
+            <span>Packaged together for <strong><%= price(@combo.price) %></strong></span>
+          </div>
+        </div>
+
+        <% @combo.groups.each_with_index do |group, idx| %>
           <fieldset class="combo-group" data-combo-picks-target="group" data-limit="<%= group.choose_count %>">
-            <legend>
-              <%= group.name %>
-              <span data-combo-picks-target="count">Choose <%= group.choose_count %></span>
+            <legend class="combo-group__legend">
+              <span class="combo-group__step">Step <%= idx + 1 %></span>
+              <span class="combo-group__name"><%= group.name %></span>
+              <span class="combo-group__counter" data-combo-picks-target="count">Choose <%= group.choose_count %></span>
             </legend>
             <div class="combo-picks">
               <% group.products.each do |product| %>
                 <% next unless product.stock_quantity.positive? %>
                 <% open = quantity_left(product).positive? && !current_cart.holding?(product) %>
                 <% next unless open || current_cart.holding?(product) %>
+                <% is_preselected = params[:select].present? && (params[:select].to_s == product.id.to_s || params[:select].to_s.split(',').include?(product.id.to_s)) %>
                 <label class="combo-pick<%= " combo-pick--off" unless open %>">
                   <% if open %>
                     <% if group.choose_count == 1 %>
-                      <%= radio_button_tag "picks[#{group.id}]", product.id, false, required: true, data: { action: "combo-picks#change" } %>
+                      <%= radio_button_tag "picks[#{group.id}]", product.id, is_preselected, required: true, data: { action: "combo-picks#change" } %>
                     <% else %>
-                      <%= check_box_tag "picks[#{group.id}][]", product.id, false, data: { action: "combo-picks#change" } %>
+                      <%= check_box_tag "picks[#{group.id}][]", product.id, is_preselected, data: { action: "combo-picks#change" } %>
                     <% end %>
                   <% end %>
+                  <span class="combo-pick__check-badge" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
                   <% image = product.display_image || product.images.first %>
                   <span class="combo-pick__photo">
                     <% if image %>
@@ -55,6 +72,7 @@
                     <% else %>
                       <%= image_tag "denshe-mark-navy.png", alt: "", width: 87, height: 80 %>
                     <% end %>
+                    <span class="combo-pick__badge">Selected</span>
                   </span>
                   <span class="combo-pick__name"><%= product.name %></span>
                   <span class="combo-pick__price"><%= price(listed_price(product)) %></span>
@@ -69,9 +87,15 @@
 
         <% ready = @combo.groups.all? { |group| group.products.count { |product| quantity_left(product).positive? && !current_cart.holding?(product) } >= group.choose_count } %>
         <% if ready %>
-          <button type="submit" class="btn btn--solid" data-combo-picks-target="submit">
-            <span>Take this look · <%= price(@combo.price) %></span>
-          </button>
+          <div class="combo-action-bar">
+            <div class="combo-action-bar__info">
+              <span class="combo-action-bar__title"><%= @combo.name %> · <%= price(@combo.price) %></span>
+              <span class="combo-action-bar__status" data-combo-picks-target="statusText">Choose <%= @combo.choice_summary %></span>
+            </div>
+            <button type="submit" class="btn btn--solid combo-submit-btn" data-combo-picks-target="submit">
+              <span>Take this look · <%= price(@combo.price) %></span>
+            </button>
+          </div>
         <% else %>
           <p class="checkout__note">There are not enough pieces left for this look.</p>
         <% end %>
