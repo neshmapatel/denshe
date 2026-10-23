@@ -334,6 +334,29 @@ class Product < ApplicationRecord
     end
   end
 
+  def mark_out_of_stock!(admin_user: nil, reason: "Marked out of stock")
+    with_lock do
+      current = stock_quantity
+      return if current <= 0
+
+      inventory_movements.create!(
+        quantity: -current,
+        movement_type: :adjustment,
+        reason: reason,
+        admin_user: admin_user
+      )
+
+      CartHold.where(product_id: id).delete_all
+
+      self.skip_stock_history = true
+      begin
+        update!(stock_quantity: 0)
+      ensure
+        self.skip_stock_history = false
+      end
+    end
+  end
+
   private
 
   def clip_label(file)

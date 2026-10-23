@@ -471,13 +471,13 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
 
   test "another shopper sees a piece that is already in a cart" do
     get piece_path(@product.slug)
-    assert_match "1 available", response.body
+    assert_match "1 left", response.body
 
     post cart_items_path, params: { slug: @product.slug }
 
     open_session do |other|
       other.get piece_path(@product.slug)
-      other.assert_no_match "1 available", other.response.body
+      other.assert_no_match "1 left", other.response.body
       other.assert_select "p.stock-note", text: "Someone has already added this to their cart."
       other.assert_select "button", text: /Select/, count: 0
 
@@ -496,18 +496,18 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
 
     post cart_items_path, params: { slug: @product.slug }
     get piece_path(@product.slug)
-    assert_match "2 available", response.body
+    assert_match "2 left", response.body
     assert_select "a", text: /Selected/
 
     open_session do |other|
       other.get piece_path(@product.slug)
-      assert_match "2 available", other.response.body
+      assert_match "2 left", other.response.body
       other.post cart_items_path, params: { slug: @product.slug }
       other.follow_redirect!
     end
 
     get piece_path(@product.slug)
-    assert_match "1 available", response.body
+    assert_match "1 left", response.body
   end
 
   test "checkout and payment ask for a selection first" do
@@ -857,6 +857,10 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_match gift.name, response.body
     assert_match "499", response.body
 
+    get checkout_path
+    assert_response :success
+    assert_select ".checkout__lines", text: /Little Finds/
+
     post checkout_path, params: {
       checkout: {
         name: "Devanshi Patel",
@@ -878,6 +882,60 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_equal gift.product_title, item.name
     assert_equal 499.0, item.unit_price.to_f
     assert_equal gift, item.curated_gift
+  end
+
+  test "availability only displays when product is at or below low stock threshold" do
+    scarce_1 = Product.create!(
+      category: @category,
+      name: "Scarce Ring 1",
+      selling_price: 350,
+      stock_quantity: 1,
+      low_stock_threshold: 2,
+      status: :active
+    )
+    scarce_2 = Product.create!(
+      category: @category,
+      name: "Scarce Ring 2",
+      selling_price: 350,
+      stock_quantity: 2,
+      low_stock_threshold: 2,
+      status: :active
+    )
+    abundant = Product.create!(
+      category: @category,
+      name: "Abundant Ring",
+      selling_price: 350,
+      stock_quantity: 5,
+      low_stock_threshold: 2,
+      status: :active
+    )
+    sold_out = Product.create!(
+      category: @category,
+      name: "Sold Ring",
+      selling_price: 350,
+      stock_quantity: 0,
+      status: :active
+    )
+
+    get piece_path(scarce_1.slug)
+    assert_response :success
+    assert_select ".detail .piece__available", "1 left"
+    assert_select ".piece-note", count: 1
+
+    get piece_path(scarce_2.slug)
+    assert_response :success
+    assert_select ".detail .piece__available", "2 left"
+    assert_select ".piece-note", count: 0
+
+    get piece_path(abundant.slug)
+    assert_response :success
+    assert_select ".detail .piece__available", 0
+    assert_select ".piece-note", count: 0
+
+    get piece_path(sold_out.slug)
+    assert_response :success
+    assert_select ".detail .piece__available", 0
+    assert_select ".badge--sold", "Sold out"
   end
 
   private

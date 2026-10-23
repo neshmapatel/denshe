@@ -53,11 +53,23 @@ ActiveAdmin.register Product do
     column("Sold", &:sold_quantity)
     actions defaults: true do |product|
       item "Restock", restock_admin_product_path(product)
+      if product.available_for_sale?
+        item "Mark Out of Stock", mark_out_of_stock_admin_product_path(product),
+             method: :put,
+             data: { confirm: "Mark #{product.name} out of stock? This sets available stock to 0." },
+             class: "member_link"
+      end
     end
   end
 
   action_item :restock, only: :show do
     link_to "Restock", restock_admin_product_path(resource)
+  end
+
+  action_item :mark_out_of_stock, only: :show, if: -> { resource.available_for_sale? } do
+    link_to "Mark Out of Stock", mark_out_of_stock_admin_product_path(resource),
+            method: :put,
+            data: { confirm: "Mark #{resource.name} out of stock? This sets available stock to 0." }
   end
 
   filter :supplier
@@ -114,6 +126,13 @@ ActiveAdmin.register Product do
 
       para do
         span link_to "Restock", restock_admin_product_path(resource), class: "button"
+        if resource.available_for_sale?
+          text_node " · "
+          span link_to "Mark Out of Stock", mark_out_of_stock_admin_product_path(resource),
+                       method: :put,
+                       data: { confirm: "Mark #{resource.name} out of stock? This sets available stock to 0." },
+                       class: "button"
+        end
         text_node " · "
         span link_to "Adjust stock", new_admin_inventory_movement_path(inventory_movement: { product_id: resource.id, movement_type: "adjustment" })
         text_node " · "
@@ -467,5 +486,22 @@ ActiveAdmin.register Product do
                 notice: "Added #{quantity} #{'piece'.pluralize(quantity)}. Stock is now #{resource.reload.stock_quantity}."
   rescue ArgumentError, ActiveRecord::RecordInvalid => error
     redirect_to restock_admin_product_path(resource), alert: error.message
+  end
+
+  member_action :mark_out_of_stock, method: :put do
+    resource.mark_out_of_stock!(admin_user: current_admin_user)
+    redirect_back fallback_location: admin_product_path(resource),
+                  notice: "#{resource.name} is now marked out of stock (available stock updated to 0)."
+  end
+
+  batch_action :mark_out_of_stock, confirm: "Mark selected products out of stock? This sets available stock to 0." do |ids|
+    count = 0
+    Product.where(id: ids).find_each do |product|
+      if product.available_for_sale?
+        product.mark_out_of_stock!(admin_user: current_admin_user)
+        count += 1
+      end
+    end
+    redirect_to collection_path, notice: "Marked #{count} #{'product'.pluralize(count)} out of stock."
   end
 end

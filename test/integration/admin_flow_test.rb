@@ -86,6 +86,37 @@ class AdminFlowTest < ActionDispatch::IntegrationTest
     assert product.inventory_movements.purchase.where(reason: "Mahavir lot", quantity: 3).exists?
   end
 
+  test "admin can mark a product out of stock directly" do
+    post admin_user_session_path, params: {
+      admin_user: { email: @admin.email, password: "denshe-admin-123" }
+    }
+    follow_redirect!
+
+    product = Product.create!(
+      category: @category,
+      name: "Solstice Cuff",
+      sku: "DN-BRAC-001",
+      selling_price: 899,
+      purchase_price: 300,
+      stock_quantity: 4,
+      status: :active
+    )
+
+    get admin_product_path(product)
+    assert_response :success
+    assert_select "a[href=?]", mark_out_of_stock_admin_product_path(product)
+
+    put mark_out_of_stock_admin_product_path(product)
+    assert_redirected_to admin_product_path(product)
+    follow_redirect!
+
+    assert_match "is now marked out of stock (available stock updated to 0)", response.body
+    assert_equal 0, product.reload.stock_quantity
+    assert_not product.available_for_sale?
+    assert product.out_of_stock?
+    assert product.inventory_movements.adjustment.where(quantity: -4).exists?
+  end
+
   test "admin can search products by name, sku, or slug including earrings" do
     post admin_user_session_path, params: {
       admin_user: { email: @admin.email, password: "denshe-admin-123" }

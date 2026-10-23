@@ -117,8 +117,19 @@ module StorefrontHelper
     product.available_for_sale? && !current_cart.holding?(product) && quantity_left(product).zero?
   end
 
-  def availability_copy(count)
-    "#{count} available"
+  def availability_copy(product_or_count, threshold: nil)
+    if product_or_count.is_a?(Product)
+      count = quantity_left(product_or_count)
+      limit = threshold || product_or_count.low_stock_threshold.to_i
+      limit = 2 if limit <= 0
+    else
+      count = product_or_count.to_i
+      limit = threshold || 2
+    end
+
+    return if count <= 0 || count > limit
+
+    "#{count} left"
   end
 
   def holds_by_others

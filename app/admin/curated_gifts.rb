@@ -71,7 +71,7 @@ ActiveAdmin.register CuratedGift do
     f.inputs "Curated Gift Option" do
       f.input :name, label: "Internal / Drop name", hint: "e.g. Treasure Drop — Little Finds"
       f.input :product_title, label: "Product title", hint: "e.g. Little Finds | Mystery Jewellery | ₹499"
-      f.input :subtitle, label: "Subtitle / Tagline", hint: "e.g. Entry-level surprise, Indian jewellery jar, Premium fusion jar"
+      f.input :subtitle, label: "Subtitle / Tagline", hint: "e.g. Little Finds, The Charm Edit, The Statement Edit, The Signature Edit, The Muse Edit"
       f.input :slug, hint: "Leave blank to generate automatically from the name."
       f.input :price, label: "Price (₹)", hint: "The selling price customers pay."
       f.input :compare_at_price, label: "Marked price / Price before discount (₹)",

@@ -178,8 +178,8 @@
                     <% if product.new_arrival? %>
                       <span class="catalogue-card__badge catalogue-card__badge--new">New</span>
                     <% end %>
-                    <% if product.stock_quantity.to_i == 1 %>
-                      <span class="catalogue-card__badge catalogue-card__badge--scarce">Only 1 left</span>
+                    <% if (copy = availability_copy(product)).present? %>
+                      <span class="catalogue-card__badge catalogue-card__badge--scarce"><%= copy %></span>
                     <% end %>
                   <% end %>
                 </div>

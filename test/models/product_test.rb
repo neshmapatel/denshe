@@ -286,6 +286,27 @@ class ProductTest < ActiveSupport::TestCase
     assert_includes product.errors[:discount_percent], "must be less than or equal to 100"
   end
 
+  test "marks product out of stock, sets stock_quantity to zero and records inventory adjustment" do
+    product = Product.create!(category: @category, name: "Gold Kada", selling_price: 999, stock_quantity: 4, status: :active)
+    CartHold.create!(product: product, session_key: "shopper-123", quantity: 1)
+
+    assert product.available_for_sale?
+    assert_not product.out_of_stock?
+    assert_equal 1, CartHold.where(product: product).count
+
+    product.mark_out_of_stock!(reason: "Damaged in store")
+
+    assert_equal 0, product.reload.stock_quantity
+    assert product.out_of_stock?
+    assert_not product.available_for_sale?
+    assert_equal 0, CartHold.where(product: product).count
+
+    last_movement = product.inventory_movements.last
+    assert_equal(-4, last_movement.quantity)
+    assert_equal "adjustment", last_movement.movement_type
+    assert_equal "Damaged in store", last_movement.reason
+  end
+
   test "keeps short video clips and refuses everything else" do
     product = Product.create!(category: @category, name: "Aurelia Hoops", selling_price: 699, stock_quantity: 1)
     clip = uploaded_clip("turn.mp4", "video/mp4")
