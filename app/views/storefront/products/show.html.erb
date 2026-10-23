@@ -139,10 +139,12 @@
           <p class="lede"><%= customer_copy(@product.short_description) %></p>
         <% end %>
 
-        <div class="piece-note">
-          <p class="piece-note__kicker">A little more personal.</p>
-          <p>This design is available as a single piece. Once it's yours, it's yours alone.</p>
-        </div>
+        <% if @product.one_of_one? %>
+          <div class="piece-note">
+            <p class="piece-note__kicker">A little more personal.</p>
+            <p>This design is available as a single piece. Once it's yours, it's yours alone.</p>
+          </div>
+        <% end %>
         <% if held_by_someone_else?(@product) %>
           <p class="stock-note">Someone has already added this to their cart.</p>
         <% elsif !@product.available_for_sale? %>

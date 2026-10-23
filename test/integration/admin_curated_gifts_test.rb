@@ -17,7 +17,7 @@ class AdminCuratedGiftsTest < ActionDispatch::IntegrationTest
     get admin_curated_gifts_path
     assert_response :success
     assert_match "Treasure Drop — Little Finds", response.body
-    assert_match "Treasure Drop — Noor", response.body
+    assert_match "Treasure Drop — The Signature Edit", response.body
     assert_match "499", response.body
     assert_match "1999", response.body
   end

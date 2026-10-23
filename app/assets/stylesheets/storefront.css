@@ -1302,6 +1302,11 @@
   color: var(--ink);
 }
 
+.piece__available--scarce {
+  color: #b86217;
+  font-weight: 500;
+}
+
 /* Save control floats over the image but stays above the card-wide link. */
 .piece__save {
   position: absolute;

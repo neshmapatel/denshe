@@ -39,6 +39,8 @@ class Product < ApplicationRecord
   validates :packaging_allocation, :shipping_allocation, numericality: { greater_than_or_equal_to: 0 }
   validates :stock_quantity, :quantity_purchased, :low_stock_threshold,
             numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :display_stock_left,
+            numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :collection_line, presence: true
 
   scope :published, -> { active }
@@ -328,6 +330,29 @@ class Product < ApplicationRecord
       self.skip_stock_history = true
       begin
         update!(attrs)
+      ensure
+        self.skip_stock_history = false
+      end
+    end
+  end
+
+  def mark_out_of_stock!(admin_user: nil, reason: "Marked out of stock")
+    with_lock do
+      current = stock_quantity
+      return if current <= 0
+
+      inventory_movements.create!(
+        quantity: -current,
+        movement_type: :adjustment,
+        reason: reason,
+        admin_user: admin_user
+      )
+
+      CartHold.where(product_id: id).delete_all
+
+      self.skip_stock_history = true
+      begin
+        update!(stock_quantity: 0, display_stock_left: nil)
       ensure
         self.skip_stock_history = false
       end

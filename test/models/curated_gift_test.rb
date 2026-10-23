@@ -11,10 +11,10 @@ class CuratedGiftTest < ActiveSupport::TestCase
     assert_equal 499.0, little_finds.price.to_f
     assert little_finds.images.attached?
 
-    noor = CuratedGift.find_by!(slug: "noor")
-    assert_equal "Treasure Drop — Noor", noor.name
-    assert_equal 1999.0, noor.price.to_f
-    assert noor.images.attached?
+    signature = CuratedGift.find_by!(slug: "the-signature-edit")
+    assert_equal "Treasure Drop — The Signature Edit", signature.name
+    assert_equal 1999.0, signature.price.to_f
+    assert signature.images.attached?
   end
 
   test "calculates discount percent when compare_at_price is set" do

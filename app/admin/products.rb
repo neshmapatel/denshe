@@ -9,7 +9,7 @@ ActiveAdmin.register Product do
                 :visible_in_australia, :selling_price_aud, :compare_at_price_aud, :discount_percent_aud,
                 :pricing_driver_aud, :packaging_allocation,
                 :shipping_allocation, :gst_rate, :quantity_purchased, :stock_quantity,
-                :low_stock_threshold, :material, :colour, :dimensions, :weight,
+                :low_stock_threshold, :display_stock_left, :material, :colour, :dimensions, :weight,
                 :care_instructions, :whats_included, :status, :collection_line, :featured, :new_arrival,
                 :bestseller, :meta_title, :meta_description, :primary_image_id,
                 images: [], remove_image_ids: [], clips: [], remove_clip_ids: []
@@ -49,15 +49,28 @@ ActiveAdmin.register Product do
       product.offered_in?(Market.australia) ? "A$#{product.selling_price_aud}" : "—"
     end
     column("Stock", &:stock_quantity)
+    column("Badge Left", &:display_stock_left)
     column("Purchased", &:quantity_purchased)
     column("Sold", &:sold_quantity)
     actions defaults: true do |product|
       item "Restock", restock_admin_product_path(product)
+      if product.available_for_sale?
+        item "Mark Out of Stock", mark_out_of_stock_admin_product_path(product),
+             method: :put,
+             data: { confirm: "Mark #{product.name} out of stock? This sets available stock to 0." },
+             class: "member_link"
+      end
     end
   end
 
   action_item :restock, only: :show do
     link_to "Restock", restock_admin_product_path(resource)
+  end
+
+  action_item :mark_out_of_stock, only: :show, if: -> { resource.available_for_sale? } do
+    link_to "Mark Out of Stock", mark_out_of_stock_admin_product_path(resource),
+            method: :put,
+            data: { confirm: "Mark #{resource.name} out of stock? This sets available stock to 0." }
   end
 
   filter :supplier
@@ -68,6 +81,7 @@ ActiveAdmin.register Product do
   filter :featured
   filter :new_arrival
   filter :bestseller
+  filter :display_stock_left, label: "Badge Left (Scarcity)"
   filter :visible_in_australia
 
   show do
@@ -109,11 +123,19 @@ ActiveAdmin.register Product do
         row("Purchased", &:quantity_purchased)
         row("Sold", &:sold_quantity)
         row("Available", &:stock_quantity)
+        row("Scarcity badge") { |p| p.display_stock_left.present? ? "#{p.display_stock_left} left" : "None (hidden)" }
         row :low_stock_threshold
       end
 
       para do
         span link_to "Restock", restock_admin_product_path(resource), class: "button"
+        if resource.available_for_sale?
+          text_node " · "
+          span link_to "Mark Out of Stock", mark_out_of_stock_admin_product_path(resource),
+                       method: :put,
+                       data: { confirm: "Mark #{resource.name} out of stock? This sets available stock to 0." },
+                       class: "button"
+        end
         text_node " · "
         span link_to "Adjust stock", new_admin_inventory_movement_path(inventory_movement: { product_id: resource.id, movement_type: "adjustment" })
         text_node " · "
@@ -270,6 +292,9 @@ ActiveAdmin.register Product do
     f.inputs "Inventory" do
       f.input :quantity_purchased, hint: "Total bought from the supplier. On first save, this follows current stock if left at 0."
       f.input :stock_quantity, label: "Current stock"
+      f.input :display_stock_left,
+              label: "Display 'X left' badge",
+              hint: "Choose how many left to display on the storefront (e.g. 1 for '1 left', 2 for '2 left', 3 for '3 left'). Leave blank to not display any 'left' badge on this product."
       f.input :low_stock_threshold
     end
 
@@ -467,5 +492,22 @@ ActiveAdmin.register Product do
                 notice: "Added #{quantity} #{'piece'.pluralize(quantity)}. Stock is now #{resource.reload.stock_quantity}."
   rescue ArgumentError, ActiveRecord::RecordInvalid => error
     redirect_to restock_admin_product_path(resource), alert: error.message
+  end
+
+  member_action :mark_out_of_stock, method: :put do
+    resource.mark_out_of_stock!(admin_user: current_admin_user)
+    redirect_back fallback_location: admin_product_path(resource),
+                  notice: "#{resource.name} is now marked out of stock (available stock updated to 0)."
+  end
+
+  batch_action :mark_out_of_stock, confirm: "Mark selected products out of stock? This sets available stock to 0." do |ids|
+    count = 0
+    Product.where(id: ids).find_each do |product|
+      if product.available_for_sale?
+        product.mark_out_of_stock!(admin_user: current_admin_user)
+        count += 1
+      end
+    end
+    redirect_to collection_path, notice: "Marked #{count} #{'product'.pluralize(count)} out of stock."
   end
 end

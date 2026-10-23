@@ -28,6 +28,10 @@ class CuratedGift < ApplicationRecord
     product_title.presence || name
   end
 
+  def title
+    product_title.presence || name
+  end
+
   def display_image
     images.first
   end
@@ -59,7 +63,7 @@ class CuratedGift < ApplicationRecord
       slug: "little-finds",
       name: "Treasure Drop — Little Finds",
       product_title: "Little Finds | Mystery Jewellery | ₹499",
-      subtitle: "Entry-level surprise",
+      subtitle: "Little Finds",
       price: 499,
       description: "For a fun, accessible introduction to DeNshe's mystery jewellery.",
       position: 1,
@@ -69,7 +73,7 @@ class CuratedGift < ApplicationRecord
       slug: "the-charm-edit",
       name: "Treasure Drop — The Charm Edit",
       product_title: "The Charm Edit | Mystery Jewellery | ₹699",
-      subtitle: "Everyday surprise",
+      subtitle: "The Charm Edit",
       price: 699,
       description: "A little more to discover, with wearable jewellery selected for everyday styling.",
       position: 2,
@@ -79,7 +83,7 @@ class CuratedGift < ApplicationRecord
       slug: "the-statement-edit",
       name: "Treasure Drop — The Statement Edit",
       product_title: "The Statement Edit | Mystery Jewellery | ₹899",
-      subtitle: "Elevated surprise",
+      subtitle: "The Statement Edit",
       price: 899,
       description: "For customers who want a more expressive mix of jewellery and statement pieces.",
       position: 3,
@@ -89,7 +93,7 @@ class CuratedGift < ApplicationRecord
       slug: "the-signature-edit",
       name: "Treasure Drop — The Signature Edit",
       product_title: "The Signature Edit | Anti-Tarnish Neckpieces & Bracelets | ₹1,999",
-      subtitle: "Elevated everyday surprise",
+      subtitle: "The Signature Edit",
       price: 1999,
       description: "Curated modern everyday jewellery featuring anti-tarnish neckpieces, delicate chains, and sleek bracelets designed for effortless daily styling.",
       position: 4,
@@ -98,10 +102,10 @@ class CuratedGift < ApplicationRecord
     {
       slug: "the-muse-edit",
       name: "Treasure Drop — The Muse Edit",
-      product_title: "The Muse Edit | Indian & Modern Fusion Jewellery Jar | ₹2,799",
-      subtitle: "Grand fusion jar — Indian & modern",
+      product_title: "The Muse Edit | Indian Jhumkas & Modern Korean Jewellery | ₹2,799",
+      subtitle: "Fusion edit — Indian & modern",
       price: 2799,
-      description: "Our ultimate luxury curation blending rich Indian traditional accents and sleek modern anti-tarnish jewellery. An expressive mix of statement earrings, handcrafted necklaces, and contemporary daily pieces.",
+      description: "Our ultimate luxury curation blending rich Indian traditional jhumkas with chic modern Korean earrings and contemporary anti-tarnish accents. An expressive, elevated mix of artisanal heritage and trendy daily styling.",
       position: 5,
       image_filename: "the-muse-edit.jpg"
     }
