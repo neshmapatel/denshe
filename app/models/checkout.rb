@@ -88,20 +88,24 @@ class Checkout
   def place!(cart)
     lines = cart.checkout_items
     combos = cart.combo_lines.select(&:offered?)
-    if lines.empty? && combos.empty?
+    curated_gifts = cart.curated_gift_lines.select(&:offered?)
+    if lines.empty? && combos.empty? && curated_gifts.empty?
       errors.add(:base, "Select a piece before checkout.")
       return
     end
     parked = cart.items.reject(&:offered?)
     parked_combos = cart.combo_lines.reject(&:offered?)
-    if parked.any? || parked_combos.any?
-      names = parked.map { |line| line.product.name } + parked_combos.map { |line| line.combo.name }
+    parked_curated = cart.curated_gift_lines.reject(&:offered?)
+    if parked.any? || parked_combos.any? || parked_curated.any?
+      names = parked.map { |line| line.product.name } +
+              parked_combos.map { |line| line.combo.name } +
+              parked_curated.map { |line| line.curated_gift.name }
       errors.add(:base, "#{names.to_sentence} #{names.one? ? "is" : "are"} part of the India shop. Remove #{names.one? ? "it" : "them"} to place this order.")
       return
     end
     return if invalid?
 
-    subtotal = lines.sum(&:line_total) + combos.sum(&:line_total)
+    subtotal = lines.sum(&:line_total) + combos.sum(&:line_total) + curated_gifts.sum(&:line_total)
     shipping_amount = australia? ? 0.to_d : self.class.shipping_amount_for(subtotal)
     coupon = cart.coupon
     if cart.coupon_code.present? && coupon.nil?
@@ -181,6 +185,18 @@ class Checkout
             item.capture_product_price!(product: product, market: market, charged: 0)
           end
         end
+      end
+
+      curated_gifts.each do |line|
+        gift = line.curated_gift
+        order.order_items.create!(
+          curated_gift: gift,
+          name: gift.product_title.presence || gift.name,
+          quantity: line.quantity,
+          unit_price: gift.price,
+          compare_at_price: gift.compare_at_price,
+          item_type: :mystery_box
+        )
       end
 
       order.reserve_catalogue_stock!

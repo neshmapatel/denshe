@@ -7,7 +7,7 @@ module Storefront
 
     helper_method :nav_categories, :category_counts, :nav_collection_lines, :collection_line_counts,
                   :catalogue_live?, :brand, :current_cart,
-                  :current_market, :australia?, :market_switch_path
+                  :current_market, :australia?, :market_switch_path, :payments_open?
 
     private
 
@@ -56,6 +56,10 @@ module Storefront
 
     def australia?
       current_market.australia?
+    end
+
+    def payments_open?
+      Rails.application.config.x.payments_open && RazorpayGateway.configured?
     end
 
     def market_switch_path(code)

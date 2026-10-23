@@ -145,10 +145,12 @@ ActiveAdmin.register Order do
     end
 
     panel "Items" do
-      table_for resource.order_items.includes(:product) do
-        column("Product") do |item|
+      table_for resource.order_items.includes(:product, :curated_gift) do
+        column("Product / Item") do |item|
           if item.product
             link_to item.product.name, admin_product_path(item.product)
+          elsif item.curated_gift
+            link_to item.name, admin_curated_gift_path(item.curated_gift)
           else
             item.name
           end

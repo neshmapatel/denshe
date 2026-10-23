@@ -17,9 +17,13 @@
                 elsif @category
                   [ { name: "Shop", url: shop_path }, { name: @category.name } ]
                 else
-                  [ { name: "Shop" } ]
+                  [ { name: "Shop", url: shop_path } ]
                 end %>
     <%= render "storefront/shared/breadcrumbs", crumbs: crumbs %>
+    <%= structured_data(breadcrumb_structured_data(crumbs)) %>
+    <% if @products.present? && @products.any? %>
+      <%= structured_data(item_list_structured_data(@products, name: @heading, url: canonical_url)) %>
+    <% end %>
 
     <header class="section-head">
       <div class="section-head__text">

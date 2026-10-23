@@ -28,7 +28,7 @@ Rails.application.config.x.storefront_preview_token = ENV.fetch("STOREFRONT_PREV
 
 # Online checkout opens when Razorpay credentials are configured.
 Rails.application.config.x.payments_open = ActiveModel::Type::Boolean.new.cast(
-  ENV.fetch("PAYMENTS_OPEN", "true")
+  ENV.fetch("PAYMENTS_OPEN", "false")
 )
 
 # Google Analytics 4 measurement ID, e.g. G-XXXXXXXXXX. Blank means no tag is rendered.

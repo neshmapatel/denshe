@@ -29,7 +29,7 @@ class CouponFlowTest < ActionDispatch::IntegrationTest
         billing_same: "1"
       }
     }
-    assert_redirected_to checkout_payment_path
+    assert_redirected_to checkout_success_path
 
     order = Order.order(:id).last
     assert_equal "FESTIVE10", order.coupon_code

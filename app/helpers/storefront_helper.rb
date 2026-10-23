@@ -50,11 +50,14 @@ module StorefrontHelper
   end
 
   def catalogue_image_source(attachment)
-    image_variant(attachment, resize_to_limit: CATALOGUE_IMAGE, format: :jpeg, quality: 70)
+    image_variant(attachment, resize_to_limit: CATALOGUE_IMAGE, quality: 70)
   end
 
   def image_variant(attachment, quality:, **transformations)
     return attachment unless StorefrontHelper.variants_supported? && attachment.variable?
+
+    # Photographs are sent as WebP, including older uploads that are still JPEG or PNG.
+    transformations[:format] = :webp
 
     # libvips takes quality inside saver. ImageMagick takes it as its own step.
     if ActiveStorage.variant_processor == :mini_magick
@@ -260,22 +263,29 @@ module StorefrontHelper
   end
 
   # index: false for pages that should not appear in Google (cart, checkout).
-  def meta(description: nil, image: nil, type: "website", index: true)
+  def meta(description: nil, image: nil, type: "website", index: true, keywords: nil)
     canonical = canonical_url
     picture = absolute_asset(image)
     title = content_for(:title).presence || brand.name
+    default_keywords = "DeNshe Jewellery, anti-tarnish jewellery, gold-tone earrings, Indian oxidised jewellery, daily wear jewellery, jewellery jars, Anand Gujarat, fashion jewellery online"
+    kw = keywords.presence || default_keywords
 
     content_for :meta do
       safe_join([
         tag.meta(name: "description", content: description),
+        tag.meta(name: "keywords", content: kw),
+        tag.meta(name: "author", content: "DeNshe Jewellery"),
         tag.link(rel: "canonical", href: canonical),
         tag.meta(name: "robots", content: index ? "index, follow" : "noindex, follow"),
+        (tag.meta(name: "googlebot", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1") if index),
         tag.meta(property: "og:site_name", content: brand.name),
         tag.meta(property: "og:type", content: type),
         tag.meta(property: "og:locale", content: (australia? ? "en_AU" : "en_IN")),
         tag.meta(property: "og:title", content: title),
         tag.meta(property: "og:description", content: description),
         tag.meta(property: "og:image", content: picture),
+        tag.meta(property: "og:image:width", content: "1200"),
+        tag.meta(property: "og:image:height", content: "630"),
         tag.meta(property: "og:url", content: canonical),
         tag.meta(name: "twitter:card", content: "summary_large_image"),
         tag.meta(name: "twitter:title", content: title),
@@ -329,8 +339,13 @@ module StorefrontHelper
     data["color"] = product.colour if product.colour.present?
     data["material"] = product.material if product.material.present?
 
-    image = product.display_image || product.gallery_images.first
-    data["image"] = absolute_asset(url_for(image)) if image
+    images = []
+    if product.images.respond_to?(:attached?) && product.images.attached?
+      images = product.images.map { |img| absolute_asset(url_for(img)) }
+    elsif (img = product.display_image || product.gallery_images.first)
+      images << absolute_asset(url_for(img))
+    end
+    data["image"] = images.presence || [ absolute_asset(image_url("denshe-logo.jpg")) ]
 
     selling = product.price_for(current_market)
     if product.offered_in?(current_market) && selling.to_d.positive?
@@ -340,11 +355,131 @@ module StorefrontHelper
         "price" => format("%.2f", selling),
         "availability" => (product.available_for_sale? ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"),
         "itemCondition" => "https://schema.org/NewCondition",
-        "url" => piece_url(product.slug)
+        "url" => piece_url(product.slug),
+        "seller" => {
+          "@type" => "Organization",
+          "name" => brand.name
+        }
       }
     end
 
     data
+  end
+
+  def curated_gift_structured_data(gift)
+    data = {
+      "@context" => "https://schema.org",
+      "@type" => "Product",
+      "name" => gift.product_title.presence || gift.name,
+      "description" => gift.description.presence || gift.subtitle.presence || "Curated jewellery gift set from DeNshe Jewellery.",
+      "brand" => { "@type" => "Brand", "name" => brand.name },
+      "category" => "Jewellery Gift Set",
+      "url" => curated_gift_url(gift.slug)
+    }
+
+    if gift.images.respond_to?(:attached?) && gift.images.attached? && gift.display_image
+      data["image"] = [ absolute_asset(url_for(gift.display_image)) ]
+    end
+
+    data["offers"] = {
+      "@type" => "Offer",
+      "priceCurrency" => "INR",
+      "price" => format("%.2f", gift.price),
+      "availability" => (gift.active? ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"),
+      "itemCondition" => "https://schema.org/NewCondition",
+      "url" => curated_gift_url(gift.slug),
+      "seller" => {
+        "@type" => "Organization",
+        "name" => brand.name
+      }
+    }
+    data
+  end
+
+  def combo_structured_data(combo)
+    data = {
+      "@context" => "https://schema.org",
+      "@type" => "Product",
+      "name" => combo.name,
+      "description" => combo.short_description.presence || "Curated jewellery look: #{combo.choice_summary} from DeNshe Jewellery.",
+      "brand" => { "@type" => "Brand", "name" => brand.name },
+      "category" => "Jewellery Set",
+      "url" => combo_url(combo.slug),
+      "offers" => {
+        "@type" => "Offer",
+        "priceCurrency" => "INR",
+        "price" => format("%.2f", combo.price),
+        "availability" => (combo.active? ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"),
+        "itemCondition" => "https://schema.org/NewCondition",
+        "url" => combo_url(combo.slug),
+        "seller" => {
+          "@type" => "Organization",
+          "name" => brand.name
+        }
+      }
+    }
+    first_prod = combo.groups.flat_map(&:products).find { |p| p.display_image.present? || (p.images.respond_to?(:attached?) && p.images.attached?) }
+    if first_prod
+      img = first_prod.display_image || first_prod.images.first
+      data["image"] = [ absolute_asset(url_for(img)) ] if img
+    end
+    data
+  end
+
+  def item_list_structured_data(products, name:, url:)
+    {
+      "@context" => "https://schema.org",
+      "@type" => "ItemList",
+      "name" => name,
+      "url" => url,
+      "numberOfItems" => products.size,
+      "itemListElement" => products.each_with_index.map do |product, idx|
+        item_data = {
+          "@type" => "ListItem",
+          "position" => idx + 1,
+          "name" => product.name,
+          "url" => piece_url(product.slug)
+        }
+        if product.images.respond_to?(:attached?) && product.images.attached?
+          img = product.display_image || product.images.first
+          item_data["image"] = absolute_asset(url_for(img)) if img
+        end
+        item_data
+      end
+    }
+  end
+
+  def faq_structured_data(qa_pairs)
+    {
+      "@context" => "https://schema.org",
+      "@type" => "FAQPage",
+      "mainEntity" => qa_pairs.map do |question, answer|
+        {
+          "@type" => "Question",
+          "name" => question,
+          "acceptedAnswer" => {
+            "@type" => "Answer",
+            "text" => answer
+          }
+        }
+      end
+    }
+  end
+
+  def breadcrumb_structured_data(crumbs)
+    {
+      "@context" => "https://schema.org",
+      "@type" => "BreadcrumbList",
+      "itemListElement" => crumbs.each_with_index.map do |crumb, idx|
+        entry = {
+          "@type" => "ListItem",
+          "position" => idx + 1,
+          "name" => crumb[:name]
+        }
+        entry["item"] = crumb[:url] if crumb[:url].present?
+        entry
+      end
+    }
   end
 
   def enquire_url(product)

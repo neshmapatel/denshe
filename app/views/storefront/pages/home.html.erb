@@ -81,26 +81,112 @@
 </section>
 
 <% if @looks.any? %>
-  <section class="section" data-reveal>
+  <section class="section section--combos" data-reveal id="looks">
     <div class="page">
-      <header class="section-head">
+      <header class="section-head section-head--combos">
         <div class="section-head__text">
-          <p class="eyebrow">Looks</p>
+          <p class="eyebrow">Curated Sets · Combos</p>
           <h2>A few pieces, one price.</h2>
-          <p class="lede">Open a look, choose the pieces, and take it to checkout.</p>
+          <p class="lede">Pick your favorite combinations from our curated sets. Choose the designs you love, bundled together for one special price.</p>
+        </div>
+        <div class="combos-guide">
+          <span class="combos-guide__step"><strong>1</strong> Pick your combo</span>
+          <span class="combos-guide__arrow" aria-hidden="true">→</span>
+          <span class="combos-guide__step"><strong>2</strong> Choose your designs</span>
+          <span class="combos-guide__arrow" aria-hidden="true">→</span>
+          <span class="combos-guide__step"><strong>3</strong> Take home the set</span>
         </div>
         <%= link_to "All looks", combos_path, class: "link-quiet" %>
       </header>
+
       <div class="combo-list combo-list--home">
         <% @looks.each do |combo| %>
-          <%= link_to combo_path(combo.slug), class: "combo-card" do %>
-            <p class="eyebrow">Choose <%= combo.choice_summary %></p>
-            <h2><%= combo.name %></h2>
-            <% if combo.short_description.present? %>
-              <p><%= combo.short_description %></p>
-            <% end %>
-            <p class="piece__price"><%= price(combo.price) %></p>
-            <span class="link-quiet">Choose the pieces</span>
+          <%= link_to combo_path(combo.slug), class: "combo-card", id: "combo-card-#{combo.slug}" do %>
+            <!-- Visual Hero Showcase: Multi-piece gallery preview -->
+            <div class="combo-card__preview">
+              <div class="combo-card__mosaic">
+                <% sample_products = combo.groups.flat_map(&:products).select { |p| p.display_image.present? || (p.images.respond_to?(:attached?) && p.images.attached?) }.first(4) %>
+                <% if sample_products.any? %>
+                  <% sample_products.each_with_index do |product, idx| %>
+                    <% image = product.display_image || product.images.first %>
+                    <div class="combo-card__mosaic-item combo-card__mosaic-item--<%= idx + 1 %>">
+                      <%= image_tag catalogue_image_source(image),
+                            alt: product.name,
+                            loading: "lazy",
+                            decoding: "async" %>
+                      <span class="combo-card__mosaic-tag"><%= product.name.split.first(2).join(" ") %></span>
+                    </div>
+                  <% end %>
+                <% else %>
+                  <div class="combo-card__mosaic-placeholder">
+                    <%= image_tag "denshe-mark-navy.png", alt: "", width: 64, height: 60 %>
+                    <span>Curated DeNshe Jewellery Set</span>
+                  </div>
+                <% end %>
+              </div>
+              <div class="combo-card__badges">
+                <span class="combo-badge combo-badge--count">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                  <%= combo.groups.sum(&:choose_count) %>-Piece Bundle
+                </span>
+                <span class="combo-badge combo-badge--value">Special Price</span>
+              </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="combo-card__body">
+              <div class="combo-card__meta">
+                <p class="eyebrow">Choose <%= combo.choice_summary %></p>
+                <h2><%= combo.name %></h2>
+                <% if combo.short_description.present? %>
+                  <p class="combo-card__desc"><%= combo.short_description %></p>
+                <% end %>
+              </div>
+
+              <!-- Available Options to Choose From -->
+              <div class="combo-card__options">
+                <div class="combo-card__options-header">
+                  <span class="combo-card__options-title">Available options in this combo:</span>
+                  <span class="combo-card__options-count"><%= combo.groups.map { |g| "#{g.choose_count} #{g.name.downcase}" }.join(" + ") %></span>
+                </div>
+
+                <div class="combo-card__groups">
+                  <% combo.groups.each do |group| %>
+                    <div class="combo-card__group-row">
+                      <div class="combo-card__group-pill">
+                        <strong>Pick <%= group.choose_count %></strong> <%= group.name %>
+                        <span class="combo-card__group-avail">(<%= group.products.count %> <%= "design".pluralize(group.products.count) %> available)</span>
+                      </div>
+                      <div class="combo-card__options-chips">
+                        <% group.products.first(3).each do |prod| %>
+                          <% p_img = prod.display_image || (prod.images.respond_to?(:attached?) && prod.images.attached? && prod.images.first) %>
+                          <span class="combo-chip" title="<%= prod.name %>">
+                            <% if p_img %>
+                              <%= image_tag catalogue_image_source(p_img), alt: prod.name, class: "combo-chip__img", loading: "lazy" %>
+                            <% end %>
+                            <span class="combo-chip__text"><%= prod.name %></span>
+                          </span>
+                        <% end %>
+                        <% if group.products.count > 3 %>
+                          <span class="combo-chip combo-chip--more">+<%= group.products.count - 3 %> more</span>
+                        <% end %>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+
+              <!-- Pricing & Action Footer -->
+              <div class="combo-card__footer">
+                <div class="combo-card__pricing">
+                  <span class="combo-card__price-label">Set bundle price</span>
+                  <p class="piece__price combo-card__price"><%= price(combo.price) %></p>
+                </div>
+                <span class="btn btn--solid combo-card__btn">
+                  <span>Choose the pieces →</span>
+                </span>
+              </div>
+            </div>
           <% end %>
         <% end %>
       </div>

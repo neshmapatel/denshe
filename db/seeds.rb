@@ -33,4 +33,5 @@ load Rails.root.join("db/seeds/investors.rb")
 load Rails.root.join("db/seeds/mahavir_enterprise.rb")
 load Rails.root.join("db/seeds/celestia.rb")
 load Rails.root.join("db/seeds/investments.rb")
+CuratedGift.seed_defaults!
 load Rails.root.join("db/seeds/local_showcase.rb") if Rails.env.development?

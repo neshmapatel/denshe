@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_13_190000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_23_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -156,6 +156,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_190000) do
     t.index ["customer_id"], name: "index_coupons_on_customer_id"
   end
 
+  create_table "curated_gifts", force: :cascade do |t|
+    t.decimal "compare_at_price", precision: 10, scale: 2
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.decimal "discount_percent", precision: 5, scale: 2, default: "0.0", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.decimal "price", precision: 10, scale: 2, default: "0.0", null: false
+    t.string "product_title", null: false
+    t.string "slug", null: false
+    t.integer "status", default: 1, null: false
+    t.string "subtitle"
+    t.datetime "updated_at", null: false
+    t.index ["position"], name: "index_curated_gifts_on_position"
+    t.index ["slug"], name: "index_curated_gifts_on_slug", unique: true
+    t.index ["status"], name: "index_curated_gifts_on_status"
+  end
+
   create_table "customers", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email"
@@ -229,6 +247,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_190000) do
   create_table "order_items", force: :cascade do |t|
     t.decimal "compare_at_price", precision: 10, scale: 2
     t.datetime "created_at", null: false
+    t.bigint "curated_gift_id"
     t.decimal "discount_amount", precision: 10, scale: 2, default: "0.0", null: false
     t.integer "item_type", default: 0, null: false
     t.string "name", null: false
@@ -238,6 +257,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_190000) do
     t.string "sku"
     t.decimal "unit_price", precision: 10, scale: 2, null: false
     t.datetime "updated_at", null: false
+    t.index ["curated_gift_id"], name: "index_order_items_on_curated_gift_id"
     t.index ["order_id"], name: "index_order_items_on_order_id"
     t.index ["product_id"], name: "index_order_items_on_product_id"
   end
@@ -599,6 +619,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_190000) do
   add_foreign_key "investments", "purchases"
   add_foreign_key "investors", "admin_users"
   add_foreign_key "mystery_box_preferences", "orders"
+  add_foreign_key "order_items", "curated_gifts"
   add_foreign_key "order_items", "orders"
   add_foreign_key "order_items", "products"
   add_foreign_key "orders", "addresses", column: "billing_address_id"

@@ -1,5 +1,19 @@
 <% page_title "Our story" %>
 <% meta description: "DeNshe began with two friends, two different corners of the world, and a shared love for jewellery that feels like you." %>
+<%= structured_data(breadcrumb_structured_data([ { name: "Our Story", url: story_url } ])) %>
+<%= structured_data(
+      "@context" => "https://schema.org",
+      "@type" => "AboutPage",
+      "name" => "Our Story | DeNshe Jewellery",
+      "url" => story_url,
+      "mainEntity" => {
+        "@type" => "Organization",
+        "name" => brand.name,
+        "url" => root_url,
+        "logo" => absolute_asset(image_url("denshe-logo.jpg")),
+        "description" => "DeNshe began with two friends, two different corners of the world, and a shared love for jewellery that feels personal, effortless and entirely yours."
+      }
+    ) %>
 
 <article class="story">
   <header class="story__chapter">

@@ -22,6 +22,16 @@ class Cart
     end
   end
 
+  CuratedGiftLine = Struct.new(:token, :curated_gift, :quantity, :market) do
+    def line_total
+      curated_gift.price.to_d * quantity
+    end
+
+    def offered?
+      !market&.australia?
+    end
+  end
+
   def initialize(session, market: Market.india)
     @session = session
     @market = market || Market.india
@@ -115,6 +125,26 @@ class Cart
     @combo_lines = nil
   end
 
+  def add_curated_gift(curated_gift, quantity = 1)
+    return :not_offered if @market&.australia?
+    return :unavailable unless curated_gift&.active?
+
+    qty = [quantity.to_i, 1].max
+    existing_token, entry = curated_gift_data.find { |_t, e| e["curated_gift_id"].to_i == curated_gift.id }
+    if existing_token
+      curated_gift_data[existing_token]["quantity"] = curated_gift_data[existing_token]["quantity"].to_i + qty
+    else
+      curated_gift_data[SecureRandom.hex(4)] = { "curated_gift_id" => curated_gift.id, "quantity" => qty }
+    end
+    @curated_gift_lines = nil
+    :added
+  end
+
+  def remove_curated_gift(token)
+    curated_gift_data.delete(token.to_s)
+    @curated_gift_lines = nil
+  end
+
   def include?(product)
     quantity_of(product).positive?
   end
@@ -132,11 +162,11 @@ class Cart
   end
 
   def count
-    data.values.sum(&:to_i) + combo_data.size
+    data.values.sum(&:to_i) + combo_data.size + curated_gift_lines.sum(&:quantity)
   end
 
   def empty?
-    items.empty?
+    items.empty? && combo_lines.empty? && curated_gift_lines.empty?
   end
 
   def items
@@ -189,8 +219,28 @@ class Cart
     @combo_lines = lines
   end
 
+  def curated_gift_lines
+    return @curated_gift_lines unless @curated_gift_lines.nil?
+    return @curated_gift_lines = [] if curated_gift_data.blank?
+
+    gifts = CuratedGift.active.where(id: curated_gift_data.values.map { |entry| entry["curated_gift_id"] }).index_by(&:id)
+    lines = []
+    curated_gift_data.each do |token, entry|
+      gift = gifts[entry["curated_gift_id"].to_i]
+      if gift.nil?
+        curated_gift_data.delete(token)
+        next
+      end
+
+      lines << CuratedGiftLine.new(token, gift, [entry["quantity"].to_i, 1].max, @market)
+    end
+    @curated_gift_lines = lines
+  end
+
   def subtotal
-    checkout_items.sum(&:line_total) + combo_lines.select(&:offered?).sum(&:line_total)
+    checkout_items.sum(&:line_total) +
+      combo_lines.select(&:offered?).sum(&:line_total) +
+      curated_gift_lines.select(&:offered?).sum(&:line_total)
   end
 
   def coupon_code
@@ -252,12 +302,18 @@ class Cart
     CartHold.where(session_key: @session[:cart_key]).delete_all if @session[:cart_key]
     @session[:cart] = {}
     @session[:cart_combos] = {}
+    @session[:cart_curated_gifts] = {}
     @combo_lines = nil
+    @curated_gift_lines = nil
     remove_coupon
   end
 
   def combo_data
     @session[:cart_combos] ||= {}
+  end
+
+  def curated_gift_data
+    @session[:cart_curated_gifts] ||= {}
   end
 
   private

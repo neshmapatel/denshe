@@ -22,6 +22,8 @@ Rails.application.routes.draw do
     get "looks/:slug", to: "combos#show", as: :combo
     post "cart/combos", to: "cart#create_combo", as: :cart_combos
     delete "cart/combos/:token", to: "cart#destroy_combo", as: :cart_combo
+    post "cart/curated-gifts", to: "cart#create_curated_gift", as: :cart_curated_gifts
+    delete "cart/curated-gifts/:token", to: "cart#destroy_curated_gift", as: :cart_curated_gift
 
     get "cart", to: "cart#show", as: :cart
     post "cart/coupon", to: "cart#apply_coupon", as: :cart_coupon
@@ -40,6 +42,8 @@ Rails.application.routes.draw do
     get "jewellery-box", to: "pages#jewellery_box", as: :jewellery_box
     get "catalogue", to: "pages#catalogue", as: :catalogue
     get "potlis-and-jars", to: "potlis_and_jars#show", as: :potlis_and_jars
+    get "curated-gifts", to: "potlis_and_jars#show", as: :curated_gifts
+    get "curated-gifts/:slug", to: "potlis_and_jars#show", as: :curated_gift
     get "mystery-box", to: redirect("/potlis-and-jars"), as: :mystery_box
     post "mystery-box", to: redirect("/potlis-and-jars")
     get "mystery-box/details", to: redirect("/potlis-and-jars"), as: :mystery_box_details

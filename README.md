@@ -47,6 +47,27 @@ Change these passwords after you first log in.
 
 Purchase price is visible in admin only. It is never meant for the customer site.
 
+## Product photographs (WebP)
+
+Every photograph uploaded for a product or curated gift is converted to WebP
+automatically (long edge capped at 2400px, quality 85, colours kept in sRGB).
+If a WebP would not be smaller, or the file is not a readable image, the original
+is stored untouched. The shop also serves all of its resized images as WebP.
+
+Photographs uploaded before this existed can be compressed on the server, with
+no re-upload (run each on the production server, e.g. `heroku run` or `kamal app exec`):
+
+```bash
+bin/rails images:compress                 # preview: shows the saving, changes nothing
+LIMIT=10 APPLY=1 bin/rails images:compress  # try a handful first
+APPLY=1 bin/rails images:compress         # compress everything
+bin/rails images:warm_variants            # pre-build the shop's image sizes
+APPLY=1 bin/rails images:purge_originals  # once the shop looks right, delete the old files
+```
+
+Each photograph keeps its place in the gallery and its primary-photo setting.
+Originals are kept until `images:purge_originals`, so the change can be checked first.
+
 ## Phases
 
 - **Phase 0–1 (this):** foundation, models, ActiveAdmin, inventory
