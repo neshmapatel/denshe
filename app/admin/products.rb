@@ -9,7 +9,7 @@ ActiveAdmin.register Product do
                 :visible_in_australia, :selling_price_aud, :compare_at_price_aud, :discount_percent_aud,
                 :pricing_driver_aud, :packaging_allocation,
                 :shipping_allocation, :gst_rate, :quantity_purchased, :stock_quantity,
-                :low_stock_threshold, :material, :colour, :dimensions, :weight,
+                :low_stock_threshold, :display_stock_left, :material, :colour, :dimensions, :weight,
                 :care_instructions, :whats_included, :status, :collection_line, :featured, :new_arrival,
                 :bestseller, :meta_title, :meta_description, :primary_image_id,
                 images: [], remove_image_ids: [], clips: [], remove_clip_ids: []
@@ -49,6 +49,7 @@ ActiveAdmin.register Product do
       product.offered_in?(Market.australia) ? "A$#{product.selling_price_aud}" : "—"
     end
     column("Stock", &:stock_quantity)
+    column("Badge Left", &:display_stock_left)
     column("Purchased", &:quantity_purchased)
     column("Sold", &:sold_quantity)
     actions defaults: true do |product|
@@ -80,6 +81,7 @@ ActiveAdmin.register Product do
   filter :featured
   filter :new_arrival
   filter :bestseller
+  filter :display_stock_left, label: "Badge Left (Scarcity)"
   filter :visible_in_australia
 
   show do
@@ -121,6 +123,7 @@ ActiveAdmin.register Product do
         row("Purchased", &:quantity_purchased)
         row("Sold", &:sold_quantity)
         row("Available", &:stock_quantity)
+        row("Scarcity badge") { |p| p.display_stock_left.present? ? "#{p.display_stock_left} left" : "None (hidden)" }
         row :low_stock_threshold
       end
 
@@ -289,6 +292,9 @@ ActiveAdmin.register Product do
     f.inputs "Inventory" do
       f.input :quantity_purchased, hint: "Total bought from the supplier. On first save, this follows current stock if left at 0."
       f.input :stock_quantity, label: "Current stock"
+      f.input :display_stock_left,
+              label: "Display 'X left' badge",
+              hint: "Choose how many left to display on the storefront (e.g. 1 for '1 left', 2 for '2 left', 3 for '3 left'). Leave blank to not display any 'left' badge on this product."
       f.input :low_stock_threshold
     end
 

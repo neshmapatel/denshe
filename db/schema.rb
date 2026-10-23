@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_23_154500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_23_165000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -351,6 +351,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_154500) do
     t.string "dimensions"
     t.decimal "discount_percent", precision: 5, scale: 2, default: "0.0", null: false
     t.decimal "discount_percent_aud", precision: 5, scale: 2, default: "0.0", null: false
+    t.integer "display_stock_left"
     t.boolean "featured", default: false, null: false
     t.decimal "gst_rate", precision: 5, scale: 2
     t.integer "low_stock_threshold", default: 2, null: false
@@ -379,6 +380,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_154500) do
     t.text "whats_included"
     t.index ["category_id"], name: "index_products_on_category_id"
     t.index ["collection_line"], name: "index_products_on_collection_line"
+    t.index ["display_stock_left"], name: "index_products_on_display_stock_left"
     t.index ["featured"], name: "index_products_on_featured"
     t.index ["primary_image_id"], name: "index_products_on_primary_image_id"
     t.index ["purchase_id"], name: "index_products_on_purchase_id"

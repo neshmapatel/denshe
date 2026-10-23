@@ -470,6 +470,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "another shopper sees a piece that is already in a cart" do
+    @product.update!(display_stock_left: 1)
     get piece_path(@product.slug)
     assert_match "1 left", response.body
 
@@ -492,7 +493,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "available quantity drops by what other carts are holding" do
-    @product.update!(stock_quantity: 3)
+    @product.update!(stock_quantity: 3, display_stock_left: 3)
 
     post cart_items_path, params: { slug: @product.slug }
     get piece_path(@product.slug)
@@ -884,13 +885,13 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_equal gift, item.curated_gift
   end
 
-  test "availability only displays when product is at or below low stock threshold" do
+  test "availability only displays when admin specifies display_stock_left" do
     scarce_1 = Product.create!(
       category: @category,
       name: "Scarce Ring 1",
       selling_price: 350,
       stock_quantity: 1,
-      low_stock_threshold: 2,
+      display_stock_left: 1,
       status: :active
     )
     scarce_2 = Product.create!(
@@ -898,7 +899,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
       name: "Scarce Ring 2",
       selling_price: 350,
       stock_quantity: 2,
-      low_stock_threshold: 2,
+      display_stock_left: 2,
       status: :active
     )
     abundant = Product.create!(
@@ -906,7 +907,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
       name: "Abundant Ring",
       selling_price: 350,
       stock_quantity: 5,
-      low_stock_threshold: 2,
+      display_stock_left: nil,
       status: :active
     )
     sold_out = Product.create!(
@@ -914,6 +915,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
       name: "Sold Ring",
       selling_price: 350,
       stock_quantity: 0,
+      display_stock_left: 1,
       status: :active
     )
 
