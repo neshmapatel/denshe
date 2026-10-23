@@ -1,5 +1,16 @@
 <% page_title "Care guide" %>
 <% meta description: "How to wear and keep DeNshe jewellery: perfume, water, storage, and what to do if a piece needs a repair." %>
+<%= structured_data(breadcrumb_structured_data([ { name: "Care Guide", url: care_url } ])) %>
+<%= structured_data(
+      faq_structured_data([
+        [ "How should I wear and take off DeNshe jewellery?", "Last on, first off. Perfume, hairspray, and lotion go on first. Let them dry, then put on your jewellery. At night, take it off before cleansing." ],
+        [ "Can I wear anti-tarnish jewellery in water or the shower?", "Water is the enemy of shine. Take pieces off for the shower, swimming in the sea, and the gym. Moisture sits in clasps and behind stones, even on anti-tarnish finishes." ],
+        [ "How should I store fashion and gold-tone jewellery?", "Give each piece its own corner. Chains tangle and stones scratch gold-tone metal. A separate pouch, a box, or a clean handkerchief will keep pieces looking like new." ],
+        [ "How do I clean DeNshe jewellery?", "Wipe, don't soak. A soft dry cloth after wearing is the whole routine. Avoid toothpaste, silver dip, and ultrasonic cleaners unless specifically advised." ],
+        [ "What is anti-tarnish finish and how does it work?", "Anti-tarnish pieces resist dulling from air and skin. They still prefer to stay dry and benefit from a soft wipe at the end of the day." ],
+        [ "What should I do if a piece needs repair?", "Tell us early. Write to us at #{brand.email} with a photograph and the piece name so we can assist while it is a small repair." ]
+      ])
+    ) %>
 
 <header class="page-intro">
   <div class="page page--narrow">

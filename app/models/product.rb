@@ -2,6 +2,7 @@ class Product < ApplicationRecord
   include Ransackable
   include Searchable
   include Sluggable
+  include WebpImages
 
   attr_accessor :skip_stock_history, :opening_stock_reason, :pricing_driver, :pricing_driver_aud
 
@@ -17,7 +18,6 @@ class Product < ApplicationRecord
   belongs_to :purchase, optional: true
   has_many :inventory_movements, dependent: :destroy
   has_many :order_items, dependent: :restrict_with_error
-  has_many_attached :images
   has_many_attached :clips
 
   CLIP_CONTENT_TYPES = %w[video/mp4 video/quicktime video/webm].freeze

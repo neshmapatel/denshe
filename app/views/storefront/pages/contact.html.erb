@@ -1,5 +1,34 @@
 <% page_title "Contact" %>
 <% meta description: "Write to DeNshe Jewellery in Anand, Gujarat about a piece, curated gifting, or an order. We answer by email#{brand.whatsapp.present? ? " and WhatsApp" : ""}." %>
+<%= structured_data(breadcrumb_structured_data([ { name: "Contact", url: contact_url } ])) %>
+<%= structured_data(
+      "@context" => "https://schema.org",
+      "@type" => "ContactPage",
+      "name" => "Contact DeNshe Jewellery",
+      "url" => contact_url,
+      "mainEntity" => {
+        "@type" => "JewelryStore",
+        "name" => brand.name,
+        "image" => absolute_asset(image_url("denshe-logo.jpg")),
+        "telephone" => brand.phone,
+        "email" => brand.email,
+        "address" => {
+          "@type" => "PostalAddress",
+          "streetAddress" => brand.operating_address,
+          "addressLocality" => brand.city,
+          "addressRegion" => "Gujarat",
+          "postalCode" => "388001",
+          "addressCountry" => "IN"
+        },
+        "contactPoint" => {
+          "@type" => "ContactPoint",
+          "telephone" => brand.phone,
+          "contactType" => "customer service",
+          "areaServed" => [ "IN", "AU" ],
+          "availableLanguage" => [ "English", "Gujarati", "Hindi" ]
+        }
+      }
+    ) %>
 
 <header class="page-intro">
   <div class="page page--narrow">

@@ -1,5 +1,11 @@
 <% page_title "Jewellery Potlis, Jars & Treasure Drops · DeNshe" %>
 <% meta description: "Explore DeNshe's curated jewellery gift sets and mystery jars. Handpicked anti-tarnish, oxidised, and contemporary jewellery curations from ₹499." %>
+<% if @curated_gifts.present? && @curated_gifts.any? %>
+  <% @curated_gifts.each do |gift| %>
+    <%= structured_data(curated_gift_structured_data(gift)) %>
+  <% end %>
+<% end %>
+<%= structured_data(breadcrumb_structured_data([ { name: "Home", url: root_url }, { name: "Potlis & Jars", url: potlis_and_jars_url } ])) %>
 
 <header class="page-intro page-intro--ink">
   <div class="page page--narrow">

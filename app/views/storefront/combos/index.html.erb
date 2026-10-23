@@ -1,5 +1,23 @@
 <% page_title "Looks" %>
 <% meta description: "A few pieces, one price. You choose which ones, from the ones set aside." %>
+<%= structured_data(breadcrumb_structured_data([ { name: "Looks", url: combos_url } ])) %>
+<% if @combos.any? %>
+  <%= structured_data(
+        "@context" => "https://schema.org",
+        "@type" => "ItemList",
+        "name" => "DeNshe Curated Looks & Combo Sets",
+        "url" => combos_url,
+        "numberOfItems" => @combos.size,
+        "itemListElement" => @combos.each_with_index.map do |combo, idx|
+          {
+            "@type" => "ListItem",
+            "position" => idx + 1,
+            "name" => combo.name,
+            "url" => combo_url(combo.slug)
+          }
+        end
+      ) %>
+<% end %>
 
 <header class="page-intro">
   <div class="page page--narrow">

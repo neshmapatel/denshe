@@ -1,5 +1,7 @@
 <% page_title @combo.name %>
 <% meta description: @combo.short_description.presence || "Choose the pieces in #{@combo.name}. One price, from DeNshe." %>
+<%= structured_data(combo_structured_data(@combo)) %>
+<%= structured_data(breadcrumb_structured_data([ { name: "Home", url: root_url }, { name: "Looks", url: combos_url }, { name: @combo.name, url: combo_url(@combo.slug) } ])) %>
 
 <section class="section section--tight">
   <div class="page">

@@ -2,11 +2,11 @@ class CuratedGift < ApplicationRecord
   include Ransackable
   include Searchable
   include Sluggable
+  include WebpImages
 
-  has_many_attached :images
   has_many :order_items, dependent: :nullify
 
-  enum :status, { draft: 0, active: 1, archived: 2 }, default: :draft
+  enum :status, { draft: 0, active: 1, archived: 2 }, default: :active
 
   validates :name, presence: true
   validates :product_title, presence: true
@@ -86,30 +86,36 @@ class CuratedGift < ApplicationRecord
       image_filename: "the-statement-edit.jpg"
     },
     {
-      slug: "noor",
-      name: "Treasure Drop — Noor",
-      product_title: "Noor | Indian & Oxidised Mystery Jewellery Jar | ₹1,999",
-      subtitle: "Indian jewellery jar",
+      slug: "the-signature-edit",
+      name: "Treasure Drop — The Signature Edit",
+      product_title: "The Signature Edit | Anti-Tarnish Neckpieces & Bracelets | ₹1,999",
+      subtitle: "Elevated everyday surprise",
       price: 1999,
-      description: "For your Indian-inspired and oxidised jewellery curation. “Noor” evokes radiance and gives this collection a more rooted, elegant identity.",
+      description: "Curated modern everyday jewellery featuring anti-tarnish neckpieces, delicate chains, and sleek bracelets designed for effortless daily styling.",
       position: 4,
-      image_filename: "noor.jpg"
+      image_filename: "the-signature-edit.jpg"
     },
     {
       slug: "the-muse-edit",
       name: "Treasure Drop — The Muse Edit",
-      product_title: "The Muse Edit | Fusion Mystery Jewellery Jar | ₹2,799",
-      subtitle: "Premium fusion jar",
+      product_title: "The Muse Edit | Indian & Modern Fusion Jewellery Jar | ₹2,799",
+      subtitle: "Grand fusion jar — Indian & modern",
       price: 2799,
-      description: "For Indian accents, contemporary styles, and everyday anti-tarnish jewellery. This is the most elevated and versatile curation.",
+      description: "Our ultimate luxury curation blending rich Indian traditional accents and sleek modern anti-tarnish jewellery. An expressive mix of statement earrings, handcrafted necklaces, and contemporary daily pieces.",
       position: 5,
       image_filename: "the-muse-edit.jpg"
     }
   ].freeze
 
-  def self.seed_defaults!
+  def self.seed_defaults!(force_reimage: false)
     DEFAULTS.each do |attrs|
-      gift = find_or_initialize_by(slug: attrs[:slug])
+      gift = find_by(slug: attrs[:slug])
+      if gift.nil? && attrs[:slug] == "the-signature-edit"
+        gift = find_by(slug: "noor")
+      end
+      gift ||= new(slug: attrs[:slug])
+
+      gift.slug = attrs[:slug]
       gift.name = attrs[:name]
       gift.product_title = attrs[:product_title]
       gift.subtitle = attrs[:subtitle]
@@ -119,14 +125,19 @@ class CuratedGift < ApplicationRecord
       gift.status = :active
       gift.save!
 
-      if !gift.images.attached? && attrs[:image_filename].present?
+      if attrs[:image_filename].present?
         image_path = Rails.root.join("app/assets/images/curated_gifts", attrs[:image_filename])
         if File.exist?(image_path)
-          gift.images.attach(
-            io: File.open(image_path),
-            filename: attrs[:image_filename],
-            content_type: "image/jpeg"
-          )
+          current_filename = gift.images.first&.filename&.to_s
+          needs_image = !gift.images.attached? || force_reimage || (current_filename != attrs[:image_filename])
+          if needs_image
+            gift.images.purge if gift.images.attached?
+            gift.images.attach(
+              io: File.open(image_path),
+              filename: attrs[:image_filename],
+              content_type: "image/jpeg"
+            )
+          end
         end
       end
     end
