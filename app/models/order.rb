@@ -57,8 +57,10 @@ class Order < ApplicationRecord
     number.presence || "Order ##{id}"
   end
 
+  # The name typed at checkout (or in admin) wins over an older customer record
+  # that was matched only by phone or email.
   def customer_display_name
-    customer&.name.presence || guest_name.presence || "Guest"
+    guest_name.to_s.strip.presence || customer&.name.presence || "Guest"
   end
 
   def australia?
@@ -245,6 +247,7 @@ class Order < ApplicationRecord
 
     found = Customer.find_for_contact(email: email, phone: phone)
     if found
+      sync_customer_from_order!(found, name: name, email: email, phone: phone)
       self.customer = found
       return
     end
@@ -257,6 +260,23 @@ class Order < ApplicationRecord
 
     built.save!
     self.customer = built
+  end
+
+  # Keep the shopper card in step with the details entered for this order.
+  def sync_customer_from_order!(customer, name:, email:, phone:)
+    attrs = {}
+    attrs[:name] = name if name.present? && customer.name != name
+
+    if email.present? && customer.email.to_s.strip.downcase != email
+      taken = Customer.where("LOWER(email) = ?", email).where.not(id: customer.id).exists?
+      attrs[:email] = email unless taken
+    end
+
+    if phone.present? && Coupon.phone_key(customer.phone) != Coupon.phone_key(phone)
+      attrs[:phone] = phone
+    end
+
+    customer.update!(attrs) if attrs.any?
   end
 
   def claim_addresses

@@ -13,8 +13,17 @@
     </header>
 
     <div class="checkout">
+      <% shipping_charge = shipping_amount_for(current_cart.subtotal) %>
+      <% due_with_shipping = cart_due %>
+      <% due_without_shipping = due_with_shipping - shipping_charge %>
       <%= form_with model: @checkout, url: checkout_path, scope: :checkout, class: "form-stack checkout__form",
-            data: { controller: "checkout" } do |form| %>
+            data: {
+              controller: "checkout",
+              checkout_shipping_label_value: shipping_label_for(current_cart.subtotal),
+              checkout_complimentary_label_value: "Complimentary",
+              checkout_due_with_shipping_value: price(due_with_shipping),
+              checkout_due_without_shipping_value: price(due_without_shipping)
+            } do |form| %>
         <% if @checkout.errors[:base].any? %>
           <p class="field__error" role="alert"><%= @checkout.errors[:base].to_sentence %></p>
         <% end %>
@@ -25,6 +34,15 @@
           <%= render "storefront/checkout/field", form: form, attribute: :phone, label: "Mobile number", autocomplete: "tel", inputmode: (australia? ? "tel" : "numeric") %>
           <%= render "storefront/checkout/field", form: form, attribute: :email, label: "Email", autocomplete: "email", required: false %>
         </fieldset>
+
+        <% if admin_user_signed_in? && !australia? %>
+          <label class="check">
+            <%= form.check_box :waive_shipping,
+                  data: { checkout_target: "waive", action: "checkout#syncShipping" } %>
+            <span>No shipping fee — sold in person / offline</span>
+          </label>
+          <p class="checkout__note">Only visible while you are signed in to admin. The order is recorded as offline and stock still comes off the shop.</p>
+        <% end %>
 
         <fieldset class="form-stack">
           <legend class="eyebrow">Shipping address</legend>
@@ -105,12 +123,12 @@
           <% end %>
           <li>
             <span>Shipping</span>
-            <span><%= shipping_label_for(current_cart.subtotal) %></span>
+            <span data-checkout-target="shippingLabel"><%= shipping_label_for(current_cart.subtotal) %></span>
           </li>
         </ul>
         <div class="bag__due">
           <p><%= australia? ? "Total" : "To pay" %></p>
-          <p><%= price(cart_due) %></p>
+          <p data-checkout-target="due"><%= price(cart_due) %></p>
         </div>
         <% if (nudge = voucher_nudge(current_cart.subtotal)) %>
           <p class="bag__nudge"><%= nudge %></p>

@@ -75,9 +75,12 @@ class OrderDeskTest < ActiveSupport::TestCase
     assert_equal 2, Order.backfill_customers!
 
     order.reload
-    assert_equal "Aisha Shah", order.customer.name
+    # The later order with the same mobile keeps the customer card current.
+    assert_equal "Aisha S", order.customer.name
     assert_equal "9876543210", order.customer.phone
     assert_equal order.customer_id, same_phone.reload.customer_id
+    assert_equal "Aisha Shah", order.customer_display_name
+    assert_equal "Aisha S", same_phone.customer_display_name
 
     order.update!(
       subtotal: 499,

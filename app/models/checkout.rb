@@ -40,6 +40,8 @@ class Checkout
   attribute :billing_city, :string
   attribute :billing_state, :string
   attribute :billing_pin_code, :string
+  # Owner-only: record an offline sale through the shop with no shipping charge.
+  attribute :waive_shipping, :boolean, default: false
 
   before_validation :normalize_australian_contact, if: :australia?
 
@@ -55,7 +57,7 @@ class Checkout
   validates :billing_pin_code, format: { with: /\A\d{4}\z/, message: "must be a 4-digit postcode" }, allow_blank: true, if: ->(checkout) { checkout.australia? && !checkout.billing_same }
   validates :billing_state, inclusion: { in: ->(checkout) { checkout.states } }, allow_blank: true, unless: :billing_same
 
-  attr_accessor :market
+  attr_accessor :market, :allow_shipping_waiver
 
   def self.from_params(params)
     new(params.to_h.slice(*attribute_names))
@@ -67,6 +69,11 @@ class Checkout
 
   def australia?
     market.australia?
+  end
+
+  # Only honored when the controller marks the shopper as allowed (signed-in admin).
+  def waive_shipping?
+    ActiveModel::Type::Boolean.new.cast(waive_shipping) && allow_shipping_waiver
   end
 
   def states
@@ -106,7 +113,12 @@ class Checkout
     return if invalid?
 
     subtotal = lines.sum(&:line_total) + combos.sum(&:line_total) + curated_gifts.sum(&:line_total)
-    shipping_amount = australia? ? 0.to_d : self.class.shipping_amount_for(subtotal)
+    shipping_amount = if australia? || waive_shipping?
+      0.to_d
+    else
+      self.class.shipping_amount_for(subtotal)
+    end
+    sold_through = waive_shipping? ? :offline : :website
     coupon = cart.coupon
     if cart.coupon_code.present? && coupon.nil?
       errors.add(:base, "That code is no longer available.")
@@ -150,7 +162,7 @@ class Checkout
         voucher_discount: voucher_off,
         total: subtotal - discount + shipping_amount,
         currency: market.currency,
-        channel: :website,
+        channel: sold_through,
         status: :pending,
         payment_status: :unpaid
       )
