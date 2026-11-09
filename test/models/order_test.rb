@@ -13,6 +13,21 @@ class OrderTest < ActiveSupport::TestCase
     assert_equal "Aisha", order.customer_display_name
   end
 
+  test "the name typed on the order is what admin shows, even if an older customer matches" do
+    customer = Customer.create!(name: "Old Record", email: "shared@example.com", phone: "9876543210")
+    order = Order.create!(
+      guest_name: "Fresh Name",
+      guest_email: "shared@example.com",
+      guest_phone: "9876543210",
+      subtotal: 200,
+      total: 200
+    )
+
+    assert_equal customer.id, order.customer_id
+    assert_equal "Fresh Name", order.customer_display_name
+    assert_equal "Fresh Name", order.customer.name
+  end
+
   test "searches orders by number, guest details, or customer" do
     customer = Customer.create!(name: "Meera Shah", email: "meera@example.com", phone: "9876543210")
     order = Order.create!(

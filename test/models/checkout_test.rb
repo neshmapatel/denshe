@@ -60,7 +60,46 @@ class CheckoutTest < ActiveSupport::TestCase
     again = checkout(email: "other@example.com").place!(cart)
 
     assert_equal order.customer_id, again.customer_id
-    assert_equal 1, Customer.where("LOWER(email) = ?", "aisha@example.com").count
+    assert_equal "other@example.com", again.customer.email
+    assert_equal "Aisha Shah", again.customer_display_name
+  end
+
+  test "reusing a phone updates the customer name to what was typed at checkout" do
+    Customer.create!(name: "First Customer Ever", phone: "9876543210", email: "old@example.com")
+
+    order = checkout(name: "Riya Patel", email: "riya@example.com").place!(@cart)
+
+    assert_equal 1, Customer.count
+    assert_equal "Riya Patel", order.guest_name
+    assert_equal "Riya Patel", order.customer_display_name
+    assert_equal "Riya Patel", order.customer.name
+    assert_equal "riya@example.com", order.customer.email
+  end
+
+  test "an allowed shipping waiver records an offline sale with no shipping" do
+    @product.update!(selling_price: 499)
+    form = checkout
+    form.allow_shipping_waiver = true
+    form.waive_shipping = true
+
+    order = form.place!(@cart)
+
+    assert_equal 0, order.shipping_amount
+    assert_equal 499, order.total
+    assert_equal "offline", order.channel
+  end
+
+  test "a shipping waiver without permission still charges shipping" do
+    @product.update!(selling_price: 499)
+    form = checkout
+    form.allow_shipping_waiver = false
+    form.waive_shipping = true
+
+    order = form.place!(@cart)
+
+    assert_equal 80, order.shipping_amount
+    assert_equal 579, order.total
+    assert_equal "website", order.channel
   end
 
   test "a checkout without an email still opens a customer from the phone" do

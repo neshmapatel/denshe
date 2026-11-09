@@ -190,7 +190,9 @@ ActiveAdmin.register Order do
     f.inputs "Price" do
       f.input :channel, label: "Sold through", include_blank: false
       f.input :subtotal, input_html: { min: 0, step: "0.01" }
-      f.input :shipping_amount, input_html: { min: 0, step: "0.01" }
+      f.input :shipping_amount,
+              hint: "Set to 0 for an offline / in-person sale with no shipping.",
+              input_html: { min: 0, step: "0.01" }
       f.input :coupon_code, label: "Coupon applied"
       f.input :coupon_discount, label: "Coupon discount", input_html: { min: 0, step: "0.01" }
       f.input :voucher_name, label: "Voucher applied"

@@ -5,11 +5,13 @@ module Storefront
 
     def new
       @checkout = Checkout.new
+      @checkout.allow_shipping_waiver = admin_user_signed_in?
     end
 
     def create
       @checkout = Checkout.from_params(checkout_params)
       @checkout.market = current_market
+      @checkout.allow_shipping_waiver = admin_user_signed_in?
       order = @checkout.place!(current_cart)
 
       if order
@@ -167,7 +169,8 @@ module Storefront
     def checkout_params
       params.require(:checkout).permit(
         :name, :phone, :email, :line1, :line2, :city, :state, :pin_code, :billing_same,
-        :billing_line1, :billing_line2, :billing_city, :billing_state, :billing_pin_code
+        :billing_line1, :billing_line2, :billing_city, :billing_state, :billing_pin_code,
+        :waive_shipping
       )
     end
   end
