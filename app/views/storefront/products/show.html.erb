@@ -180,6 +180,21 @@
                 label: "Save #{@product.name} to your jewellery box" %>
         </div>
 
+        <div class="product-perks">
+          <div class="product-perk">
+            <%= icon :sparkle %>
+            <span>Anti-tarnish everyday finish</span>
+          </div>
+          <div class="product-perk">
+            <%= icon :box %>
+            <span>Dispatched in 2–4 days from Anand, Gujarat</span>
+          </div>
+          <div class="product-perk">
+            <%= icon :heart %>
+            <span>Free delivery across India on orders above ₹599</span>
+          </div>
+        </div>
+
         <% if specs.any? %>
           <dl class="spec-list">
             <% specs.each do |label, value| %>

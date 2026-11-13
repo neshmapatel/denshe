@@ -21,7 +21,7 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
   test "public pages tell search engines what they are" do
     get root_url
     assert_select "link[rel=canonical][href=?]", "http://www.example.com/"
-    assert_select "title", "Gold-tone earrings and everyday jewellery · DeNshe Jewellery"
+    assert_select "title", "Anti-Tarnish and Everyday Gold-Tone Jewellery · DeNshe Jewellery"
     assert_select "meta[name=description]"
     assert_match "Anand", response.body
     assert_no_match "from Mumbai", response.body

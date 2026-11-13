@@ -1,11 +1,26 @@
-<% base_title = @collection_line ? @collection_line.name : (@category ? @category.name : "Shop") %>
+<% base_title = if @collection_line
+     "#{@collection_line.name} · Everyday Jewellery"
+   elsif @category
+     case @category.slug
+     when "earrings" then "Anti-Tarnish Earrings & Gold-Tone Hoops"
+     when "kadas" then "Waterproof Daily Wear Kadas & Bracelets"
+     when "rings" then "Anti-Tarnish Everyday Rings & Bands"
+     when "bracelets" then "Anti-Tarnish Bracelets & Cuffs"
+     when "chain-pendants" then "Gold-Tone Chains & Minimal Pendants"
+     when "sets" then "Curated Jewellery Sets & Combos"
+     when "handchains" then "Gold-Tone Hand Chains & Hathphool"
+     else "#{@category.name} Jewellery"
+     end
+   else
+     "Shop"
+   end %>
 <% page_title(@pagination.page > 1 ? "#{base_title}, page #{@pagination.page}" : base_title) %>
 <% description = if @collection_line
-     "#{@collection_line.tagline} #{@collection_line.name} from DeNshe, with the price on every piece."
+     "#{@collection_line.tagline} Discover #{@collection_line.name} anti-tarnish jewellery from DeNshe with transparent pricing."
    elsif @category
      category_intro(@category)
    else
-     "Shop gold-tone and anti-tarnish jewellery from DeNshe. Earrings, kadas, rings, and chains, with the price on every piece."
+     "Shop anti-tarnish and everyday gold-tone jewellery from DeNshe. Earrings, kadas, rings, and chains, with the price on every piece."
    end %>
 <% description = "#{description} Page #{@pagination.page}." if @pagination.page > 1 %>
 <% meta description: description %>
@@ -127,3 +142,5 @@
     <% end %>
   </div>
 </section>
+
+<%= render "storefront/shared/category_guide" if @products.any? && !@filter.filtering? %>

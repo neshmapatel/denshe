@@ -93,15 +93,15 @@ module StorefrontHelper
 
   def category_intro(category)
     {
-      "earrings" => "Gold-tone and anti-tarnish earring designs. Hoops, studs, and drops, with the price beside each piece.",
-      "rings" => "Adjustable fashion rings in gold-tone and anti-tarnish finishes. The price sits with each design.",
-      "bracelets" => "Bracelets for the wrist, in gold-tone and stone-set designs. Prices are on each piece.",
-      "kadas" => "Gold-tone kadas, from slim everyday cuffs to wider statement pieces. The price is on each one.",
-      "sets" => "Necklace sets meant to be worn together. Each set is priced on its page.",
-      "handchains" => "Hand chains from wrist to finger, in gold-tone designs. The price is on each piece.",
-      "chain-pendants" => "Chains and pendants in gold-tone and silver-tone. The price sits with the design.",
+      "earrings" => "Gold-tone and anti-tarnish earring designs. Everyday hoops, studs, and drops made for sensitive ears with lasting shine.",
+      "rings" => "Adjustable fashion rings in gold-tone and anti-tarnish finishes. Designed for daily comfort and enduring shine.",
+      "bracelets" => "Bracelets for the wrist, in gold-tone and stone-set designs for effortless stacking.",
+      "kadas" => "Gold-tone kadas, from slim everyday cuffs to wider statement pieces designed for daily wear.",
+      "sets" => "Necklace sets meant to be worn together. Anti-tarnish, festive and contemporary curations.",
+      "handchains" => "Hand chains from wrist to finger, in gold-tone designs for celebrations and modern styling.",
+      "chain-pendants" => "Chains and pendants in gold-tone and silver-tone finishes for everyday layering.",
       "combo" => "Pieces meant to be worn together. Each set is priced on its page."
-    }.fetch(category.slug, "Shop #{category.name.downcase} from DeNshe. The price is on every piece.")
+    }.fetch(category.slug, "Shop #{category.name.downcase} from DeNshe. Anti-tarnish, gold-tone daily wear pieces with transparent pricing.")
   end
 
   # Indian digit grouping: ₹1,299 and ₹1,20,000.
@@ -340,6 +340,137 @@ module StorefrontHelper
     tag.script(json_escape(data.to_json).html_safe, type: "application/ld+json")
   end
 
+  def standard_offer_details(selling_price, url:, in_stock:, currency: "INR")
+    offer = {
+      "@type" => "Offer",
+      "priceCurrency" => currency,
+      "price" => format("%.2f", selling_price),
+      "priceValidUntil" => 1.year.from_now.strftime("%Y-%m-%d"),
+      "availability" => (in_stock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"),
+      "itemCondition" => "https://schema.org/NewCondition",
+      "url" => url,
+      "seller" => {
+        "@type" => "Organization",
+        "name" => brand.name
+      }
+    }
+
+    if currency == "INR"
+      offer["shippingDetails"] = {
+        "@type" => "OfferShippingDetails",
+        "shippingRate" => {
+          "@type" => "MonetaryAmount",
+          "value" => (selling_price.to_d >= brand.free_shipping_above ? "0.00" : format("%.2f", brand.standard_shipping)),
+          "currency" => "INR"
+        },
+        "shippingDestination" => {
+          "@type" => "DefinedRegion",
+          "addressCountry" => "IN"
+        },
+        "deliveryTime" => {
+          "@type" => "ShippingDeliveryTime",
+          "handlingTime" => {
+            "@type" => "QuantitativeValue",
+            "minValue" => 1,
+            "maxValue" => 2,
+            "unitCode" => "d"
+          },
+          "transitTime" => {
+            "@type" => "QuantitativeValue",
+            "minValue" => 2,
+            "maxValue" => 4,
+            "unitCode" => "d"
+          }
+        }
+      }
+      offer["hasMerchantReturnPolicy"] = {
+        "@type" => "MerchantReturnPolicy",
+        "applicableCountry" => "IN",
+        "returnPolicyCategory" => "https://schema.org/MerchantReturnFiniteReturnWindow",
+        "merchantReturnDays" => 7,
+        "returnMethod" => "https://schema.org/ReturnByMail",
+        "returnFees" => "https://schema.org/FreeReturn"
+      }
+    end
+
+    offer
+  end
+
+  def category_seo_guide(category, collection_line)
+    if category
+      case category.slug
+      when "earrings"
+        {
+          eyebrow: "Everyday Anti-Tarnish",
+          heading: "Anti-Tarnish Earrings for Sensitive Ears",
+          content: "DeNshe earrings are curated for effortless everyday wear and all-day comfort. Featuring durable anti-tarnish finishes, our hoops, studs, and drops resist dulling from daily wear and humidity. Lightweight, skin-friendly, and designed to pair seamlessly with both Western silhouettes and festive Indian wear. Every piece is transparently priced and dispatched with care from Anand, Gujarat across India."
+        }
+      when "kadas"
+        {
+          eyebrow: "Comfort & Daily Wear",
+          heading: "Everyday Anti-Tarnish Kadas & Bangles",
+          content: "From slender everyday cuffs to statement gold-tone kadas, our wristwear is built for real routines. Each piece features an anti-tarnish protective finish so you can go about your day without worrying about quick fading or skin irritation. Stack them together or wear a single piece as your daily signature."
+        }
+      when "rings"
+        {
+          eyebrow: "Everyday Essentials",
+          heading: "Anti-Tarnish Everyday Rings & Bands",
+          content: "Our rings combine adjustable sizing with long-lasting anti-tarnish finishes. Designed for comfortable wear from morning to night, these gold-tone rings and bands add a subtle, enduring sparkle to your hands. Ideal for gifting or building your personal everyday jewellery rotation."
+        }
+      when "bracelets"
+        {
+          eyebrow: "Effortless Stacking",
+          heading: "Anti-Tarnish Bracelets & Wrist Cuffs",
+          content: "Designed for effortless wrist stacking, our anti-tarnish bracelets pair clean links with delicate stone accents. Lightweight, comfortable, and finished to retain their shine through busy days."
+        }
+      when "chain-pendants"
+        {
+          eyebrow: "Minimal Layering",
+          heading: "Minimalist Anti-Tarnish Chains & Pendants",
+          content: "Clean lines, delicate silhouettes, and resilient finishes. DeNshe chains and pendants are crafted to stay radiant through warm weather and daily routines. Layer multiple lengths or wear a solitary pendant for an understated, timeless look."
+        }
+      when "sets", "combo"
+        {
+          eyebrow: "Curated Pairings",
+          heading: "Anti-Tarnish Jewellery Sets & Combos",
+          content: "Complete looks curated to save you styling time. Our anti-tarnish jewellery sets and combos bring harmonious pairings of necklaces, earrings, and accessories at accessible bundle pricing. Ideal for celebrations, weddings, and thoughtful gifts."
+        }
+      when "handchains"
+        {
+          eyebrow: "Traditional & Modern",
+          heading: "Gold-Tone Hand Chains & Hathphool",
+          content: "Graceful hand chains from wrist to finger, crafted for celebrations, festive evenings, and contemporary ethnic styling. Comfortable to wear with secure clasps."
+        }
+      else
+        {
+          eyebrow: "DeNshe Jewellery",
+          heading: "Anti-Tarnish #{category.name} from Anand, Gujarat",
+          content: "Explore anti-tarnish #{category.name.downcase} designed for everyday life. Transparent pricing on every piece, dispatched across India from Anand, Gujarat."
+        }
+      end
+    elsif collection_line
+      if collection_line.western?
+        {
+          eyebrow: "The Modern Edit",
+          heading: "Minimalist Everyday Jewellery",
+          content: "Contemporary, minimal, and versatile. The Modern Edit is designed for office days, casual weekends, and modern daily wear. Anti-tarnish gold-tone pieces that feel personal, light, and effortless."
+        }
+      elsif collection_line.indian?
+        {
+          eyebrow: "The Festive Edit",
+          heading: "Festive & Oxidised Jewellery",
+          content: "Timeless statement pieces crafted for celebrations, weddings, and festive gatherings. Authentic oxidised silver-tones and rich gold finishes designed to complement traditional attire."
+        }
+      end
+    else
+      {
+        eyebrow: "DeNshe Jewellery",
+        heading: "Anti-Tarnish Everyday Jewellery from Anand, Gujarat",
+        content: "Founded with love by two best friends, DeNshe brings you curated anti-tarnish and everyday gold-tone jewellery. Every piece is selected for lasting shine, comfort, and transparent pricing. Orders ship nationwide across all Indian PIN codes from Anand, Gujarat with free shipping on orders above ₹599."
+      }
+    end
+  end
+
   def product_structured_data(product, description:)
     data = {
       "@context" => "https://schema.org",
@@ -364,18 +495,12 @@ module StorefrontHelper
 
     selling = product.price_for(current_market)
     if product.offered_in?(current_market) && selling.to_d.positive?
-      data["offers"] = {
-        "@type" => "Offer",
-        "priceCurrency" => current_market.currency,
-        "price" => format("%.2f", selling),
-        "availability" => (product.available_for_sale? ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"),
-        "itemCondition" => "https://schema.org/NewCondition",
-        "url" => piece_url(product.slug),
-        "seller" => {
-          "@type" => "Organization",
-          "name" => brand.name
-        }
-      }
+      data["offers"] = standard_offer_details(
+        selling,
+        url: piece_url(product.slug),
+        in_stock: product.available_for_sale?,
+        currency: current_market.currency
+      )
     end
 
     data
@@ -396,18 +521,13 @@ module StorefrontHelper
       data["image"] = [ absolute_asset(url_for(gift.display_image)) ]
     end
 
-    data["offers"] = {
-      "@type" => "Offer",
-      "priceCurrency" => "INR",
-      "price" => format("%.2f", gift.price),
-      "availability" => (gift.active? ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"),
-      "itemCondition" => "https://schema.org/NewCondition",
-      "url" => curated_gift_url(gift.slug),
-      "seller" => {
-        "@type" => "Organization",
-        "name" => brand.name
-      }
-    }
+    data["offers"] = standard_offer_details(
+      gift.price,
+      url: curated_gift_url(gift.slug),
+      in_stock: gift.active?,
+      currency: "INR"
+    )
+
     data
   end
 
@@ -420,24 +540,20 @@ module StorefrontHelper
       "brand" => { "@type" => "Brand", "name" => brand.name },
       "category" => "Jewellery Set",
       "url" => combo_url(combo.slug),
-      "offers" => {
-        "@type" => "Offer",
-        "priceCurrency" => "INR",
-        "price" => format("%.2f", combo.price),
-        "availability" => (combo.active? ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"),
-        "itemCondition" => "https://schema.org/NewCondition",
-        "url" => combo_url(combo.slug),
-        "seller" => {
-          "@type" => "Organization",
-          "name" => brand.name
-        }
-      }
+      "offers" => standard_offer_details(
+        combo.price,
+        url: combo_url(combo.slug),
+        in_stock: combo.active?,
+        currency: "INR"
+      )
     }
+
     first_prod = combo.groups.flat_map(&:products).find { |p| p.display_image.present? || (p.images.respond_to?(:attached?) && p.images.attached?) }
     if first_prod
       img = first_prod.display_image || first_prod.images.first
       data["image"] = [ absolute_asset(url_for(img)) ] if img
     end
+
     data
   end
 

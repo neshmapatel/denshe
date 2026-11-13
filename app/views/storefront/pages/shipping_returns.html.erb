@@ -1,9 +1,9 @@
-<% page_title "Shipping & returns" %>
-<% meta description: "Shipping charges, delivery timelines, cancellation rules, and refund policy for DeNshe Jewellery." %>
+<% page_title "Shipping & Delivery Policy, Dispatch Timelines & Returns" %>
+<% meta description: "DeNshe Jewellery shipping policy: Dispatch in 2–4 days from Anand, Gujarat, free shipping above ₹599 across India, tracked delivery & easy cancellation." %>
 <%= structured_data(breadcrumb_structured_data([ { name: "Shipping & Returns", url: shipping_returns_url } ])) %>
 <%= structured_data(
       faq_structured_data([
-        [ "Where does DeNshe Jewellery ship?", "DeNshe Jewellery ships across all pincodes in India from Anand, Gujarat. Orders for Australia also ship from Anand, Gujarat with confirmation." ],
+        [ "Where does DeNshe Jewellery ship?", "DeNshe Jewellery ships across all pincodes in India directly from Anand, Gujarat with active shipment tracking." ],
         [ "What are the shipping charges for domestic orders in India?", "Standard shipping is #{price(brand.standard_shipping)} on orders below #{price(brand.free_shipping_above)}. Shipping is completely free and complimentary on orders of #{price(brand.free_shipping_above)} and above." ],
         [ "What is the dispatch window and delivery timeline?", "Orders are packed and dispatched within #{brand.dispatch_window} after payment confirmation. Estimated delivery time across India is 3 to 7 working days with full shipment tracking provided via email and WhatsApp/SMS." ],
         [ "Can I cancel my order?", "Orders can be cancelled before they are dispatched from our studio by emailing #{brand.email} with your Order Number. Once an order has been dispatched and handed over to the courier partner, it cannot be cancelled." ],

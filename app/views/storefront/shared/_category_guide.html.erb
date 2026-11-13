@@ -1,0 +1,15 @@
+<% guide = category_seo_guide(@category, @collection_line) %>
+<% if guide.present? %>
+  <section class="section section--sand category-guide-section">
+    <div class="page page--narrow">
+      <div class="category-guide">
+        <p class="eyebrow"><%= guide[:eyebrow] %></p>
+        <h2><%= guide[:heading] %></h2>
+        <div class="category-guide__body">
+          <p><%= guide[:content] %></p>
+        </div>
+      </div>
+    </div>
+  </section>
+<% end %>
+

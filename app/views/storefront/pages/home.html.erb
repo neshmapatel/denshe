@@ -1,25 +1,39 @@
-<% page_title "Gold-tone earrings and everyday jewellery" %>
+<% page_title "Anti-Tarnish and Everyday Gold-Tone Jewellery" %>
 <% content_for :head do %>
   <link rel="preload" as="image" href="<%= image_path("denshe-wordmark-ivory.png") %>" fetchpriority="high">
 <% end %>
-<% meta description: "Jewellery from Anand, Gujarat. Gold-tone and anti-tarnish earrings, kadas, rings, and chains, with the price on every piece." %>
+<% meta description: "Discover DeNshe: anti-tarnish and everyday gold-tone jewellery from Anand, Gujarat. Earrings, kadas, rings, chains, and curated gift potlis." %>
 <%= structured_data(
       "@context" => "https://schema.org",
       "@graph" => [
         {
-          "@type" => "Organization",
+          "@type" => [ "Organization", "JewelryStore", "OnlineStore" ],
           "name" => brand.name,
           "url" => root_url,
           "logo" => absolute_asset(image_url("denshe-logo.jpg")),
           "email" => brand.email,
           "telephone" => brand.phone,
+          "priceRange" => "₹₹",
           "address" => {
             "@type" => "PostalAddress",
+            "streetAddress" => brand.operating_address,
             "addressLocality" => "Anand",
             "addressRegion" => "Gujarat",
             "postalCode" => "388001",
             "addressCountry" => "IN"
           },
+          "founder" => [
+            {
+              "@type" => "Person",
+              "name" => "Neshma",
+              "jobTitle" => "Co-Founder"
+            },
+            {
+              "@type" => "Person",
+              "name" => "Devanshi",
+              "jobTitle" => "Co-Founder"
+            }
+          ],
           "sameAs" => [ instagram_url ].compact
         },
         {
