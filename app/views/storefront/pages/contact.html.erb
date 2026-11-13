@@ -1,5 +1,5 @@
-<% page_title "Contact" %>
-<% meta description: "Write to DeNshe Jewellery in Anand, Gujarat about a piece, curated gifting, or an order. We answer by email#{brand.whatsapp.present? ? " and WhatsApp" : ""}." %>
+<% page_title "Contact · Customer Care & Gifting Inquiries in Anand, Gujarat" %>
+<% meta description: "Contact DeNshe Jewellery in Anand, Gujarat. Inquire about anti-tarnish everyday jewellery, curated gift potlis, custom orders, or customer support via WhatsApp & email." %>
 <%= structured_data(breadcrumb_structured_data([ { name: "Contact", url: contact_url } ])) %>
 <%= structured_data(
       "@context" => "https://schema.org",
@@ -12,10 +12,11 @@
         "image" => absolute_asset(image_url("denshe-logo.jpg")),
         "telephone" => brand.phone,
         "email" => brand.email,
+        "priceRange" => "₹₹",
         "address" => {
           "@type" => "PostalAddress",
           "streetAddress" => brand.operating_address,
-          "addressLocality" => brand.city,
+          "addressLocality" => "Anand",
           "addressRegion" => "Gujarat",
           "postalCode" => "388001",
           "addressCountry" => "IN"
@@ -24,7 +25,7 @@
           "@type" => "ContactPoint",
           "telephone" => brand.phone,
           "contactType" => "customer service",
-          "areaServed" => [ "IN", "AU" ],
+          "areaServed" => "IN",
           "availableLanguage" => [ "English", "Gujarati", "Hindi" ]
         }
       }
