@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_23_165000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_122752) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -85,6 +85,49 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_165000) do
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_admin_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_admin_users_on_reset_password_token", unique: true
+  end
+
+  create_table "ahoy_events", force: :cascade do |t|
+    t.string "name"
+    t.jsonb "properties"
+    t.datetime "time"
+    t.bigint "user_id"
+    t.bigint "visit_id"
+    t.index ["name", "time"], name: "index_ahoy_events_on_name_and_time"
+    t.index ["properties"], name: "index_ahoy_events_on_properties", opclass: :jsonb_path_ops, using: :gin
+    t.index ["user_id"], name: "index_ahoy_events_on_user_id"
+    t.index ["visit_id"], name: "index_ahoy_events_on_visit_id"
+  end
+
+  create_table "ahoy_visits", force: :cascade do |t|
+    t.string "app_version"
+    t.string "browser"
+    t.string "city"
+    t.string "country"
+    t.string "device_type"
+    t.string "ip"
+    t.text "landing_page"
+    t.float "latitude"
+    t.float "longitude"
+    t.string "os"
+    t.string "os_version"
+    t.string "platform"
+    t.text "referrer"
+    t.string "referring_domain"
+    t.string "region"
+    t.datetime "started_at"
+    t.text "user_agent"
+    t.bigint "user_id"
+    t.string "utm_campaign"
+    t.string "utm_content"
+    t.string "utm_medium"
+    t.string "utm_source"
+    t.string "utm_term"
+    t.string "visit_token"
+    t.string "visitor_token"
+    t.index ["user_id"], name: "index_ahoy_visits_on_user_id"
+    t.index ["visit_token"], name: "index_ahoy_visits_on_visit_token", unique: true
+    t.index ["visitor_token", "started_at"], name: "index_ahoy_visits_on_visitor_token_and_started_at"
   end
 
   create_table "cart_holds", force: :cascade do |t|
@@ -264,6 +307,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_165000) do
 
   create_table "orders", force: :cascade do |t|
     t.text "admin_notes"
+    t.bigint "ahoy_visit_id"
     t.decimal "amount_paid", precision: 10, scale: 2
     t.bigint "billing_address_id"
     t.integer "channel", default: 0, null: false
@@ -294,6 +338,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_165000) do
     t.decimal "voucher_discount", precision: 10, scale: 2, default: "0.0", null: false
     t.bigint "voucher_id"
     t.string "voucher_name"
+    t.index ["ahoy_visit_id"], name: "index_orders_on_ahoy_visit_id"
     t.index ["billing_address_id"], name: "index_orders_on_billing_address_id"
     t.index ["channel"], name: "index_orders_on_channel"
     t.index ["coupon_id"], name: "index_orders_on_coupon_id"
@@ -626,6 +671,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_165000) do
   add_foreign_key "order_items", "products"
   add_foreign_key "orders", "addresses", column: "billing_address_id"
   add_foreign_key "orders", "addresses", column: "shipping_address_id"
+  add_foreign_key "orders", "ahoy_visits"
   add_foreign_key "orders", "coupons", on_delete: :nullify
   add_foreign_key "orders", "customers"
   add_foreign_key "orders", "vouchers", on_delete: :nullify

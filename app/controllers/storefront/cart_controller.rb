@@ -12,6 +12,7 @@ module Storefront
 
       case current_cart.add(product)
       when :added
+        ahoy.track("Added to cart", product_id: product.id, name: product.name, price: product.selling_price.to_f)
         redirect_back fallback_location: shop_path, notice: "#{product.name} is selected."
       when :held
         redirect_back fallback_location: shop_path, alert: "Someone has already added #{product.name} to their cart."
@@ -32,6 +33,7 @@ module Storefront
 
       case current_cart.add_combo(combo, picks)
       when :added
+        ahoy.track("Added look to cart", combo_id: combo.id, name: combo.name, price: combo.price.to_f)
         redirect_to cart_path, notice: "#{combo.name} is selected."
       when :incomplete
         redirect_to combo_path(combo.slug), alert: "Choose #{combo.choice_summary}."

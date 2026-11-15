@@ -22,6 +22,30 @@ module Storefront
     def shipping_returns
     end
 
+    def karamsad
+      @featured_pieces = Product.catalogue_for(current_market)
+        .with_storefront_includes
+        .where(status: :active)
+        .order(Arel.sql("CASE WHEN products.stock_quantity > 0 THEN 0 ELSE 1 END, products.bestseller DESC, products.featured DESC, products.created_at DESC"))
+        .limit(8)
+    end
+
+    def anand
+      @featured_pieces = Product.catalogue_for(current_market)
+        .with_storefront_includes
+        .where(status: :active)
+        .order(Arel.sql("CASE WHEN products.stock_quantity > 0 THEN 0 ELSE 1 END, products.bestseller DESC, products.featured DESC, products.created_at DESC"))
+        .limit(8)
+    end
+
+    def vidya_nagar
+      @featured_pieces = Product.catalogue_for(current_market)
+        .with_storefront_includes
+        .where(status: :active)
+        .order(Arel.sql("CASE WHEN products.stock_quantity > 0 THEN 0 ELSE 1 END, products.selling_price ASC, products.featured DESC"))
+        .limit(8)
+    end
+
     def jewellery_box
     end
 

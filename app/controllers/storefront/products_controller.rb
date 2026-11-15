@@ -36,6 +36,7 @@ module Storefront
         return
       end
 
+      ahoy.track("Viewed piece", product_id: @product.id, name: @product.name, slug: @product.slug)
       @related = related_pieces
     end
 

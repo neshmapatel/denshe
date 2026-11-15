@@ -41,6 +41,9 @@ class StorefrontFlowTest < ActionDispatch::IntegrationTest
     assert_match piece_url(@product.slug), response.body
     assert_match catalogue_url, response.body
     assert_match collection_url("western"), response.body
+    assert_match jewellery_in_karamsad_url, response.body
+    assert_match jewellery_in_anand_url, response.body
+    assert_match jewellery_in_vidya_nagar_url, response.body
     assert_no_match %r{/cart}, response.body
     assert_no_match %r{/admin}, response.body
 

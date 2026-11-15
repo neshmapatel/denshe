@@ -1,0 +1,192 @@
+<% page_title "Anti-Tarnish Jewellery in Anand, Gujarat · Home Studio & Local Delivery" %>
+<% meta description: "Curated anti-tarnish and everyday jewellery based in Anand, Gujarat. Visit our Anand home studio by appointment or order online for fast local delivery across Anand & Charotar." %>
+
+<%= structured_data(breadcrumb_structured_data([
+      { name: "Home", url: root_url },
+      { name: "Jewellery in Anand", url: jewellery_in_anand_url }
+    ])) %>
+
+<%= structured_data(
+      "@context" => "https://schema.org",
+      "@type" => [ "JewelryStore", "LocalBusiness" ],
+      "name" => "#{brand.name} — Anand Studio",
+      "url" => jewellery_in_anand_url,
+      "image" => absolute_asset(image_url("denshe-logo.jpg")),
+      "telephone" => brand.phone,
+      "email" => brand.email,
+      "priceRange" => "₹₹",
+      "address" => {
+        "@type" => "PostalAddress",
+        "streetAddress" => brand.operating_address,
+        "addressLocality" => "Anand",
+        "addressRegion" => "Gujarat",
+        "postalCode" => "388001",
+        "addressCountry" => "IN"
+      },
+      "geo" => {
+        "@type" => "GeoCoordinates",
+        "latitude": 22.5645,
+        "longitude": 72.9289
+      },
+      "areaServed" => [
+        { "@type": "City", "name": "Anand" },
+        { "@type": "City", "name": "Vallabh Vidyanagar" },
+        { "@type": "AdministrativeArea", "name": "Gujarat" }
+      ],
+      "openingHoursSpecification" => [
+        {
+          "@type" => "OpeningHoursSpecification",
+          "dayOfWeek" => [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ],
+          "opens" => "10:00",
+          "closes" => "18:00"
+        }
+      ],
+      "sameAs" => [ instagram_url ].compact
+    ) %>
+
+<%= structured_data(faq_structured_data([
+      [
+        "Where is DeNshe located in Anand?",
+        "DeNshe is an independent jewellery brand based in Anand, Gujarat (PIN 388001). We operate from our home studio, and customers from Anand and nearby towns are welcome to visit by appointment to view and try on pieces."
+      ],
+      [
+        "Can I visit the DeNshe home studio to see jewellery before buying?",
+        "Yes, absolutely! We love meeting local shoppers. Simply send us a message on WhatsApp (+91 9586488320) or call us to set up a convenient time to drop by, try pieces on, and shop in person."
+      ],
+      [
+        "How does local delivery work in Anand and Charotar?",
+        "Because we dispatch directly from Anand, local orders can be delivered to your doorstep within hours or the next day. You can also opt for self-pickup directly from our studio."
+      ],
+      [
+        "Is DeNshe jewellery truly anti-tarnish and sweat-resistant?",
+        "Yes. Our everyday jewellery collection is curated specifically for daily wear and Indian climate conditions. The finishes resist dulling from humidity and daily wear, and are skin-friendly for sensitive ears."
+      ]
+    ])) %>
+
+<header class="page-intro page-intro--ink">
+  <div class="page page--narrow">
+    <p class="eyebrow">Anand, Gujarat · Home Studio & Dispatch</p>
+    <h1>Anti-tarnish jewellery, right here in Anand.</h1>
+    <p class="lede">
+      Crafted and curated for everyday life. Lasting gold-tone shine that withstands daily routines, college mornings, and Gujarat weather without tarnishing or irritating your skin.
+    </p>
+    <div class="page-intro__actions" style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+      <%= link_to shop_path, class: "btn btn--ivory btn--solid" do %>
+        <span>Browse All Pieces</span>
+      <% end %>
+      <% if whatsapp_url %>
+        <%= link_to whatsapp_url("Hello DeNshe, I am based in Anand and would like to inquire about visiting your home studio / order pickup."), target: "_blank", rel: "noopener", class: "btn btn--ivory" do %>
+          <span>Schedule Studio Visit (WhatsApp)</span>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</header>
+
+<section class="section section--tight">
+  <div class="page">
+    <div class="contact-grid">
+      <article class="contact-card">
+        <p class="eyebrow">Visit in Anand</p>
+        <h3>Home Studio Visits</h3>
+        <p>
+          Prefer to feel the weight and try pieces in person? You are always welcome at our Anand home studio. Message us on WhatsApp to coordinate a relaxed visit.
+        </p>
+        <% if whatsapp_url %>
+          <p style="margin-top: 0.75rem;">
+            <%= link_to "Book a visit on WhatsApp →", whatsapp_url("Hello DeNshe, I'd like to book a time to visit your studio in Anand."), target: "_blank", rel: "noopener" %>
+          </p>
+        <% end %>
+      </article>
+
+      <article class="contact-card">
+        <p class="eyebrow">Fast Charotar Fulfilment</p>
+        <h3>Same-Day Dispatch & Pickup</h3>
+        <p>
+          Need a piece today for a gift or celebration? We dispatch right from Anand. Local orders can be delivered directly to your door or collected from our studio.
+        </p>
+        <p style="margin-top: 0.75rem;">
+          <%= link_to "Explore our catalogue →", catalogue_path %>
+        </p>
+      </article>
+
+      <article class="contact-card">
+        <p class="eyebrow">Skin-Friendly Quality</p>
+        <h3>Tested for Everyday Wear</h3>
+        <p>
+          Every piece is selected for lasting gold-tone finish and comfort. Lightweight, water-resistant, and gentle on sensitive ears with transparent pricing.
+        </p>
+        <p style="margin-top: 0.75rem;">
+          <%= link_to "Read our care guide →", care_path %>
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<% if @featured_pieces.present? && @featured_pieces.any? %>
+  <section class="section">
+    <div class="page">
+      <header class="section-head">
+        <div class="section-head__text">
+          <p class="eyebrow">In-Stock Favourites</p>
+          <h2>Trending everyday pieces in Anand.</h2>
+          <p class="lede">Curated for daily wear, festive styling, and effortless gifts.</p>
+        </div>
+        <div class="section-head__action">
+          <%= link_to shop_path, class: "btn" do %>
+            <span>View All <%= Product.active.count %> Pieces →</span>
+          <% end %>
+        </div>
+      </header>
+
+      <div class="product-grid">
+        <% @featured_pieces.each do |product| %>
+          <%= render "storefront/shared/piece", product: product %>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>
+
+<section class="section section--tight" style="background: var(--surface-subtle, #fbfbf9); padding: 3rem 0; border-top: 1px solid var(--border-subtle, rgba(24, 24, 104, 0.08));">
+  <div class="page page--narrow">
+    <header class="section-head" style="margin-bottom: 2rem;">
+      <div class="section-head__text">
+        <p class="eyebrow">Frequently Asked Questions</p>
+        <h2>Shopping with DeNshe in Anand</h2>
+      </div>
+    </header>
+
+    <div class="faq-list" style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <article class="faq-item">
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.35rem;">Where is DeNshe located in Anand?</h3>
+        <p style="color: var(--ink-secondary, #4a4a68); line-height: 1.6;">
+          DeNshe is an independent jewellery brand founded by Neshma and Devanshi, operating from our home studio in Anand (PIN 388001). Local customers are warmly welcome to visit by appointment.
+        </p>
+      </article>
+
+      <article class="faq-item">
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.35rem;">Can I collect my order in person?</h3>
+        <p style="color: var(--ink-secondary, #4a4a68); line-height: 1.6;">
+          Yes! You can order online or message us directly on WhatsApp to arrange convenient pickup from our Anand location without waiting for courier transit.
+        </p>
+      </article>
+
+      <article class="faq-item">
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.35rem;">Do you deliver to nearby towns like Vallabh Vidyanagar?</h3>
+        <p style="color: var(--ink-secondary, #4a4a68); line-height: 1.6;">
+          Yes, we serve Anand and nearby towns like Vallabh Vidyanagar with swift delivery, and ship nationwide across all Indian PIN codes with free shipping on orders above ₹599.
+        </p>
+      </article>
+
+      <article class="faq-item">
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.35rem;">Is your jewellery safe for sensitive ears?</h3>
+        <p style="color: var(--ink-secondary, #4a4a68); line-height: 1.6;">
+          Our anti-tarnish earrings and cuffs are selected for sensitive skin. They are lightweight, comfortable, and finished to retain their shine through daily wear.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+

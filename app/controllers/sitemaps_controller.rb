@@ -16,6 +16,9 @@ class SitemapsController < ApplicationController
       entry(story_url, changefreq: "monthly", priority: "0.6"),
       entry(care_url, changefreq: "monthly", priority: "0.6"),
       entry(contact_url, changefreq: "monthly", priority: "0.6"),
+      entry(jewellery_in_karamsad_url, changefreq: "weekly", priority: "0.8", lastmod: Product.maximum(:updated_at)),
+      entry(jewellery_in_anand_url, changefreq: "weekly", priority: "0.8", lastmod: Product.maximum(:updated_at)),
+      entry(jewellery_in_vidya_nagar_url, changefreq: "weekly", priority: "0.8", lastmod: Product.maximum(:updated_at)),
       entry(shipping_returns_url, changefreq: "monthly", priority: "0.5"),
       entry(privacy_url, changefreq: "monthly", priority: "0.3"),
       entry(terms_url, changefreq: "monthly", priority: "0.3")

@@ -86,3 +86,5 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
+
+gem "ahoy_matey", "~> 5.4"

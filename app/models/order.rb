@@ -5,6 +5,7 @@ class Order < ApplicationRecord
   belongs_to :customer, optional: true
   belongs_to :coupon, optional: true
   belongs_to :voucher, optional: true
+  belongs_to :ahoy_visit, class_name: "Ahoy::Visit", optional: true
 
   attr_accessor :new_customer_name, :new_customer_email, :new_customer_phone
   belongs_to :shipping_address, class_name: "Address", optional: true

@@ -1,0 +1,193 @@
+<% page_title "Anti-Tarnish Jewellery in Karamsad, Gujarat · Home Studio & Local Delivery" %>
+<% meta description: "Discover curated anti-tarnish and everyday jewellery based in Karamsad, Gujarat. Visit our Karamsad home studio by appointment or order online for same-day local pickup and delivery." %>
+
+<%= structured_data(breadcrumb_structured_data([
+      { name: "Home", url: root_url },
+      { name: "Jewellery in Karamsad", url: jewellery_in_karamsad_url }
+    ])) %>
+
+<%= structured_data(
+      "@context" => "https://schema.org",
+      "@type" => [ "JewelryStore", "LocalBusiness" ],
+      "name" => "#{brand.name} — Karamsad Studio",
+      "url" => jewellery_in_karamsad_url,
+      "image" => absolute_asset(image_url("denshe-logo.jpg")),
+      "telephone" => brand.phone,
+      "email" => brand.email,
+      "priceRange" => "₹₹",
+      "address" => {
+        "@type" => "PostalAddress",
+        "streetAddress" => "Karamsad, Anand District",
+        "addressLocality" => "Karamsad",
+        "addressRegion" => "Gujarat",
+        "postalCode" => "388325",
+        "addressCountry" => "IN"
+      },
+      "geo" => {
+        "@type" => "GeoCoordinates",
+        "latitude": 22.5487,
+        "longitude": 72.9038
+      },
+      "areaServed" => [
+        { "@type": "City", "name": "Karamsad" },
+        { "@type": "City", "name": "Anand" },
+        { "@type": "City", "name": "Vallabh Vidyanagar" },
+        { "@type": "AdministrativeArea", "name": "Gujarat" }
+      ],
+      "openingHoursSpecification" => [
+        {
+          "@type" => "OpeningHoursSpecification",
+          "dayOfWeek" => [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ],
+          "opens" => "10:00",
+          "closes" => "18:00"
+        }
+      ],
+      "sameAs" => [ instagram_url ].compact
+    ) %>
+
+<%= structured_data(faq_structured_data([
+      [
+        "Where is DeNshe based in Karamsad?",
+        "DeNshe is based in Karamsad, Gujarat. We operate from our home studio here, and local customers from Karamsad, Anand, and Vidya Nagar are warmly welcome to visit by appointment."
+      ],
+      [
+        "Can I visit the home studio in Karamsad to try on jewellery?",
+        "Yes! Because we are based in Karamsad, you can easily message us on WhatsApp (+91 9586488320) to arrange a convenient time to drop by, view the collections in person, and find the right pieces."
+      ],
+      [
+        "Can I pick up my order in Karamsad instead of waiting for shipping?",
+        "Yes, self-pickup is available directly from our Karamsad studio. You can also request same-day doorstep drop-off across Karamsad and nearby areas."
+      ],
+      [
+        "Are the pieces resistant to water and humidity?",
+        "Yes, our anti-tarnish collection is specifically selected for daily durability in Gujarat's climate. The gold-tone finish resists sweat and moisture, and is gentle on sensitive skin."
+      ]
+    ])) %>
+
+<header class="page-intro page-intro--ink">
+  <div class="page page--narrow">
+    <p class="eyebrow">Karamsad, Gujarat · Home Studio & Founder Base</p>
+    <h1>Anti-tarnish jewellery, based right here in Karamsad.</h1>
+    <p class="lede">
+      Effortless, personal, and made for daily wear. Founded by two friends with our home studio right here in Karamsad—welcome to visit by appointment, pick up orders instantly, or enjoy fast local delivery.
+    </p>
+    <div class="page-intro__actions" style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+      <%= link_to shop_path, class: "btn btn--ivory btn--solid" do %>
+        <span>Browse All Pieces</span>
+      <% end %>
+      <% if whatsapp_url %>
+        <%= link_to whatsapp_url("Hello DeNshe, I am in Karamsad and would like to arrange a studio visit / order pickup."), target: "_blank", rel: "noopener", class: "btn btn--ivory" do %>
+          <span>Schedule Studio Visit (WhatsApp)</span>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</header>
+
+<section class="section section--tight">
+  <div class="page">
+    <div class="contact-grid">
+      <article class="contact-card">
+        <p class="eyebrow">Visit in Karamsad</p>
+        <h3>Home Studio Appointments</h3>
+        <p>
+          Prefer trying pieces on in person? We love hosting local shoppers at our Karamsad home studio. Send us a message on WhatsApp to coordinate a relaxed visit.
+        </p>
+        <% if whatsapp_url %>
+          <p style="margin-top: 0.75rem;">
+            <%= link_to "Book a visit on WhatsApp →", whatsapp_url("Hello DeNshe, I'd like to book a time to visit your Karamsad studio."), target: "_blank", rel: "noopener" %>
+          </p>
+        <% end %>
+      </article>
+
+      <article class="contact-card">
+        <p class="eyebrow">Instant Fulfilment</p>
+        <h3>Same-Day Pickup & Delivery</h3>
+        <p>
+          Need a last-minute gift or a piece for an evening function? Collect it directly from our Karamsad location, or ask for same-day delivery across Karamsad, Vidya Nagar, and Anand.
+        </p>
+        <p style="margin-top: 0.75rem;">
+          <%= link_to "View complete catalogue →", catalogue_path %>
+        </p>
+      </article>
+
+      <article class="contact-card">
+        <p class="eyebrow">Skin-Safe Daily Wear</p>
+        <h3>Anti-Tarnish & Hypoallergenic</h3>
+        <p>
+          Each design is curated for sensitive skin and real everyday routines. Lightweight hoops, kadas, and rings that keep their golden radiance season after season.
+        </p>
+        <p style="margin-top: 0.75rem;">
+          <%= link_to "Read our story →", story_path %>
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<% if @featured_pieces.present? && @featured_pieces.any? %>
+  <section class="section">
+    <div class="page">
+      <header class="section-head">
+        <div class="section-head__text">
+          <p class="eyebrow">In-Stock Favourites</p>
+          <h2>Popular everyday pieces in Karamsad.</h2>
+          <p class="lede">Anti-tarnish earrings, daily kadas, and curated gift boxes ready for pickup or delivery.</p>
+        </div>
+        <div class="section-head__action">
+          <%= link_to shop_path, class: "btn" do %>
+            <span>View All <%= Product.active.count %> Pieces →</span>
+          <% end %>
+        </div>
+      </header>
+
+      <div class="product-grid">
+        <% @featured_pieces.each do |product| %>
+          <%= render "storefront/shared/piece", product: product %>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>
+
+<section class="section section--tight" style="background: var(--surface-subtle, #fbfbf9); padding: 3rem 0; border-top: 1px solid var(--border-subtle, rgba(24, 24, 104, 0.08));">
+  <div class="page page--narrow">
+    <header class="section-head" style="margin-bottom: 2rem;">
+      <div class="section-head__text">
+        <p class="eyebrow">Frequently Asked Questions</p>
+        <h2>Shopping with DeNshe in Karamsad</h2>
+      </div>
+    </header>
+
+    <div class="faq-list" style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <article class="faq-item">
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.35rem;">Can I collect my order directly in Karamsad?</h3>
+        <p style="color: var(--ink-secondary, #4a4a68); line-height: 1.6;">
+          Yes! You can order online and choose local pickup or message us on WhatsApp (+91 9586488320) to pick up your jewellery directly from our Karamsad base, saving all courier transit time.
+        </p>
+      </article>
+
+      <article class="faq-item">
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.35rem;">Can I visit in person to try pieces on?</h3>
+        <p style="color: var(--ink-secondary, #4a4a68); line-height: 1.6;">
+          Yes, our home studio in Karamsad welcomes visitors by appointment. Send us a message on WhatsApp and we will set up a time for you to view the pieces at your leisure.
+        </p>
+      </article>
+
+      <article class="faq-item">
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.35rem;">Do you deliver to nearby towns from Karamsad?</h3>
+        <p style="color: var(--ink-secondary, #4a4a68); line-height: 1.6;">
+          Yes! We offer fast local delivery to Karamsad, Vallabh Vidyanagar, Anand, Bakrol, Borsad, and nationwide shipping across all Indian PIN codes with free delivery on orders above ₹599.
+        </p>
+      </article>
+
+      <article class="faq-item">
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.35rem;">How do I care for my anti-tarnish jewellery?</h3>
+        <p style="color: var(--ink-secondary, #4a4a68); line-height: 1.6;">
+          Our pieces are durable and water-resistant for daily wear. Keep them away from harsh perfumes, store them in the airtight pouch or box provided when not in use, and wipe with a soft dry cloth.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+

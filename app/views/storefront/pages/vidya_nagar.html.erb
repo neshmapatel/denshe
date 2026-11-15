@@ -1,0 +1,169 @@
+<% page_title "Everyday & Anti-Tarnish Jewellery in Vallabh Vidyanagar · College & Daily Wear" %>
+<% meta description: "Affordable anti-tarnish everyday jewellery in Vallabh Vidyanagar. Lightweight hoops, rings, and chains perfect for college lectures and café dates, with fast delivery from Anand." %>
+
+<%= structured_data(breadcrumb_structured_data([
+      { name: "Home", url: root_url },
+      { name: "Jewellery in Vallabh Vidyanagar", url: jewellery_in_vidya_nagar_url }
+    ])) %>
+
+<%= structured_data(
+      "@context" => "https://schema.org",
+      "@type" => [ "JewelryStore", "LocalBusiness" ],
+      "name" => "#{brand.name} — Vallabh Vidyanagar",
+      "url" => jewellery_in_vidya_nagar_url,
+      "image" => absolute_asset(image_url("denshe-logo.jpg")),
+      "telephone" => brand.phone,
+      "email" => brand.email,
+      "priceRange" => "₹₹",
+      "address" => {
+        "@type" => "PostalAddress",
+        "streetAddress" => brand.operating_address,
+        "addressLocality" => "Anand",
+        "addressRegion" => "Gujarat",
+        "postalCode" => "388001",
+        "addressCountry" => "IN"
+      },
+      "areaServed" => [
+        { "@type": "City", "name": "Vallabh Vidyanagar" },
+        { "@type": "City", "name": "Anand" }
+      ],
+      "sameAs" => [ instagram_url ].compact
+    ) %>
+
+<%= structured_data(faq_structured_data([
+      [
+        "How quickly can I get DeNshe jewellery delivered in Vallabh Vidyanagar?",
+        "Because our studio and dispatch hub are right next door in Anand, orders to Vallabh Vidyanagar are delivered quickly—typically same-day or next-day. Same-day collection from our Anand location is also available."
+      ],
+      [
+        "Will the jewellery tarnish during daily college wear in humid weather?",
+        "Our anti-tarnish pieces are crafted specifically to resist dulling from sweat, humidity, and active daily routines. You can wear them to lectures, labs, and evening café hangouts without worrying about discoloration."
+      ],
+      [
+        "Do you have budget-friendly options for college students?",
+        "Yes! Our daily wear earrings, minimal rings, and layering chains start at accessible price points with transparent pricing on every piece. We also offer curated gift potlis and mystery boxes starting from ₹499."
+      ],
+      [
+        "Can I send a surprise jewellery gift to a friend's hostel in Vidya Nagar?",
+        "Yes! Our curated gift potlis and keepsake jars come beautifully packed and ready to gift. You can add a personal note and we will deliver it directly to their doorstep or hostel."
+      ]
+    ])) %>
+
+<header class="page-intro page-intro--ink">
+  <div class="page page--narrow">
+    <p class="eyebrow">Vallabh Vidyanagar · Campus & Everyday Edit</p>
+    <h1>Everyday jewellery that keeps up with college life.</h1>
+    <p class="lede">
+      Anti-tarnish hoops, stackable rings, and effortless chains. Designed to go from 8 AM lectures to evening café dates in Vidya Nagar without fading, green skin, or fuss.
+    </p>
+    <div class="page-intro__actions" style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+      <%= link_to shop_path, class: "btn btn--ivory btn--solid" do %>
+        <span>Shop Everyday Pieces</span>
+      <% end %>
+      <%= link_to potlis_and_jars_path, class: "btn btn--ivory" do %>
+        <span>Gifting Jars from ₹499</span>
+      <% end %>
+    </div>
+  </div>
+</header>
+
+<section class="section section--tight">
+  <div class="page">
+    <div class="contact-grid">
+      <article class="contact-card">
+        <p class="eyebrow">College to Café</p>
+        <h3>Sweat & Tarnish Resistant</h3>
+        <p>
+          Rushing between classes or hanging out at Nana Bazar? Our anti-tarnish gold-tone finish stays bright without dulling or reacting with sensitive skin.
+        </p>
+        <p style="margin-top: 0.75rem;">
+          <%= link_to "View earrings collection →", collection_path("earrings") %>
+        </p>
+      </article>
+
+      <article class="contact-card">
+        <p class="eyebrow">Minutes From Campus</p>
+        <h3>Fast Local Delivery to VV Nagar</h3>
+        <p>
+          Dispatched from our Anand studio just minutes away. Direct delivery to your hostel, PG, or home in Vidya Nagar, or pick up your order in person.
+        </p>
+        <% if whatsapp_url %>
+          <p style="margin-top: 0.75rem;">
+            <%= link_to "WhatsApp order assistance →", whatsapp_url("Hello DeNshe, I am in Vallabh Vidyanagar and have a question about delivery."), target: "_blank", rel: "noopener" %>
+          </p>
+        <% end %>
+      </article>
+
+      <article class="contact-card">
+        <p class="eyebrow">Roommate & Bestie Gifting</p>
+        <h3>Curated Jars from ₹499</h3>
+        <p>
+          Need a birthday surprise or festive gift? Our handcrafted jewellery jars and potlis come pre-packaged with beautiful presentation and honest pricing.
+        </p>
+        <p style="margin-top: 0.75rem;">
+          <%= link_to "Explore Potlis & Jars →", potlis_and_jars_path %>
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<% if @featured_pieces.present? && @featured_pieces.any? %>
+  <section class="section">
+    <div class="page">
+      <header class="section-head">
+        <div class="section-head__text">
+          <p class="eyebrow">Student & Daily Favourites</p>
+          <h2>Effortless pieces for Vidya Nagar daily wear.</h2>
+          <p class="lede">Lightweight, comfortable, and easy to style with any outfit.</p>
+        </div>
+        <div class="section-head__action">
+          <%= link_to shop_path, class: "btn" do %>
+            <span>Explore All Pieces →</span>
+          <% end %>
+        </div>
+      </header>
+
+      <div class="product-grid">
+        <% @featured_pieces.each do |product| %>
+          <%= render "storefront/shared/piece", product: product %>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>
+
+<section class="section section--tight" style="background: var(--surface-subtle, #fbfbf9); padding: 3rem 0; border-top: 1px solid var(--border-subtle, rgba(24, 24, 104, 0.08));">
+  <div class="page page--narrow">
+    <header class="section-head" style="margin-bottom: 2rem;">
+      <div class="section-head__text">
+        <p class="eyebrow">Got Questions?</p>
+        <h2>Vallabh Vidyanagar Orders & Delivery</h2>
+      </div>
+    </header>
+
+    <div class="faq-list" style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <article class="faq-item">
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.35rem;">Can you deliver to college hostels or PGs in Vidya Nagar?</h3>
+        <p style="color: var(--ink-secondary, #4a4a68); line-height: 1.6;">
+          Yes! We deliver across Vallabh Vidyanagar including college hostels, PGs, and private flats. Simply enter your delivery details at checkout or message us on WhatsApp.
+        </p>
+      </article>
+
+      <article class="faq-item">
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.35rem;">Can I visit in person to try on earrings?</h3>
+        <p style="color: var(--ink-secondary, #4a4a68); line-height: 1.6;">
+          Definitely. Our Anand home studio is just a quick 10-minute drive from Vidya Nagar. Drop us a WhatsApp message and we will welcome you to check out all the pieces.
+        </p>
+      </article>
+
+      <article class="faq-item">
+        <h3 style="font-size: 1.15rem; margin-bottom: 0.35rem;">What payment methods are supported?</h3>
+        <p style="color: var(--ink-secondary, #4a4a68); line-height: 1.6;">
+          We accept all major UPI apps (Google Pay, PhonePe, Paytm), credit/debit cards, and net banking through our secure Razorpay checkout.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+

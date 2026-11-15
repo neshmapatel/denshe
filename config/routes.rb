@@ -54,6 +54,12 @@ Rails.application.routes.draw do
     get "privacy", to: "pages#privacy", as: :privacy
     get "terms", to: "pages#terms", as: :terms
     get "shipping-and-returns", to: "pages#shipping_returns", as: :shipping_returns
+    get "jewellery-in-karamsad", to: "pages#karamsad", as: :jewellery_in_karamsad
+    get "pages/jewellery-in-karamsad", to: redirect("/jewellery-in-karamsad")
+    get "jewellery-in-anand", to: "pages#anand", as: :jewellery_in_anand
+    get "pages/jewellery-in-anand", to: redirect("/jewellery-in-anand")
+    get "jewellery-in-vidya-nagar", to: "pages#vidya_nagar", as: :jewellery_in_vidya_nagar
+    get "pages/jewellery-in-vidya-nagar", to: redirect("/jewellery-in-vidya-nagar")
   end
 
   get "search", to: redirect { |_params, request| "/shop?#{request.query_string}" }
