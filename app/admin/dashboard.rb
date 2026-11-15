@@ -51,6 +51,18 @@ ActiveAdmin.register_page "Dashboard" do
       end
     end
 
+    panel "Instagram & Marketing Attribution" do
+      insta_visits = Ahoy::Visit.from_instagram.count
+      insta_orders = Order.joins(:ahoy_visit).merge(Ahoy::Visit.from_instagram)
+      insta_revenue = insta_orders.revenue_paid.sum(:total)
+      ul do
+        li "Instagram visitors: #{insta_visits}"
+        li "Instagram orders: #{insta_orders.count}"
+        li "Instagram revenue: ₹#{insta_revenue}"
+        li { span link_to "Open Marketing Attribution Dashboard →", admin_marketing_attribution_path }
+      end
+    end
+
     panel "Low stock" do
       products = Product.low_stock.includes(:category).order(:stock_quantity).limit(8)
       if products.any?

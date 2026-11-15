@@ -12,9 +12,11 @@ module Storefront
       @checkout = Checkout.from_params(checkout_params)
       @checkout.market = current_market
       @checkout.allow_shipping_waiver = admin_user_signed_in?
+      @checkout.ahoy_visit = current_visit
       order = @checkout.place!(current_cart)
 
       if order
+        ahoy.track("Placed order", order_id: order.id, order_number: order.number, total: order.total.to_f)
         order.order_items.each { |item| current_cart.remove(item.product) if item.product }
         current_cart.clear
         session[:order_id] = order.id

@@ -57,7 +57,7 @@ class Checkout
   validates :billing_pin_code, format: { with: /\A\d{4}\z/, message: "must be a 4-digit postcode" }, allow_blank: true, if: ->(checkout) { checkout.australia? && !checkout.billing_same }
   validates :billing_state, inclusion: { in: ->(checkout) { checkout.states } }, allow_blank: true, unless: :billing_same
 
-  attr_accessor :market, :allow_shipping_waiver
+  attr_accessor :market, :allow_shipping_waiver, :ahoy_visit
 
   def self.from_params(params)
     new(params.to_h.slice(*attribute_names))
@@ -149,6 +149,7 @@ class Checkout
         guest_name: name.to_s.strip,
         guest_phone: phone,
         guest_email: email.presence,
+        ahoy_visit: ahoy_visit,
         shipping_address: shipping,
         billing_address: billing,
         subtotal: subtotal,
@@ -233,6 +234,7 @@ class Checkout
         guest_name: name.to_s.strip,
         guest_phone: phone,
         guest_email: email.presence,
+        ahoy_visit: ahoy_visit,
         shipping_address: shipping,
         billing_address: billing,
         subtotal: subtotal,
