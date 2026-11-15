@@ -24,7 +24,7 @@ gem "prawn", "~> 2.5"
 gem "prawn-table", "~> 0.2.2"
 
 # json 3.0 only accepts keyword options; Rails 8.1 still calls JSON.parse(json, options)
-gem "json", "~> 2.16"
+gem "json", "~> 3.0"
 
 # Admin authentication
 gem "devise", "~> 5.0"
